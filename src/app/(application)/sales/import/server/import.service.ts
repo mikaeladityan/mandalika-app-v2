@@ -1,0 +1,47 @@
+import { api, setupCSRFToken } from "@/lib/api";
+import { ApiSuccessResponse } from "@/shared/types";
+import { ResponseSalesImportDTO, SalesImportPreviewDTO } from "./import.schema";
+
+const API = `${process.env.NEXT_PUBLIC_API}/api/app/sales/import`;
+
+export class SalesImportService {
+    static async preview(file: File): Promise<ResponseSalesImportDTO> {
+        await setupCSRFToken();
+
+        const form = new FormData();
+        form.append("file", file);
+
+        const { data } = await api.post<ApiSuccessResponse<ResponseSalesImportDTO>>(
+            `${API}/preview`,
+            form,
+            { headers: { "Content-Type": "multipart/form-data" } },
+        );
+
+        return data.data;
+    }
+
+    static async getPreview(importId: string) {
+        const { data } = await api.get<
+            ApiSuccessResponse<{
+                rows: SalesImportPreviewDTO[];
+                total: number;
+                valid: number;
+                invalid: number;
+            }>
+        >(`${API}/preview/${importId}`);
+
+        return data.data;
+    }
+
+    static async execute(importId: string, month: number, year: number) {
+        await setupCSRFToken();
+
+        const { data } = await api.post(`${API}/execute`, {
+            import_id: importId,
+            month,
+            year,
+        });
+
+        return data.data;
+    }
+}

@@ -1,0 +1,558 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { ChevronDown, BarChart2 } from "lucide-react";
+
+import { useSaleQuery, useSaleTableState } from "@/app/(application)/sales/server/use.sales";
+import { useRecipeUtilsOption } from "@/app/(application)/recipes/server/use.recipe";
+
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Area,
+    Line,
+    ComposedChart,
+    LabelList,
+} from "recharts";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+export function SalesAnalytics() {
+    const table = useSaleTableState();
+    const { sales, isLoading, isFetching } = useSaleQuery(table.queryParams);
+    const { product } = useRecipeUtilsOption();
+
+    const activeHorizon = table.horizon ?? 12;
+    const [openProductSelector, setOpenProductSelector] = useState(false);
+    const [openProductSelector2, setOpenProductSelector2] = useState(false);
+
+    const chartData = useMemo(() => {
+        if (!sales?.sales || sales.sales.length === 0) return [];
+
+        const monthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "Mei",
+            "Jun",
+            "Jul",
+            "Ags",
+            "Sep",
+            "Okt",
+            "Nov",
+            "Des",
+        ];
+
+        // Case comparison: iterate periods and find data for both products
+        const periods = sales.sales[0].quantity.map((q: any) => ({ month: q.month, year: q.year }));
+
+        return periods.map((p: any) => {
+            const periodLabel = `${monthNames[p.month - 1]}${String(p.year).slice(-2)}`;
+            const row: any = { period: periodLabel };
+
+            sales.sales.forEach((s: any, idx: number) => {
+                const found = s.quantity.find((q: any) => q.month === p.month && q.year === p.year);
+                const val = Number(found?.quantity || 0);
+                if (sales.sales.length > 1) {
+                    row[`quantity_${idx + 1}`] = val;
+                    row[`name_${idx + 1}`] = s.product.name;
+                } else {
+                    row.quantity = val;
+                }
+            });
+
+            return row;
+        });
+    }, [sales]);
+
+    const summaries = useMemo(() => {
+        if (!sales?.sales || sales.sales.length === 0) return [];
+
+        return sales.sales.map((s: any, idx: number) => {
+            const total = s.totalQuantity || 0;
+            const avg = chartData.length > 0 ? total / chartData.length : 0;
+            return {
+                total,
+                average: avg.toFixed(0),
+                product: s.product,
+                color: idx === 0 ? "#10b981" : "#3b82f6", // Emerald for P1, Blue for P2
+            };
+        });
+    }, [sales, chartData]);
+
+    const isDataLoading = isLoading || isFetching || product.isLoading;
+
+    const isTrendUp =
+        chartData.length > 1
+            ? chartData[chartData.length - 1].quantity >= chartData[0].quantity
+            : true;
+    const chartColor = isTrendUp ? "#10b981" : "#ef4444";
+
+    return (
+        <section className="space-y-6">
+            <header className="space-y-1">
+                <h2 className="text-2xl font-bold">Analitik Penjualan</h2>
+                <p className="text-muted-foreground">
+                    Analisis data penjualan produk dalam rentang {activeHorizon} bulan terakhir.
+                </p>
+            </header>
+
+            <Card>
+                <CardHeader className="py-4">
+                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full">
+                        <div className="flex flex-col md:flex-row gap-2 flex-1">
+                            <Popover
+                                open={openProductSelector}
+                                onOpenChange={setOpenProductSelector}
+                            >
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={openProductSelector}
+                                        className={cn(
+                                            "w-full md:w-fit justify-between text-left font-normal",
+                                            !table.product_id && "text-muted-foreground",
+                                        )}
+                                        disabled={isDataLoading}
+                                    >
+                                        <div className="truncate flex items-center gap-1.5 flex-wrap">
+                                            {(() => {
+                                                if (!table.product_id)
+                                                    return "Pilih Produk Utama...";
+                                                const selectedProduct = product.data?.find(
+                                                    (p) => p.id === table.product_id,
+                                                );
+                                                if (!selectedProduct) return "Produk P1";
+
+                                                return (
+                                                    <>
+                                                        <span className="font-semibold">
+                                                            {selectedProduct.name}
+                                                        </span>
+                                                        {selectedProduct.type && (
+                                                            <span className="text-xs text-muted-foreground uppercase">
+                                                                {selectedProduct.type}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
+                                                            {selectedProduct.size}
+                                                        </span>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-fit p-0" align="start">
+                                    <Command>
+                                        <CommandInput placeholder="Cari nama atau kode produk..." />
+                                        <CommandList>
+                                            <CommandEmpty>Produk tidak ditemukan.</CommandEmpty>
+                                            <CommandGroup>
+                                                <CommandItem
+                                                    onSelect={() => {
+                                                        table.setProductId(undefined);
+                                                        setOpenProductSelector(false);
+                                                    }}
+                                                    className="font-medium text-destructive"
+                                                >
+                                                    Pilih Otomatis (Produk Terlaris)
+                                                </CommandItem>
+                                                {product.data?.map((p) => (
+                                                    <CommandItem
+                                                        key={p.id}
+                                                        value={`${p.name} ${p.code}`}
+                                                        onSelect={() => {
+                                                            table.setProductId(p.id);
+                                                            setOpenProductSelector(false);
+                                                        }}
+                                                    >
+                                                        <div className="flex flex-col">
+                                                            <span>
+                                                                {p.name} {p.type?.toUpperCase()} [
+                                                                {String(p.size).toUpperCase()}]
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Kode: {p.code}
+                                                            </span>
+                                                        </div>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+
+                            {/* Selector Produk Kedua - Lebih Subtle */}
+                            <Popover
+                                open={openProductSelector2}
+                                onOpenChange={setOpenProductSelector2}
+                            >
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        role="combobox"
+                                        aria-expanded={openProductSelector2}
+                                        className={cn(
+                                            "w-full md:w-fit justify-between text-left font-normal hover:bg-accent/50",
+                                            !table.product_id_2 && "text-muted-foreground",
+                                            table.product_id_2 &&
+                                                "text-blue-600 bg-blue-50/50 hover:bg-blue-100/50",
+                                        )}
+                                        disabled={isDataLoading}
+                                    >
+                                        <div className="truncate flex items-center gap-1.5 flex-wrap">
+                                            <div
+                                                className={cn(
+                                                    "w-2 h-2 rounded-full shrink-0",
+                                                    table.product_id_2 ? "bg-blue-500" : "bg-muted",
+                                                )}
+                                            />
+                                            {(() => {
+                                                if (!table.product_id_2) return "Bandingkan...";
+                                                const selectedProduct2 = product.data?.find(
+                                                    (p) => p.id === table.product_id_2,
+                                                );
+                                                if (!selectedProduct2) return "Produk P2";
+
+                                                return (
+                                                    <>
+                                                        <span className="font-semibold">
+                                                            {selectedProduct2.name}
+                                                        </span>
+                                                        {selectedProduct2.type && (
+                                                            <span className="text-xs text-muted-foreground uppercase">
+                                                                {selectedProduct2.type}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[10px] font-medium bg-blue-100/50 text-blue-700 px-1.5 py-0.5 rounded uppercase">
+                                                            {selectedProduct2.size}
+                                                        </span>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-fit p-0" align="start">
+                                    <Command>
+                                        <CommandInput placeholder="Cari nama atau kode produk..." />
+                                        <CommandList>
+                                            <CommandEmpty>Produk tidak ditemukan.</CommandEmpty>
+                                            <CommandGroup>
+                                                <CommandItem
+                                                    onSelect={() => {
+                                                        table.setProductId2(undefined);
+                                                        setOpenProductSelector2(false);
+                                                    }}
+                                                    className="font-medium text-destructive"
+                                                >
+                                                    Hapus Perbandingan
+                                                </CommandItem>
+                                                {product.data?.map((p) => (
+                                                    <CommandItem
+                                                        key={p.id}
+                                                        value={`${p.name} ${p.code}`}
+                                                        onSelect={() => {
+                                                            table.setProductId2(p.id);
+                                                            setOpenProductSelector2(false);
+                                                        }}
+                                                    >
+                                                        <div className="flex flex-col">
+                                                            <span>
+                                                                {p.name} {p.type?.toUpperCase()} [
+                                                                {String(p.size).toUpperCase()}]
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Kode: {p.code}
+                                                            </span>
+                                                        </div>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+
+                        <div className="shrink-0">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="secondary"
+                                        className="w-full md:w-40 justify-between font-semibold"
+                                    >
+                                        {activeHorizon} Bulan Terakhir
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="max-h-60 overflow-y-auto"
+                                >
+                                    {[2, 4, 6, 8, 10, 12, 16, 20, 24].map((h) => (
+                                        <DropdownMenuItem
+                                            key={h}
+                                            onClick={() => table.setHorizon(h)}
+                                        >
+                                            {h} Bulan
+                                        </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuItem
+                                        onClick={() => table.setHorizon(undefined)}
+                                        className="text-muted-foreground"
+                                    >
+                                        Default (12 Bulan)
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </CardHeader>
+            </Card>
+
+            {summaries.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Card className="bg-emerald-50/20 border-emerald-100 col-span-1 md:col-span-1">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2 flex-wrap leading-tight">
+                                <BarChart2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span className="truncate">{summaries[0].product.name}</span>
+                            </CardTitle>
+                            <CardDescription className="truncate flex items-center gap-1.5 flex-wrap">
+                                <span>{summaries[0].product.code}</span>
+                                <span>•</span>
+                                <span className="uppercase">
+                                    {summaries[0].product.product_type?.name}
+                                </span>
+                                <span>•</span>
+                                <span className="font-medium bg-emerald-100 text-emerald-800 px-1 rounded text-[10px] uppercase">
+                                    {String(summaries[0].product.size).toUpperCase()}
+                                </span>
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-black text-emerald-700">
+                                {summaries[0].total.toLocaleString("id-ID")}{" "}
+                                <span className="text-sm font-medium text-muted-foreground uppercase">
+                                    {summaries[0].product.size}
+                                </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 lowercase">
+                                total terjual ({activeHorizon} bln)
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        className={cn(
+                            summaries.length > 1
+                                ? "bg-blue-50/20 border-blue-100"
+                                : "bg-background",
+                        )}
+                    >
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                {summaries.length > 1 ? (
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="text-blue-700 font-bold text-base truncate">
+                                            {summaries[1].product.name}
+                                        </span>
+                                        <span className="text-xs font-normal truncate flex items-center gap-1 flex-wrap text-muted-foreground">
+                                            <span>{summaries[1].product.code}</span>
+                                            <span>•</span>
+                                            <span className="uppercase">
+                                                {summaries[1].product.product_type?.name}
+                                            </span>
+                                            <span>•</span>
+                                            <span className="font-medium bg-blue-100 text-blue-800 px-1 rounded text-[10px] uppercase">
+                                                {String(summaries[1].product.size).toUpperCase()}
+                                            </span>
+                                        </span>
+                                    </div>
+                                ) : (
+                                    "Rata-rata Penjualan"
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div
+                                className={cn(
+                                    "text-2xl font-bold",
+                                    summaries.length > 1 && "text-blue-800",
+                                )}
+                            >
+                                {summaries.length > 1
+                                    ? summaries[1].total.toLocaleString("id-ID")
+                                    : Number(summaries[0].average).toLocaleString("id-ID")}
+                                {summaries.length > 1 && (
+                                    <span className="text-xs font-medium text-muted-foreground ml-1 uppercase">
+                                        {summaries[1].product.size}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {summaries.length > 1 ? "Total Terjual (Komp.)" : "per bulan"}
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                {summaries.length > 1 ? "Perbandingan Avg" : "Rentang Waktu"}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {summaries.length > 1
+                                    ? `${Number(summaries[0].average).toLocaleString("id-ID")} vs ${Number(summaries[1].average).toLocaleString("id-ID")}`
+                                    : `${activeHorizon} Bulan`}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {summaries.length > 1
+                                    ? "Avg per bulan"
+                                    : chartData.length > 0 &&
+                                      `${chartData[0]?.period} - ${chartData[chartData.length - 1]?.period}`}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            <Card className="pt-6">
+                <CardContent>
+                    {!chartData.length && !isDataLoading ? (
+                        <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                            Tidak ada data penjualan untuk kriteria ini.
+                        </div>
+                    ) : (
+                        <div className={cn("h-[400px] w-full", isDataLoading && "opacity-50")}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ComposedChart
+                                    data={chartData}
+                                    margin={{ top: 35, right: 30, left: 0, bottom: 0 }}
+                                >
+                                    <defs>
+                                        <linearGradient id="colorQty" x1="0" y1="0" x2="0" y2="1">
+                                            <stop
+                                                offset="5%"
+                                                stopColor={chartColor}
+                                                stopOpacity={0.3}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor={chartColor}
+                                                stopOpacity={0}
+                                            />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        vertical={false}
+                                        stroke="hsl(var(--border))"
+                                    />
+                                    <XAxis
+                                        dataKey="period"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fill: "hsl(var(--muted-foreground))",
+                                            fontSize: 12,
+                                            fontWeight: "bold",
+                                        }}
+                                        dy={10}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: "hsl(var(--muted))", opacity: 0.2 }}
+                                        contentStyle={{
+                                            backgroundColor: "#FFFFFF",
+                                            borderColor: "hsl(var(--border))",
+                                            borderRadius: "8px",
+                                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                                            color: "hsl(var(--foreground))",
+                                        }}
+                                        itemStyle={{
+                                            color: chartColor,
+                                            fontWeight: 600,
+                                        }}
+                                        labelStyle={{
+                                            color: "hsl(var(--foreground))",
+                                            fontWeight: "bold",
+                                            marginBottom: "4px",
+                                        }}
+                                    />
+                                    <Bar
+                                        dataKey={summaries.length > 1 ? "quantity_1" : "quantity"}
+                                        name={
+                                            summaries.length > 1
+                                                ? summaries[0].product.name
+                                                : "Volume Terjual"
+                                        }
+                                        fill="#10b981"
+                                        radius={[4, 4, 0, 0]}
+                                        maxBarSize={50}
+                                    >
+                                        {summaries.length === 1 && (
+                                            <LabelList
+                                                dataKey="quantity"
+                                                position="top"
+                                                fill="hsl(var(--foreground))"
+                                                fontSize={12}
+                                                fontWeight={600}
+                                                offset={10}
+                                            />
+                                        )}
+                                    </Bar>
+
+                                    {summaries.length > 1 && (
+                                        <Bar
+                                            dataKey="quantity_2"
+                                            name={summaries[1].product.name}
+                                            fill="#3b82f6"
+                                            radius={[4, 4, 0, 0]}
+                                            maxBarSize={50}
+                                        />
+                                    )}
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </section>
+    );
+}
