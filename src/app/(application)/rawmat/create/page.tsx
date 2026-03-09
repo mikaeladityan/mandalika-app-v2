@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { CreateRawMaterial } from "@/components/pages/rawmat/crate";
+import { CreateRawMaterial } from "@/components/pages/rawmat/create";
 
 export default function CreateRawMatPage() {
     return (

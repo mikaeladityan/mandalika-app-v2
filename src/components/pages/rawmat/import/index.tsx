@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Upload, FileText, Database, RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+    Upload,
+    FileText,
+    Database,
+    RefreshCw,
+    AlertCircle,
+    ArrowLeft,
+    Container,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -26,8 +34,7 @@ import {
 } from "@/app/(application)/rawmat/import/server/use.import";
 import { RawmatImportPreviewDTO } from "@/app/(application)/rawmat/import/server/import.schema";
 import { useRouter } from "next/navigation";
-
-/* ================= TYPES ================= */
+import Link from "next/link";
 
 type ImportRawmatFormValues = {
     month: number;
@@ -35,8 +42,6 @@ type ImportRawmatFormValues = {
 };
 
 const MAX_ROWS = 5000;
-
-/* ================= COMPONENT ================= */
 
 export function ImportRawmatForm() {
     const router = useRouter();
@@ -51,7 +56,6 @@ export function ImportRawmatForm() {
 
     const [openDialog, setOpenDialog] = useState(false);
 
-    // ===== Progress State =====
     const [isImporting, setIsImporting] = useState(false);
     const [progress, setProgress] = useState(0);
     const [progressLabel, setProgressLabel] = useState("");
@@ -59,8 +63,6 @@ export function ImportRawmatForm() {
     const previewMutation = usePreviewImportRawmat();
     const getPreviewMutation = useGetPreviewImport();
     const executeMutation = useExecuteImportRawmat();
-
-    /* ================= PROGRESS HELPER ================= */
 
     function runProgress(from: number, to: number, duration: number, label: string) {
         return new Promise<void>((resolve) => {
@@ -86,8 +88,6 @@ export function ImportRawmatForm() {
         });
     }
 
-    /* ================= PREVIEW ================= */
-
     async function handlePreview() {
         if (!file) return;
 
@@ -109,8 +109,6 @@ export function ImportRawmatForm() {
             toast.error("Failed to generate preview");
         }
     }
-
-    /* ================= EXECUTE ================= */
 
     async function handleExecute() {
         if (!importId || stats.invalid > 0) return;
@@ -183,27 +181,40 @@ export function ImportRawmatForm() {
                 </label>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={handlePreview}
-                        disabled={!file || previewMutation.isPending}
-                    >
-                        {previewMutation.isPending ? (
-                            <RefreshCw className="animate-spin" />
-                        ) : (
-                            <FileText />
-                        )}
-                        Preview
+                <div className="flex flex-col items-end gap-2">
+                    <Button asChild variant="warning" className="font-semibold w-fit">
+                        <Link
+                            href={
+                                "https://docs.google.com/spreadsheets/d/1jT9fGCKUDOyNimdLrQ66Y1OKg6d9AUxdJCHQOUyDPZI/edit?usp=sharing"
+                            }
+                            target="_blank"
+                        >
+                            <Container />
+                            Template
+                        </Link>
                     </Button>
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handlePreview}
+                            disabled={!file || previewMutation.isPending}
+                        >
+                            {previewMutation.isPending ? (
+                                <RefreshCw className="animate-spin" />
+                            ) : (
+                                <FileText />
+                            )}
+                            Preview
+                        </Button>
 
-                    <Button
-                        onClick={() => setOpenDialog(true)}
-                        disabled={!importId || stats.invalid > 0}
-                    >
-                        <Database />
-                        Import
-                    </Button>
+                        <Button
+                            onClick={() => setOpenDialog(true)}
+                            disabled={!importId || stats.invalid > 0}
+                        >
+                            <Database />
+                            Import
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Invalid warning */}
@@ -237,7 +248,6 @@ export function ImportRawmatForm() {
                 </Tabs>
             </CardContent>
 
-            {/* ================= DIALOG ================= */}
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogContent>
                     <DialogHeader>
@@ -250,7 +260,6 @@ export function ImportRawmatForm() {
                         <p>Apakah anda sudah yakin dengan data tersebut?</p>
                     )}
 
-                    {/* ===== Progress Bar ===== */}
                     {isImporting && (
                         <div className="space-y-2 mt-4">
                             <div className="flex justify-between text-xs text-muted-foreground">

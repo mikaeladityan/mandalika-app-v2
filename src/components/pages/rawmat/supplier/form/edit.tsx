@@ -98,7 +98,7 @@ export function EditSupplier() {
                                 label="Alamat Lengkap Supplier"
                                 placeholder="Jl. XxX..."
                                 type="text"
-                                error={form.formState.errors.phone}
+                                error={form.formState.errors.addresses}
                             />
                         </div>
                     </CardContent>

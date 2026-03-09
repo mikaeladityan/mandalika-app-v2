@@ -67,6 +67,10 @@ export const QueryRawMaterialSchema = z.object({
         ])
         .default("updated_at"),
     sortOrder: z.enum(["asc", "desc"]).default("asc"),
+    // ─── Filters by relation IDs ──────────────────────────────────────────────
+    category_id: z.coerce.number().int().optional(),
+    supplier_id: z.coerce.number().int().optional(),
+    unit_id: z.coerce.number().int().optional(),
 });
 
 export type RequestRawMaterialDTO = z.input<typeof RequestRawMaterialSchema>;

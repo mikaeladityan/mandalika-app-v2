@@ -13,6 +13,7 @@ import {
     ArrowRight,
     Loader,
     Import,
+    X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SelectFilter } from "@/components/ui/form/select";
 
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
@@ -37,6 +39,9 @@ import { RawMaterialColumns } from "./table/column";
 import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
+import { useCategory } from "@/app/(application)/rawmat/categories/server/use.category";
+import { useSupplier } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
+import { useUnit } from "@/app/(application)/rawmat/units/server/use.unit";
 
 export function RawMaterials() {
     const router = useRouter();
@@ -56,6 +61,11 @@ export function RawMaterials() {
     const { data, meta, isLoading, isFetching, isRefetching } = useRawMaterialsQuery(
         table.queryParams,
     );
+
+    // ─── Sub-module data untuk filter ────────────────────────────────────────
+    const { categories: categoryList } = useCategory({ page: 1, take: 100, status: "ACTIVE" });
+    const { suppliers: supplierList } = useSupplier({ page: 1, take: 100 });
+    const { units: unitList } = useUnit({ page: 1, take: 100 });
 
     const { clean } = useActionRawMat();
     const runClean = async () => {
@@ -175,7 +185,73 @@ export function RawMaterials() {
                         </InputGroupAddon>
                     </InputGroup>
 
-                    <div className="flex justify-between gap-2">
+                    {/* ===== Filters ===== */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        {/* Filter Kategori */}
+                        <SelectFilter
+                            placeholder="Kategori"
+                            value={table.categoryId ?? null}
+                            options={
+                                categoryList.data?.data?.map((c) => ({
+                                    value: c.id,
+                                    label: c.name,
+                                })) ?? []
+                            }
+                            onChange={(val) => table.setCategoryId(Number(val))}
+                            onReset={() => table.setCategoryId(undefined)}
+                            isLoading={categoryList.isLoading || categoryList.isRefetching}
+                            canSearching={true}
+                            className="w-full md:w-auto min-w-58"
+                        />
+
+                        {/* Filter Supplier */}
+                        <SelectFilter
+                            placeholder="Supplier"
+                            value={table.supplierId ?? null}
+                            options={
+                                supplierList.data?.data?.map((s) => ({
+                                    value: s.id,
+                                    label: s.name,
+                                })) ?? []
+                            }
+                            onChange={(val) => table.setSupplierId(Number(val))}
+                            onReset={() => table.setSupplierId(undefined)}
+                            isLoading={supplierList.isLoading || supplierList.isRefetching}
+                            canSearching={true}
+                            className="w-full md:w-auto min-w-44"
+                        />
+
+                        {/* Filter Satuan */}
+                        <SelectFilter
+                            placeholder="Satuan"
+                            value={table.unitId ?? null}
+                            options={
+                                unitList.data?.data?.map((u) => ({
+                                    value: u.id,
+                                    label: u.name,
+                                })) ?? []
+                            }
+                            onChange={(val) => table.setUnitId(Number(val))}
+                            onReset={() => table.setUnitId(undefined)}
+                            isLoading={unitList.isLoading || unitList.isRefetching}
+                            canSearching={true}
+                            className="w-full md:w-auto min-w-36"
+                        />
+
+                        {/* Reset All Filters */}
+                        {(table.categoryId || table.supplierId || table.unitId || table.search) && (
+                            <Button
+                                variant="ghost"
+                                onClick={table.resetFilters}
+                                className="h-9 px-2 text-muted-foreground hover:text-foreground"
+                            >
+                                Reset <X className="ml-1 h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* ===== Actions ===== */}
+                    <div className="flex flex-col md:flex-row justify-between gap-2">
                         <div className="flex gap-2">
                             <Link href="/rawmat/create">
                                 <Button>
@@ -206,7 +282,8 @@ export function RawMaterials() {
                                 </DialogAlert>
                             )}
                         </div>
-                        <div className="flex items-center justify-end gap-2">
+
+                        <div className="flex items-center gap-2">
                             <Link href="/rawmat/import">
                                 <Button variant={"outline"}>
                                     <Import size={16} /> Import

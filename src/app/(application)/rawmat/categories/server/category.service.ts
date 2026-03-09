@@ -36,6 +36,15 @@ export class CategoryService {
         }
     }
 
+    static async changeStatus(id: number, status: string) {
+        try {
+            await setupCSRFToken();
+            await api.patch(`${API}/${id}/status`, { status });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async list(params: QueryRawMatCategoryDTO) {
         try {
             const { data } = await api.get<

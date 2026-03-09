@@ -181,6 +181,17 @@ export function useProductTableState() {
             page: "1",
         });
 
+    const resetFilters = () => {
+        setSearch("");
+        batchSet({
+            search: undefined,
+            gender: undefined,
+            type_id: undefined,
+            size_id: undefined,
+            page: "1",
+        });
+    };
+
     // Set Page
     const setPage = (page: number) => batchSet({ page: String(page) });
 
@@ -220,6 +231,7 @@ export function useProductTableState() {
         setType,
         size_id,
         setSize,
+        resetFilters,
         queryParams,
         setPage,
         setPageSize,

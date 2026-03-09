@@ -28,8 +28,11 @@ export const QuerySupplierSchema = z.object({
     page: z.number().int().positive().default(1).optional(),
     take: z.number().int().positive().max(100).default(10).optional(),
     search: z.string().optional(),
-    sortBy: z.enum(["country", "name", "updated_at", "created_at"]).default("updated_at"),
-    sortOrder: z.enum(["asc", "desc"]).default("asc"),
+    sortBy: z
+        .enum(["country", "name", "updated_at", "created_at"])
+        .default("updated_at")
+        .optional(),
+    sortOrder: z.enum(["asc", "desc"]).default("asc").optional(),
 });
 
 export type RequestSupplierDTO = z.input<typeof RequestSupplierSchema>;

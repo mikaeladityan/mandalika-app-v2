@@ -54,10 +54,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
                 { title: "Analitik Penjualan", url: "/sales/analytics", icon: BarChart },
             ],
         },
-        {
-            label: "Gudang",
-            items: [{ title: "Gudang", url: "/warehouses", icon: Warehouse }],
-        },
+
         {
             items: [
                 {
@@ -95,6 +92,10 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     ],
                 },
             ],
+        },
+        {
+            label: "Gudang",
+            items: [{ title: "Gudang", url: "/warehouses", icon: Warehouse }],
         },
         {
             label: "Produksi",

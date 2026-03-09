@@ -51,7 +51,7 @@ export const RecipeColumns = ({
                             {row.original.product.product_type?.name.toUpperCase()}
                         </span>
                         <span className="text-xs font-medium px-2 bg-gray-100 text-gray-600 rounded">
-                            {row.original.product.size}{" "}
+                            {row.original.product.size?.size}{" "}
                             {row.original.product.unit?.name.toUpperCase()}
                         </span>
                     </div>

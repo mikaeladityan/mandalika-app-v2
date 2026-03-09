@@ -168,7 +168,6 @@ export function RecipeDataTable({
                                 <Eye size={16} />
                             </Button>
                         </Link>
-                        <DialogDelete data={row.original} />
                     </div>
                 ),
             },
@@ -351,88 +350,5 @@ export function RecipeDataTable({
                 </div>
             </div>
         </div>
-    );
-}
-
-// --- SUB KOMPONEN: DIALOG DELETE ---
-function DialogDelete({ data }: { data: any }) {
-    const [confirm, setConfirm] = useState<string>("");
-    const [err, setErr] = useState<string>("");
-    const { deleted } = useActionProduct();
-
-    const onConfirm = async (code: string) => {
-        setErr("");
-        if (!confirm) {
-            setErr("Konfirmasi tidak boleh kosong");
-            return;
-        }
-        if (confirm !== data.name) {
-            setErr("Konfirmasi tidak valid");
-            return;
-        }
-        await deleted.mutateAsync({ code });
-    };
-
-    return (
-        <Dialog onOpenChange={(open) => !open && (setConfirm(""), setErr(""))}>
-            <DialogTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
-                >
-                    {deleted.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Trash2 size={16} />
-                    )}
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-106.25">
-                <DialogHeader>
-                    <DialogTitle className="font-semibold text-lg text-slate-900">
-                        Hapus Produk (Finish Good)
-                    </DialogTitle>
-                    <DialogDescription className="text-slate-500">
-                        Apakah anda yakin untuk menghapus Produk (Finish Good){" "}
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-bold text-slate-900">
-                            {data.name}
-                        </span>
-                        ? Tindakan ini tidak dapat dibatalkan.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-2">
-                    <label
-                        htmlFor="confirm"
-                        className="text-xs font-bold uppercase tracking-wider text-slate-500"
-                    >
-                        Tulis Nama Produk untuk Konfirmasi
-                    </label>
-                    <Input
-                        id="confirm"
-                        onChange={(e) => setConfirm(e.target.value)}
-                        value={confirm}
-                        placeholder={data.name}
-                        className={err ? "border-rose-500 focus-visible:ring-rose-500" : ""}
-                        disabled={deleted.isPending}
-                    />
-                    {err && <p className="text-[11px] font-medium text-rose-500">{err}</p>}
-                </div>
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button
-                        variant="destructive"
-                        type="button"
-                        className="w-full sm:w-auto"
-                        onClick={() => onConfirm(data.code)}
-                        disabled={deleted.isPending}
-                    >
-                        {deleted.isPending ? (
-                            <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                        ) : null}
-                        Hapus Sekarang
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     );
 }

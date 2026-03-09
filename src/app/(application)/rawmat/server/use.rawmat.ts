@@ -156,16 +156,41 @@ export function useRawMaterialTableState() {
         [sortBy, sortOrder],
     );
 
-    /* ================= STATUS (REPLACING isDeleted) ================= */
+    /* ================= STATUS ================= */
     const status = (get("status") as "actived" | "deleted") ?? "actived";
-
     const isDeleted = status === "deleted";
-
     const toggleTrashMode = () =>
         batchSet({
             status: isDeleted ? "actived" : "deleted",
             page: "1",
         });
+
+    /* ================= FILTERS (category / supplier / unit) ================= */
+    const rawCategoryId = get("category_id");
+    const categoryId = rawCategoryId ? Number(rawCategoryId) : undefined;
+    const setCategoryId = (id?: number) =>
+        batchSet({ category_id: id ? String(id) : undefined, page: "1" });
+
+    const rawSupplierId = get("supplier_id");
+    const supplierId = rawSupplierId ? Number(rawSupplierId) : undefined;
+    const setSupplierId = (id?: number) =>
+        batchSet({ supplier_id: id ? String(id) : undefined, page: "1" });
+
+    const rawUnitId = get("unit_id");
+    const unitId = rawUnitId ? Number(rawUnitId) : undefined;
+    const setUnitId = (id?: number) =>
+        batchSet({ unit_id: id ? String(id) : undefined, page: "1" });
+
+    const resetFilters = () => {
+        setSearch("");
+        batchSet({
+            search: undefined,
+            category_id: undefined,
+            supplier_id: undefined,
+            unit_id: undefined,
+            page: "1",
+        });
+    };
 
     /* ================= PAGINATION ================= */
     const setPage = (page: number) => batchSet({ page: String(page) });
@@ -180,6 +205,9 @@ export function useRawMaterialTableState() {
             sortBy: sortBy as QueryRawMaterialDTO["sortBy"],
             sortOrder,
             status,
+            category_id: categoryId,
+            supplier_id: supplierId,
+            unit_id: unitId,
         }),
         [searchParams],
     );
@@ -194,6 +222,14 @@ export function useRawMaterialTableState() {
         status,
         isDeleted,
         toggleTrashMode,
+
+        categoryId,
+        setCategoryId,
+        supplierId,
+        setSupplierId,
+        unitId,
+        setUnitId,
+        resetFilters,
 
         queryParams,
         setPage,

@@ -232,8 +232,9 @@ export function SelectFilter({
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : isActive && onReset ? (
                                 <X
-                                    className="h-4 w-4 opacity-70 hover:opacity-100 transition-opacity"
+                                    className="h-4 w-4 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
                                     onClick={(e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
                                         onReset();
                                         setOpen(false);
@@ -268,6 +269,20 @@ export function SelectFilter({
                         <CommandEmpty>Tidak ada hasil</CommandEmpty>
 
                         <CommandGroup className="max-h-65 overflow-y-auto overscroll-contain">
+                            {isActive && onReset && (
+                                <CommandItem
+                                    onSelect={() => {
+                                        onReset();
+                                        setOpen(false);
+                                    }}
+                                    className="text-muted-foreground italic flex border-b rounded-none mb-1"
+                                >
+                                    Hapus Filter...
+                                </CommandItem>
+                            )}
+                            {filteredOptions.length === 0 && !isActive && (
+                                <div className="py-6 text-center text-sm">Tidak ada opsi</div>
+                            )}
                             {filteredOptions.map((option) => (
                                 <CommandItem
                                     key={option.value}

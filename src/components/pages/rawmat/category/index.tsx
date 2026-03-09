@@ -81,7 +81,7 @@ export function Categories() {
 
                 <div className="flex justify-between gap-2">
                     <div className="flex gap-2">
-                        <Link href="/categories/create">
+                        <Link href="/rawmat/categories/create">
                             <Button size={"sm"}>
                                 <Plus size={16} /> Category
                             </Button>

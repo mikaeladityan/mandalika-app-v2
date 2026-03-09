@@ -71,12 +71,29 @@ export function useFormCategory(id?: number) {
             queryClient.invalidateQueries({ queryKey: ["rawmat"], type: "all" });
             setNotif({
                 title: "Hapus Kategori Raw Material",
-                message: "Kategori raw material berhasil dihapus",
+                message: "Kategori raw material berhasil dihapus secara permanen",
             });
         },
     });
 
-    return { create, update, deleted };
+    const changeStatus = useMutation<unknown, ResponseError, { id: number; status: StatusEnumDTO }>(
+        {
+            mutationKey: ["category", "changeStatus"],
+            mutationFn: ({ id, status }) => CategoryService.changeStatus(id, status),
+            onError: (err) => {
+                FetchError(err, setErr);
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ["category"], type: "all" });
+                setNotif({
+                    title: "Update Status Kategori",
+                    message: "Status kategori berhasil diperbarui",
+                });
+            },
+        },
+    );
+
+    return { create, update, deleted, changeStatus };
 }
 
 export function useCategoryTableState() {

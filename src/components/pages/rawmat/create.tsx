@@ -1,14 +1,13 @@
 "use client";
+
+import { useCategoriesQuery } from "@/app/(application)/rawmat/categories/server/use.category";
 import {
     RequestRawMaterialDTO,
     RequestRawMaterialSchema,
 } from "@/app/(application)/rawmat/server/rawmat.schema";
-import { useFormRawMat, useRawMaterial } from "@/app/(application)/rawmat/server/use.rawmat";
-import { useCategoriesQuery } from "@/app/(application)/rawmat/categories/server/use.category";
+import { useFormRawMat } from "@/app/(application)/rawmat/server/use.rawmat";
 import { useSuppliersQuery } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
 import { useUnitsQuery } from "@/app/(application)/rawmat/units/server/use.unit";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedCreatableCombobox } from "@/components/ui/form/createable.combobox";
@@ -16,20 +15,16 @@ import { InputForm } from "@/components/ui/form/input";
 import { Form } from "@/components/ui/form/main";
 import { SelectForm } from "@/components/ui/form/select";
 import { Separator } from "@/components/ui/separator";
+import { useDebounce } from "@/shared/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Box, RotateCcw, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDebounce } from "@/shared/hooks";
 
-export function EditRawmat() {
+export function CreateRawMaterial() {
     const router = useRouter();
-    const { id } = useParams();
-    const { update } = useFormRawMat(Number(id));
-
-    const { rawMaterial, isError, isFetching, isLoading, isRefetching } = useRawMaterial(
-        undefined,
-        Number(id),
-    );
+    const { create } = useFormRawMat();
 
     const [categorySearch, setCategorySearch] = useState("");
     const [unitSearch, setUnitSearch] = useState("");
@@ -54,8 +49,8 @@ export function EditRawmat() {
         take: 50,
     });
 
-    const form = useForm<Partial<RequestRawMaterialDTO>>({
-        resolver: zodResolver(RequestRawMaterialSchema.partial()),
+    const form = useForm<RequestRawMaterialDTO>({
+        resolver: zodResolver(RequestRawMaterialSchema),
         defaultValues: {
             barcode: "",
             name: "",
@@ -68,33 +63,10 @@ export function EditRawmat() {
         },
     });
 
-    useEffect(() => {
-        if (!rawMaterial) return;
-
-        form.reset({
-            barcode: rawMaterial.barcode ?? "",
-            name: rawMaterial.name ?? "",
-            price: rawMaterial.price ?? 0,
-            min_buy: Number(rawMaterial.min_buy ?? 0),
-            min_stock: Number(rawMaterial.min_stock ?? 0),
-            supplier_id: rawMaterial.supplier?.id ?? undefined,
-            raw_mat_category: rawMaterial.raw_mat_category?.slug ?? "",
-            unit: rawMaterial.unit_raw_material.slug ?? "",
-        });
-    }, [rawMaterial, form]);
-
-    const onSubmit = async (body: Partial<RequestRawMaterialDTO>) => {
-        await update.mutateAsync(body);
+    const onSubmit = async (body: RequestRawMaterialDTO) => {
+        await create.mutateAsync(body);
         router.push("/rawmat");
     };
-
-    if (isLoading) {
-        return (
-            <div className="p-8 text-center text-muted-foreground animate-pulse">
-                Loading data...
-            </div>
-        );
-    }
 
     return (
         <div className="w-full relative pb-12">
@@ -115,10 +87,11 @@ export function EditRawmat() {
                             <div>
                                 <h1 className="text-xl font-black flex items-center gap-2">
                                     <Box className="h-6 w-6 text-muted-foreground" />
-                                    Edit Raw Material
+                                    Tambah Raw Material
                                 </h1>
                                 <p className="text-sm text-muted-foreground hidden sm:block">
-                                    Ubah informasi dasar, detail pembelian, stok, atau klasifikasi.
+                                    Lengkapi informasi dasar, detail pembelian, stok, dan
+                                    klasifikasi.
                                 </p>
                             </div>
                         </div>
@@ -136,10 +109,10 @@ export function EditRawmat() {
                                 type="submit"
                                 variant="info"
                                 className="w-full md:w-auto"
-                                disabled={update.isPending}
+                                disabled={create.isPending}
                             >
                                 <Save className="mr-2 h-4 w-4" />
-                                {update.isPending ? "Menyimpan..." : "Simpan Perubahan"}
+                                {create.isPending ? "Menyimpan..." : "Simpan Material"}
                             </Button>
                         </div>
                     </div>
@@ -167,6 +140,7 @@ export function EditRawmat() {
                                     label="Barcode (Opsional)"
                                     placeholder="Contoh: 1234567890123"
                                     type="text"
+                                    autoFocus
                                     error={form.formState.errors.barcode}
                                 />
                                 <InputForm
@@ -285,7 +259,7 @@ export function EditRawmat() {
                                         label: `${s.name} (${s.country})`,
                                     }))}
                                     placeholder="Pilih supplier..."
-                                    error={form.formState.errors.supplier_id as any}
+                                    error={form.formState.errors.supplier_id}
                                 />
                             </CardContent>
                         </Card>

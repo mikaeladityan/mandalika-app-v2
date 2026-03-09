@@ -194,6 +194,17 @@ export function Products() {
                             canSearching={true}
                             className="w-full md:w-auto min-w-28"
                         />
+
+                        {/* Reset All Filters */}
+                        {(table.gender || table.type_id || table.size_id || table.search) && (
+                            <Button
+                                variant="ghost"
+                                onClick={table.resetFilters}
+                                className="h-9 px-2 text-muted-foreground hover:text-foreground"
+                            >
+                                Reset <X className="ml-1 h-3.5 w-3.5" />
+                            </Button>
+                        )}
                     </div>
 
                     {/* ===== Actions ===== */}
