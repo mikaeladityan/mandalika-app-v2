@@ -1,144 +1,110 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Search, ChevronDown, Import, Loader2 } from "lucide-react";
+import { Search, Loader2, ChevronDown, Import } from "lucide-react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { RawMatColumns } from "./table/column";
 import {
-    useRawMatStocksQuery,
-    useRawMatStockTableState,
+    useRawMaterialStocksQuery,
+    useRawMaterialStockTableState,
+    useRawMaterialStockWarehouses,
 } from "@/app/(application)/rawmat/stocks/server/use.rawmat.stock";
-import { useCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
-import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
+import { RawMaterialColumns } from "./table/column";
 import { DataTable } from "@/components/ui/table/data";
-import { useParams } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
+import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 
-export function RawMatWarehouseStockDetail() {
+export function RawMaterialsWarehouseStockDetail() {
     const { id } = useParams<{ id: string }>();
-    const table = useRawMatStockTableState();
+    const table = useRawMaterialStockTableState();
+
+    const { warehouses = [] } = useRawMaterialStockWarehouses();
+    const currentWarehouse = useMemo(
+        () => warehouses.find((w: any) => w.id === Number(id)),
+        [warehouses, id],
+    );
+
+    const warehouseNames = useMemo(
+        () => (currentWarehouse ? [currentWarehouse.name] : []),
+        [currentWarehouse],
+    );
+
     const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
         category: true,
-        amount: true,
-        warehouse: true,
+        uom: true,
     });
 
-    // Pass warehouse_id from params
-    const { rawMats, meta, isLoading, isFetching, isRefetching } = useRawMatStocksQuery({
+    const { rawMaterials, meta, isLoading, isFetching, isRefetching } = useRawMaterialStocksQuery({
         ...table.queryParams,
         warehouse_id: Number(id),
-    });
-
-    const { categories } = useCategory({ take: 100 });
+    } as any);
 
     const columns = useMemo(
         () =>
-            RawMatColumns({
+            RawMaterialColumns({
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                warehouseNames,
+                showTotal: false,
             }),
-        [table.sortBy, table.sortOrder, table.onSort],
+        [table.sortBy, table.sortOrder, table.onSort, warehouseNames],
     );
 
     const isTableLoading = isLoading || isFetching || isRefetching;
 
     return (
-        <>
+        <section className="space-y-6">
             <header className="space-y-1 mb-5">
                 <h2 className="text-xl font-semibold tracking-tight">
-                    Stock Raw Material Gudang {rawMats[0]?.warehouse?.name ?? "..."}
+                    Stok Bahan Baku: {currentWarehouse?.name || "Gudang RM"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                    Kelola pergerakan dan informasi seluruh stock bahan baku pada gudang ini
+                    Lihat detail ketersediaan bahan baku pada gudang terpilih
                 </p>
             </header>
 
-            <Card>
-                <CardHeader className="space-y-4">
-                    {/* ===== Search ===== */}
-                    <InputGroup className="w-full md:max-w-sm">
-                        <InputGroupInput
-                            placeholder="Search raw material..."
-                            value={table.search}
-                            onChange={(e) => table.setSearch(e.target.value)}
-                        />
-                        <InputGroupAddon>
-                            <Search className="h-4 w-4" />
-                        </InputGroupAddon>
-                        <InputGroupAddon align="inline-end">
-                            {isFetching ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <span className="text-xs text-muted-foreground">
-                                    {meta?.len ?? 0} result
-                                </span>
-                            )}
-                        </InputGroupAddon>
-                    </InputGroup>
+            <Card className="border-none shadow-sm rounded-xl overflow-hidden">
+                <CardHeader className="bg-white border-b space-y-4 pt-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <InputGroup className="w-full md:max-w-xs">
+                            <InputGroupInput
+                                placeholder="Cari nama atau barcode..."
+                                value={table.search}
+                                onChange={(e) => table.setSearch(e.target.value)}
+                            />
+                            <InputGroupAddon>
+                                {isFetching ? (
+                                    <Loader2 className="animate-spin" size={14} />
+                                ) : (
+                                    <Search size={14} />
+                                )}
+                            </InputGroupAddon>
+                        </InputGroup>
 
-                    {/* ===== Filters ===== */}
-                    <div className="flex flex-col md:flex-row gap-2">
-                        {/* Category */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className="w-full md:w-48 justify-between"
-                                    disabled={categories.isLoading || categories.isRefetching}
-                                >
-                                    {table.category_id
-                                        ? (categories.data?.data
-                                              ?.find((t) => t.id === table.category_id)
-                                              ?.name.toUpperCase() ?? "Kategori Material")
-                                        : "Kategori Material"}
-                                    <ChevronDown className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                                {categories.data?.data?.map((cat) => (
-                                    <DropdownMenuItem
-                                        key={cat.id}
-                                        onClick={() => table.setCategory(cat.id)}
-                                    >
-                                        {cat.name.toUpperCase()}
-                                    </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuItem
-                                    onClick={() => table.setCategory(undefined)}
-                                    className="text-muted-foreground"
-                                >
-                                    Reset
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-
-                    {/* ===== Actions ===== */}
-                    <div className="flex flex-col md:flex-row justify-end gap-2">
-                        <Button variant="success" asChild>
-                            <Link href={`/warehouses/${id}/rawmat-import`}>
-                                <Import className="h-4 w-4 mr-2" />
-                                Import
-                            </Link>
-                        </Button>
                         <div className="flex gap-2">
+                            <Button variant="success" asChild size="sm">
+                                <Link href={`/rawmat/stocks/${id}/import`}>
+                                    <Import className="h-4 w-4 mr-2" />
+                                    Import
+                                </Link>
+                            </Button>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
+                                    <Button variant="outline" size="sm">
                                         Kolom
-                                        <ChevronDown className="h-4 w-4" />
+                                        <ChevronDown className="h-4 w-4 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -153,7 +119,7 @@ export function RawMatWarehouseStockDetail() {
                                                 }))
                                             }
                                         >
-                                            {key.replace("_", " ").toUpperCase()}
+                                            {key.toUpperCase()}
                                         </DropdownMenuCheckboxItem>
                                     ))}
                                 </DropdownMenuContent>
@@ -161,28 +127,24 @@ export function RawMatWarehouseStockDetail() {
                         </div>
                     </div>
                 </CardHeader>
-                {isTableLoading ? (
-                    <CardContent>
+                <CardContent className="pt-6">
+                    {isTableLoading && !rawMaterials.length ? (
                         <TableSkeleton />
-                    </CardContent>
-                ) : (
-                    <>
-                        <CardContent>
-                            <DataTable
-                                columns={columns}
-                                data={rawMats}
-                                page={table.queryParams.page || 1}
-                                pageSize={table.queryParams.take || 10}
-                                total={meta?.len ?? 0}
-                                onPageChange={(page) => table.setPage(page)}
-                                onPageSizeChange={(size) => table.setPageSize(size)}
-                                state={{ columnVisibility }}
-                                onColumnVisibilityChange={setColumnVisibility}
-                            />
-                        </CardContent>
-                    </>
-                )}
+                    ) : (
+                        <DataTable
+                            columns={columns as ColumnDef<unknown, unknown>[]}
+                            data={rawMaterials}
+                            total={meta?.len ?? 0}
+                            page={Number(table.queryParams.page)}
+                            pageSize={Number(table.queryParams.take)}
+                            onPageChange={table.setPage}
+                            onPageSizeChange={table.setPageSize}
+                            state={{ columnVisibility }}
+                            onColumnVisibilityChange={setColumnVisibility}
+                        />
+                    )}
+                </CardContent>
             </Card>
-        </>
+        </section>
     );
 }

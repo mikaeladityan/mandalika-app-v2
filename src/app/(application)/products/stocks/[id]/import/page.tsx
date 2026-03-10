@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ProductInventoryImportForm } from "@/components/pages/warehouse/product/import";
+import { ProductInventoryImportForm } from "@/components/pages/products/stock/import";
 
 export default function ImportProductInventoryPage() {
     return (

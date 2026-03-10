@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { RawMaterialInventoryImportForm } from "@/components/pages/warehouse/rawmaterial/import";
+import { RawMaterialInventoryImportForm } from "@/components/pages/rawmat/stock/import";
 
 export default function ImportRawMaterialInventoryPage() {
     return (

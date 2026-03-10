@@ -19,4 +19,15 @@ export class ProductStockService {
             throw error;
         }
     }
+
+    static async listWarehouses() {
+        try {
+            const { data } = await api.get<ApiSuccessResponse<Array<{ id: number; name: string }>>>(
+                `${API}/warehouses`,
+            );
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

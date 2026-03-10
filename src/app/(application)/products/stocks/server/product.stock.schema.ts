@@ -15,12 +15,7 @@ export const ResponseProductStockSchema = z.object({
     gender: z.enum(GENDER).default("UNISEX"),
     uom: z.string(),
     amount: z.number(),
-    warehouse: z
-        .object({
-            id: z.string(),
-            name: z.string(),
-        })
-        .optional(),
+    stocks: z.record(z.string(), z.number()).default({}),
 });
 
 export const QueryProductStockSchema = z.object({

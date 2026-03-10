@@ -7,18 +7,17 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { RawMaterialInventoryImportPreviewDTO } from "@/app/(application)/warehouses/[id]/rawmat-import/server/import.schema";
+import { ProductInventoryImportPreviewDTO } from "@/app/(application)/products/stocks/[id]/import/server/import.schema";
 
-export function PreviewTable({ rows }: { rows: RawMaterialInventoryImportPreviewDTO[] }) {
+export function PreviewTable({ rows }: { rows: ProductInventoryImportPreviewDTO[] }) {
     if (!rows.length) return null;
 
     return (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>BARCODE</TableHead>
-                    <TableHead>MATERIAL</TableHead>
-                    <TableHead>KATEGORI</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Produk</TableHead>
                     <TableHead>Amount</TableHead>
                 </TableRow>
             </TableHeader>
@@ -26,11 +25,10 @@ export function PreviewTable({ rows }: { rows: RawMaterialInventoryImportPreview
             <TableBody>
                 {rows.map((row, i) => (
                     <TableRow key={i}>
-                        <TableCell>{row.barcode}</TableCell>
+                        <TableCell>{row.code}</TableCell>
                         <TableCell>
-                            {row.name} {row.name.toUpperCase()}
+                            {row.name} {row.type?.toUpperCase()} {row.size?.toUpperCase()}
                         </TableCell>
-                        <TableCell>{row.category}</TableCell>
                         <TableCell>{row.amount}</TableCell>
                         <TableCell>
                             <Badge variant={row.errors.length ? "destructive" : "default"}>

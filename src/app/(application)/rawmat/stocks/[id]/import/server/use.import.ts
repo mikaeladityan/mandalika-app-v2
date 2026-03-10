@@ -31,6 +31,7 @@ export function useExecuteImportRawMaterialInventory() {
                 params.month,
                 params.year,
             ),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["warehouse"], type: "all" }),
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ["rawmat", "stocks"], type: "all" }),
     });
 }

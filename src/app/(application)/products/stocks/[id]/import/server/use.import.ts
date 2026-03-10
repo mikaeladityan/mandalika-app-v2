@@ -31,6 +31,7 @@ export function useExecuteImportProductInventory() {
                 params.month,
                 params.year,
             ),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["warehouse"], type: "all" }),
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ["products", "stocks"], type: "all" }),
     });
 }

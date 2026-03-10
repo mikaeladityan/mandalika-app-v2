@@ -22,21 +22,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-import { PreviewTable } from "./preview";
-
-import {
-    useExecuteImportProductInventory,
-    useGetPreviewImportProductInventory,
-    usePreviewImportProductInventory,
-} from "@/app/(application)/warehouses/[id]/import/server/use.import";
-import { ProductInventoryImportPreviewDTO } from "@/app/(application)/warehouses/[id]/import/server/import.schema";
 import { useWarehouses } from "@/app/(application)/shared/use.shared";
 import { useParams, useRouter } from "next/navigation";
 
+import { PreviewTable } from "./preview";
+import { RawMaterialInventoryImportPreviewDTO } from "@/app/(application)/rawmat/stocks/[id]/import/server/import.schema";
+import {
+    useExecuteImportRawMaterialInventory,
+    useGetPreviewImportRawMaterialInventory,
+    usePreviewImportRawMaterialInventory,
+} from "@/app/(application)/rawmat/stocks/[id]/import/server/use.import";
+
 const MAX_ROWS = 5000;
 
-export function ProductInventoryImportForm() {
+export function RawMaterialInventoryImportForm() {
     const { id } = useParams();
     const router = useRouter();
     const warehouse = useWarehouses();
@@ -45,12 +44,12 @@ export function ProductInventoryImportForm() {
     const [importId, setImportId] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [rows, setRows] = useState<ProductInventoryImportPreviewDTO[]>([]);
+    const [rows, setRows] = useState<RawMaterialInventoryImportPreviewDTO[]>([]);
     const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
 
-    const previewMutation = usePreviewImportProductInventory();
-    const getPreviewMutation = useGetPreviewImportProductInventory();
-    const executeMutation = useExecuteImportProductInventory();
+    const previewMutation = usePreviewImportRawMaterialInventory();
+    const getPreviewMutation = useGetPreviewImportRawMaterialInventory();
+    const executeMutation = useExecuteImportRawMaterialInventory();
 
     async function handlePreview() {
         if (!file) return;
@@ -73,13 +72,14 @@ export function ProductInventoryImportForm() {
     }
 
     async function handleImport() {
-        if (!importId || stats.invalid > 0 || !selectedDate) {
+        if (!importId || stats.valid === 0 || !selectedDate) {
             if (!selectedDate) toast.error("Pilih tanggal terlebih dahulu");
+            if (stats.valid === 0) toast.error("Tidak ada data valid untuk diimport");
             return;
         }
 
         const date = selectedDate.getDate();
-        const month = selectedDate.getMonth() + 1; // getMonth is 0-indexed
+        const month = selectedDate.getMonth() + 1;
         const year = selectedDate.getFullYear();
 
         await executeMutation.mutateAsync({
@@ -99,7 +99,9 @@ export function ProductInventoryImportForm() {
         setSelectedDate(undefined);
         setIsDialogOpen(false);
     }
+
     const selectWarehouse = warehouse.data?.filter((w) => w.id === Number(id));
+
     return (
         <Card>
             <CardHeader>
@@ -109,14 +111,13 @@ export function ProductInventoryImportForm() {
                             size={"icon"}
                             variant={"ghost"}
                             type="button"
-                            onClick={() => router.push(`/warehouses/${id}`)}
+                            onClick={() => router.push(`/rawmat/stocks/${id}`)}
                         >
                             <ArrowLeft className="size-5" />
                         </Button>
                         <h1 className="text-xl">
                             {" "}
-                            Product Import Gudang{" "}
-                            {selectWarehouse?.[0]?.name?.toLowerCase() ?? "..."}
+                            RawMaterial Import {selectWarehouse?.[0]?.name?.toLowerCase() ?? "..."}
                         </h1>
                     </div>
                 </CardTitle>
@@ -124,6 +125,7 @@ export function ProductInventoryImportForm() {
             </CardHeader>
 
             <CardContent className="space-y-6">
+                {/* File */}
                 <label className="border-dashed border-2 rounded-lg p-6 block text-center cursor-pointer">
                     <input
                         hidden
@@ -154,7 +156,7 @@ export function ProductInventoryImportForm() {
                         <DialogTrigger asChild>
                             <Button
                                 disabled={
-                                    !importId || stats.invalid > 0 || executeMutation.isPending
+                                    !importId || stats.valid === 0 || executeMutation.isPending
                                 }
                             >
                                 <Database />
@@ -163,7 +165,7 @@ export function ProductInventoryImportForm() {
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Konfirmasi Import Stok</DialogTitle>
+                                <DialogTitle>Konfirmasi Import Stok Raw Material</DialogTitle>
                                 <DialogDescription>
                                     Silakan pilih tanggal periode stok yang akan disesuaikan
                                     (Upsert).
@@ -219,9 +221,12 @@ export function ProductInventoryImportForm() {
                 </div>
 
                 {stats.invalid > 0 && (
-                    <Alert variant="destructive">
-                        <AlertCircle />
-                        <AlertDescription>{stats.invalid} invalid rows detected</AlertDescription>
+                    <Alert className="bg-amber-50 border-amber-200 text-amber-800">
+                        <AlertCircle className="size-4 text-amber-600" />
+                        <AlertDescription>
+                            Ditemukan {stats.invalid} baris tidak valid. Baris ini akan otomatis
+                            dilewati (skipped) saat eksekusi.
+                        </AlertDescription>
                     </Alert>
                 )}
 

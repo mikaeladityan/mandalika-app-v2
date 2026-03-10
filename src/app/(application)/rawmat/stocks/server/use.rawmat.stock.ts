@@ -1,18 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { QueryRawMatStockDTO } from "./rawmat.stock.schema";
-import { RawMatStockService } from "./rawmat.stock.service";
-import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { RawMaterialStockService } from "./rawmat.stock.service";
+import { QueryRawMaterialStockDTO } from "./rawmat.stock.schema";
+import { useDebounce, useQueryParams } from "@/shared/hooks";
 
-export function useRawMatStock(params: QueryRawMatStockDTO) {
-    return useQuery({
-        queryKey: ["rawmat", "stocks", params],
-        queryFn: () => RawMatStockService.list(params),
-        enabled: !!params,
-    });
-}
-
-export function useRawMatStockTableState() {
+export function useRawMaterialStockTableState() {
     const { get, batchSet, searchParams } = useQueryParams();
 
     // Search
@@ -44,89 +36,89 @@ export function useRawMatStockTableState() {
     );
 
     const category_id = get("category_id") ? Number(get("category_id")) : undefined;
+    const supplier_id = get("supplier_id") ? Number(get("supplier_id")) : undefined;
     const warehouse_id = get("warehouse_id") ? Number(get("warehouse_id")) : undefined;
 
-    const setWarehouse = (value?: number) =>
-        batchSet({
-            warehouse_id: value ? String(value) : undefined,
-            page: "1",
-        });
-
-    const setCategory = (value?: number) =>
-        batchSet({
-            category_id: value ? String(value) : undefined,
-            page: "1",
-        });
+    const setCategory = (val?: number) =>
+        batchSet({ category_id: val ? String(val) : undefined, page: "1" });
+    const setSupplier = (val?: number) =>
+        batchSet({ supplier_id: val ? String(val) : undefined, page: "1" });
+    const setWarehouse = (val?: number) =>
+        batchSet({ warehouse_id: val ? String(val) : undefined, page: "1" });
 
     const month = get("month") ? Number(get("month")) : undefined;
     const year = get("year") ? Number(get("year")) : undefined;
 
-    const setMonth = (value?: number) =>
-        batchSet({
-            month: value ? String(value) : undefined,
-            page: "1",
-        });
+    const setMonth = (val: number) => batchSet({ month: String(val), page: "1" });
+    const setYear = (val: number) => batchSet({ year: String(val), page: "1" });
 
-    const setYear = (value?: number) =>
-        batchSet({
-            year: value ? String(value) : undefined,
-            page: "1",
-        });
+    const setPage = (val: number) => batchSet({ page: String(val) });
+    const setPageSize = (val: number) => batchSet({ take: String(val), page: "1" });
 
-    // Set Page
-    const setPage = (page: number) => batchSet({ page: String(page) });
-
-    const setPageSize = (take: number) =>
-        batchSet({
-            take: String(take),
-            page: "1",
-        });
-
-    // Query DTO
-    const queryParams = useMemo<QueryRawMatStockDTO>(
+    const queryParams = useMemo<QueryRawMaterialStockDTO>(
         () => ({
-            take: Number(get("take") ?? 50),
             page: Number(get("page") ?? 1),
+            take: Number(get("take") ?? 50),
             search: get("search") ?? undefined,
-            sortBy: sortBy as QueryRawMatStockDTO["sortBy"],
+            sortBy: sortBy as QueryRawMaterialStockDTO["sortBy"],
             sortOrder,
             category_id,
+            supplier_id,
             warehouse_id,
-            month: month ?? undefined,
-            year: year ?? undefined,
+            month,
+            year,
         }),
         [searchParams],
     );
 
     return {
+        queryParams,
         search,
         setSearch,
+        onSort,
         sortBy,
         sortOrder,
-        onSort,
         category_id,
         setCategory,
+        supplier_id,
+        setSupplier,
         warehouse_id,
         setWarehouse,
         month,
         setMonth,
         year,
         setYear,
-        queryParams,
         setPage,
         setPageSize,
     };
 }
 
-export function useRawMatStocksQuery(params: QueryRawMatStockDTO) {
-    const query = useRawMatStock(params);
+export function useRawMaterialStocksQuery(params: QueryRawMaterialStockDTO) {
+    const query = useQuery({
+        queryKey: ["raw-materials", "stocks", params],
+        queryFn: () => RawMaterialStockService.list(params),
+        enabled: !!params,
+    });
 
     return {
-        rawMats: query.data?.data ?? [],
+        ...query,
+        rawMaterials: query.data?.data ?? [],
+        total: query.data?.len ?? 0,
         month: query.data?.month,
         year: query.data?.year,
-        total: query.data?.len ?? 0,
         meta: query.data,
+    };
+}
+
+export function useRawMaterialStockWarehouses() {
+    const query = useQuery({
+        queryKey: ["raw-materials", "stocks", "warehouses"],
+        queryFn: () => RawMaterialStockService.listWarehouses(),
+        staleTime: Infinity,
+    });
+
+    return {
         ...query,
+        warehouses: query.data ?? [],
     };
 }

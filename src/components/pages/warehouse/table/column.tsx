@@ -1,12 +1,12 @@
 "use client";
 
-import { QueryProductInventoryDTO } from "@/app/(application)/warehouses/server/warehouse.schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { SortableHeader } from "@/components/ui/table/sortable";
+import { QueryWarehouseDTO } from "@/app/(application)/warehouses/server/warehouse.schema";
 
 export const WarehouseInventoryColumns = (
     warehouseNames: string[],
-    type: QueryProductInventoryDTO["type"],
+    type: QueryWarehouseDTO["type"],
 ): ColumnDef<any>[] => {
     const baseColumns: ColumnDef<any>[] = [
         {

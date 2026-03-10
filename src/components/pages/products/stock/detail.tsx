@@ -19,6 +19,7 @@ import { ProductColumns } from "./table.tsx/column";
 import {
     useProductStocksQuery,
     useProductStockTableState,
+    useProductStockWarehouses,
 } from "@/app/(application)/products/stocks/server/use.product.stock";
 import { useType } from "@/app/(application)/products/(component)/type/server/use.type";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
@@ -28,13 +29,23 @@ import { useParams } from "next/navigation";
 export function ProductsWarehouseStockDetail() {
     const { id } = useParams<{ id: string }>();
     const table = useProductStockTableState();
+    const { warehouses = [] } = useProductStockWarehouses();
+    const currentWarehouse = useMemo(
+        () => warehouses.find((w: any) => w.id === Number(id)),
+        [warehouses, id],
+    );
+
+    const warehouseNames = useMemo(
+        () => (currentWarehouse ? [currentWarehouse.name] : []),
+        [currentWarehouse],
+    );
+
     const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
         gender: true,
         type: true,
         size: true,
-        amount: true,
-        warehouse: true,
     });
+
     const { products, meta, isLoading, isFetching, isRefetching } = useProductStocksQuery({
         ...table.queryParams,
         warehouse_id: Number(id),
@@ -48,8 +59,10 @@ export function ProductsWarehouseStockDetail() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                warehouseNames,
+                showTotal: false,
             }),
-        [table.sortBy, table.sortOrder, table.onSort],
+        [table.sortBy, table.sortOrder, table.onSort, warehouseNames],
     );
 
     const isTableLoading = isLoading || isFetching || isRefetching;
@@ -58,7 +71,7 @@ export function ProductsWarehouseStockDetail() {
         <>
             <header className="space-y-1 mb-5">
                 <h2 className="text-xl font-semibold tracking-tight">
-                    Stock Produk Gudang {products[0]?.warehouse?.name}
+                    Stock Produk {currentWarehouse?.name || "Gudang"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                     Kelola pergerakan dan informasi seluruh stock produk
@@ -164,7 +177,7 @@ export function ProductsWarehouseStockDetail() {
                     {/* ===== Actions ===== */}
                     <div className="flex flex-col md:flex-row justify-end gap-2">
                         <Button variant="success" asChild>
-                            <Link href={`/warehouses/${id}/import`}>
+                            <Link href={`/products/stocks/${id}/import`}>
                                 <Import className="h-4 w-4 mr-2" />
                                 Import
                             </Link>

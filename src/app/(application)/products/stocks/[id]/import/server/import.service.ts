@@ -1,24 +1,23 @@
 import { api, setupCSRFToken } from "@/lib/api";
 import { ApiSuccessResponse } from "@/shared/types";
 import {
-    RawMaterialInventoryImportPreviewDTO,
-    ResponseRawMaterialInventoryImportDTO,
+    ProductInventoryImportPreviewDTO,
+    ResponseProductInventoryImportDTO,
 } from "./import.schema";
 
-const API = `${process.env.NEXT_PUBLIC_API}/api/app/warehouses/rawmaterial/import`;
+const API = `${process.env.NEXT_PUBLIC_API}/api/app/products/stocks/import`;
 
-export class RawMaterialInventoryImportService {
-    static async preview(file: File): Promise<ResponseRawMaterialInventoryImportDTO> {
+export class ProductInventoryImportService {
+    static async preview(file: File): Promise<ResponseProductInventoryImportDTO> {
         await setupCSRFToken();
 
         const form = new FormData();
         form.append("file", file);
 
-        const { data } = await api.post<ApiSuccessResponse<ResponseRawMaterialInventoryImportDTO>>(
+        const { data } = await api.post<ApiSuccessResponse<ResponseProductInventoryImportDTO>>(
             `${API}/preview`,
             form,
-
-            { headers: { "Content-Type": "multipart/form-data" }, timeout: 500000 },
+            { headers: { "Content-Type": "multipart/form-data" } },
         );
 
         return data.data;
@@ -27,7 +26,7 @@ export class RawMaterialInventoryImportService {
     static async getPreview(importId: string) {
         const { data } = await api.get<
             ApiSuccessResponse<{
-                rows: RawMaterialInventoryImportPreviewDTO[];
+                rows: ProductInventoryImportPreviewDTO[];
                 total: number;
                 valid: number;
                 invalid: number;

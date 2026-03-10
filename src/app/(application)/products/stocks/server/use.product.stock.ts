@@ -140,3 +140,16 @@ export function useProductStocksQuery(params: QueryProductStockDTO) {
         ...query,
     };
 }
+
+export function useProductStockWarehouses() {
+    const query = useQuery({
+        queryKey: ["products", "stocks", "warehouses"],
+        queryFn: () => ProductStockService.listWarehouses(),
+        staleTime: Infinity,
+    });
+
+    return {
+        ...query,
+        warehouses: query.data ?? [],
+    };
+}
