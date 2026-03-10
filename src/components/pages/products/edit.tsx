@@ -16,7 +16,7 @@ import { Form } from "@/components/ui/form/main";
 import { SelectForm } from "@/components/ui/form/select";
 import { useDebounce } from "@/shared/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Separator } from "@radix-ui/react-separator";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Save, Box, RotateCcw } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -80,6 +80,8 @@ export function EditProduct() {
             lead_time: 0,
             z_value: 0,
             review_period: 0,
+            distribution_percentage: 0,
+            safety_percentage: 0,
         },
     });
 
@@ -96,16 +98,14 @@ export function EditProduct() {
                 lead_time: product.lead_time,
                 review_period: product.review_period,
                 z_value: product.z_value,
+                distribution_percentage: product.distribution_percentage,
+                safety_percentage: product.safety_percentage,
             });
         }
     }, [product, form]);
 
     const onSubmit = async (body: Partial<RequestProductDTO>) => {
         await update.mutateAsync({ body, id: Number(id) });
-        form.reset();
-    };
-
-    const onReset = () => {
         form.reset();
     };
 
@@ -128,10 +128,10 @@ export function EditProduct() {
                             <div>
                                 <h1 className="text-xl font-black flex items-center gap-2">
                                     <Box className="h-6 w-6 text-muted-foreground" />
-                                    Tambah Produk Baru
+                                    Edit Produk
                                 </h1>
                                 <p className="text-sm text-muted-foreground hidden sm:block">
-                                    Lengkapi informasi dasar, atribut, dan parameter stok produk.
+                                    Perbarui rincian produk dan parameter forecasting.
                                 </p>
                             </div>
                         </div>
@@ -152,7 +152,7 @@ export function EditProduct() {
                                 disabled={update.isPending}
                             >
                                 <Save className="mr-2 h-4 w-4" />
-                                {update.isPending ? "Menyimpan..." : "Simpan Produk"}
+                                {update.isPending ? "Menyimpan..." : "Update Produk"}
                             </Button>
                         </div>
                     </div>
@@ -233,6 +233,24 @@ export function EditProduct() {
                                     placeholder="0"
                                     type="number"
                                     error={form.formState.errors.review_period}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="distribution_percentage"
+                                    label="Persentase Edar (EDAR)"
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.01"
+                                    error={form.formState.errors.distribution_percentage}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="safety_percentage"
+                                    label="Safety Stock (%)"
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.01"
+                                    error={form.formState.errors.safety_percentage}
                                 />
                             </CardContent>
                         </Card>

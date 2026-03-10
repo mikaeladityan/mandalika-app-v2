@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { QuerySalesDTO, RequestSalesDTO, ResponseSalesDTO } from "./sales.schema";
+import { QuerySalesDTO, RequestSalesDTO } from "./sales.schema";
 import { QueryDetailSale, SalesService } from "./sales.service";
 import { FetchError, ResponseError } from "@/lib/utils/error";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
@@ -7,27 +7,30 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { errorAtom, notificationAtom } from "@/shared/store";
 import { useRouter } from "next/navigation";
-export function useFormSales(form: any) {
+
+export function useFormSales(form?: any) {
     const setErr = useSetAtom(errorAtom);
     const setNotif = useSetAtom(notificationAtom);
     const queryClient = useQueryClient();
     const router = useRouter();
+
     const create = useMutation<unknown, ResponseError, RequestSalesDTO>({
         mutationKey: ["sales", "create"],
         mutationFn: (body) => SalesService.create(body),
         onSuccess: () => {
             setNotif({
-                title: "Buat Penjualan",
-                message: "Berhasil menambahkan penjualan produk baru",
+                title: "Tambah Penjualan",
+                message: "Berhasil menambahkan data penjualan produk baru",
             });
-            queryClient.invalidateQueries({ queryKey: ["products"], type: "all" });
-            queryClient.invalidateQueries({ queryKey: ["sales"], type: "all" });
-            queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
-            form.reset();
+            // Revalidate related modules
+            queryClient.invalidateQueries({ queryKey: ["sales"] });
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["forecast"] });
+
+            if (form) form.reset();
+            router.push("/sales");
         },
-        onError: (err) => {
-            FetchError(err, setErr);
-        },
+        onError: (err) => FetchError(err, setErr),
     });
 
     const update = useMutation<unknown, ResponseError, RequestSalesDTO>({
@@ -35,62 +38,61 @@ export function useFormSales(form: any) {
         mutationFn: (body) => SalesService.update(body),
         onSuccess: () => {
             setNotif({
-                title: "Update Penjualan",
-                message: "Berhasil melakukan update data penjualan produk",
+                title: "Perbarui Penjualan",
+                message: "Berhasil memperbarui data penjualan produk",
             });
-            queryClient.invalidateQueries({ queryKey: ["products"], type: "all" });
-            queryClient.invalidateQueries({ queryKey: ["sales"], type: "all" });
-            queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
-            router.replace("/sales");
+            queryClient.invalidateQueries({ queryKey: ["sales"] });
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["forecast"] });
+
+            router.push("/sales");
         },
-        onError: (err) => {
-            FetchError(err, setErr);
-        },
+        onError: (err) => FetchError(err, setErr),
     });
 
     return { create, update };
 }
 
-export const useSales = (params?: QuerySalesDTO, query?: QueryDetailSale) => {
-    const sales = useQuery({
-        queryKey: ["sales", params],
+export const useSales = (params?: QuerySalesDTO, queryDetail?: QueryDetailSale) => {
+    const list = useQuery({
+        queryKey: ["sales", "list", params],
         queryFn: () => SalesService.list(params!),
-        enabled: !!params && !query,
+        enabled: !!params && !queryDetail,
     });
 
     const detail = useQuery({
-        queryKey: ["sales", query],
-        queryFn: () => SalesService.detail(query!),
-        enabled: !params && !!query,
+        queryKey: ["sales", "detail", queryDetail],
+        queryFn: () => SalesService.detail(queryDetail!),
+        enabled: !!queryDetail && !params,
     });
 
     const productsOption = useQuery({
-        queryKey: ["products", "options"],
+        queryKey: ["products", "options", "redis"],
         queryFn: SalesService.getProductOptions,
-        enabled: !query && !params,
+        enabled: false, // Default false, enable manually when needed
     });
 
     return {
-        sales: sales.data,
+        sales: list.data,
         sale: detail.data,
         products: productsOption.data,
-        isLoading: sales.isLoading || detail.isLoading || productsOption.isLoading,
-        isError: sales.isError || detail.isError || productsOption.isError,
-        isFetching: sales.isFetching || detail.isFetching || productsOption.isFetching,
-        isRefetching: sales.isRefetching || detail.isRefetching || productsOption.isRefetching,
-        refetch: sales.refetch || detail.refetch || productsOption.refetch,
+        isLoading: list.isLoading || detail.isLoading,
+        isFetching: list.isFetching || detail.isFetching,
+        isError: list.isError || detail.isError,
+        refetch: list.refetch || detail.refetch,
+        productsOption,
     };
 };
 
 export function useSaleTableState() {
     const { get, batchSet, searchParams } = useQueryParams();
 
-    // Search
+    // Search Logic
     const [search, setSearch] = useState(get("search") ?? "");
     const debouncedSearch = useDebounce(search, 500);
 
-    // Filters
-    const [gender, setGender] = useState<any>(get("gender") ? get("gender") : undefined);
+    // Filters Logic
+    const [gender, setGender] = useState<any>(get("gender") ?? undefined);
     const [size, setSize] = useState<number | undefined>(
         get("size") ? Number(get("size")) : undefined,
     );
@@ -119,47 +121,47 @@ export function useSaleTableState() {
         });
     }, [debouncedSearch, gender, size, variant, horizon, product_id, product_id_2]);
 
-    // Sort
+    // Sorting Logic
     const sortBy = get("sortBy") ?? "quantity";
     const sortOrder = (get("sortOrder") as "asc" | "desc") ?? "desc";
 
     const onSort = useCallback(
         (key: string) => {
             const nextOrder = sortBy === key && sortOrder === "asc" ? "desc" : "asc";
-
-            batchSet({
-                sortBy: key,
-                sortOrder: nextOrder,
-                page: "1",
-            });
+            batchSet({ sortBy: key, sortOrder: nextOrder, page: "1" });
         },
-        [sortBy, sortOrder],
+        [sortBy, sortOrder, batchSet],
     );
 
     const setPage = (page: number) => batchSet({ page: String(page) });
+    const setPageSize = (take: number) => batchSet({ take: String(take), page: "1" });
 
-    const setPageSize = (take: number) =>
-        batchSet({
-            take: String(take),
-            page: "1",
-        });
-
-    // Query DTO
     const queryParams = useMemo<QuerySalesDTO>(
         () => ({
             take: Number(get("take") ?? 25),
             page: Number(get("page") ?? 1),
             search: get("search") ?? undefined,
-            sortBy: sortBy as QuerySalesDTO["sortBy"],
+            sortBy: sortBy as any,
             sortOrder,
-            gender: gender as QuerySalesDTO["gender"],
+            gender: gender as any,
             size,
             variant,
             horizon,
             product_id,
             product_id_2,
         }),
-        [searchParams],
+        [
+            searchParams,
+            get,
+            sortBy,
+            sortOrder,
+            gender,
+            size,
+            variant,
+            horizon,
+            product_id,
+            product_id_2,
+        ],
     );
 
     return {
@@ -181,7 +183,6 @@ export function useSaleTableState() {
         sortOrder,
         onSort,
         queryParams,
-
         setPage,
         setPageSize,
     };
@@ -192,7 +193,7 @@ export function useSaleQuery(params: QuerySalesDTO) {
 
     return {
         data: query.sales?.sales ?? [],
-        meta: query.sales,
+        total: query.sales?.len ?? 0,
         ...query,
     };
 }

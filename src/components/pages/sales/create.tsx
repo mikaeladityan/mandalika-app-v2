@@ -3,15 +3,23 @@
 import { RequestSalesDTO, RequestSalesSchema } from "@/app/(application)/sales/server/sales.schema";
 import { useFormSales, useSales } from "@/app/(application)/sales/server/use.sales";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { InputForm } from "@/components/ui/form/input";
 import { Form } from "@/components/ui/form/main";
 import { SelectForm } from "@/components/ui/form/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, RefreshCcw, Send, CalendarDays } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCcw, Send, CalendarDays, Info, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CreateSales() {
     const router = useRouter();
@@ -39,138 +47,170 @@ export function CreateSales() {
     });
 
     const { create } = useFormSales(form);
-    const { products, isLoading, isFetching, isRefetching, isError } = useSales();
+    const { productsOption } = useSales();
 
-    const loading = isLoading || isFetching || isRefetching;
-
+    // Fetch products manually on mount
     useEffect(() => {
-        if (isError) {
-            router.push("/application/sales");
-        }
-    }, [isError, router]);
+        productsOption.refetch();
+    }, []);
 
-    const productOptions =
-        products?.map((p) => ({
-            label: `(${p.code}) ${p.name} ${p.type?.toUpperCase()}`,
-            value: p.id,
-        })) ?? [];
+    const productOptions = useMemo(() => {
+        return (
+            productsOption.data?.map((p) => ({
+                label: `(${p.code}) ${p.name} ${String(p.type).toUpperCase()}`,
+                value: p.id,
+            })) ?? []
+        );
+    }, [productsOption.data]);
 
     const onSubmit = async (body: RequestSalesDTO) => {
         await create.mutateAsync({
-            product_id: body.product_id,
+            ...body,
             quantity: Number(body.quantity),
-            month: body.month, // Gunakan nilai dari form (M-1)
-            year: body.year, // Gunakan nilai dari form
         });
     };
 
-    if (loading) {
+    const isPending = create.isPending;
+    const isLoadingOptions = productsOption.isLoading;
+
+    if (isLoadingOptions) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="animate-spin" />
+            <div className="space-y-6">
+                <Skeleton className="h-8 w-64" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Skeleton className="col-span-2 h-[400px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
+                </div>
             </div>
         );
     }
 
     return (
-        <section className="xl:max-w-4xl">
-            <Card>
-                <CardHeader className="space-y-3">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.back()}
-                        className="w-fit"
-                    >
-                        <ArrowLeft />
-                        Kembali
-                    </Button>
+        <section className="w-full">
+            <Form
+                methods={form}
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid gap-6 lg:grid-cols-12"
+            >
+                {/* Kolom Kiri: Form Input */}
+                <div className="lg:col-span-8 space-y-6">
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
+                        <CardHeader className="border-b bg-white/50">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <div className="h-4 w-1 bg-primary rounded-full" />
+                                Input Data Penjualan Aktual
+                            </CardTitle>
+                            <CardDescription className="flex items-center gap-2 text-blue-600 font-medium">
+                                <CalendarDays className="size-4" />
+                                Periode: {period.label}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-8 pt-8">
+                            {/* Information Banner */}
+                            <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex gap-3">
+                                <Info className="size-5 text-blue-500 shrink-0" />
+                                <div className="text-xs text-blue-700 leading-relaxed">
+                                    <strong>Panduan:</strong> Data yang Anda masukkan akan digunakan
+                                    sebagai data historis untuk proses{" "}
+                                    <b>Forecasting (BOM & Raw Material)</b>. Pastikan angka yang
+                                    diinput sesuai dengan laporan penjualan aktual dari sistem POS
+                                    atau Marketplace.
+                                </div>
+                            </div>
 
-                    <CardTitle className="flex flex-col gap-1">
-                        Tambah Data Penjualan
-                        <div className="text-sm font-normal text-muted-foreground flex items-center gap-2">
-                            <CalendarDays className="size-4 text-blue-500" />
-                            Input aktual untuk periode:{" "}
-                            <span className="font-bold text-foreground underline underline-offset-4">
-                                {period.label}
-                            </span>
-                        </div>
-                    </CardTitle>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SelectForm
+                                    required
+                                    name="product_id"
+                                    control={form.control}
+                                    label="Produk"
+                                    canSearching
+                                    options={productOptions}
+                                    placeholder="Pilih produk..."
+                                    error={form.formState.errors.product_id}
+                                    isLoading={isPending}
+                                />
 
-                    <CardAction>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => form.reset()}
-                            className="text-muted-foreground hover:text-warning"
-                        >
-                            <RefreshCcw className="size-4 mr-2" />
-                            Reset Form
-                        </Button>
-                    </CardAction>
-                </CardHeader>
+                                <InputForm
+                                    required
+                                    name="quantity"
+                                    control={form.control}
+                                    label="Total Quantity Terjual (Aktual)"
+                                    type="number"
+                                    placeholder="Contoh: 2500"
+                                    error={form.formState.errors.quantity}
+                                    disabled={isPending}
+                                />
+                            </div>
 
-                <CardContent>
-                    <Form
-                        methods={form}
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-6"
-                    >
-                        {/* Information Banner */}
-                        <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-[11px] text-blue-700">
-                            <strong>Sistem Informasi:</strong> Data ini akan digunakan untuk proses{" "}
-                            <b>Reconcile</b> bulan {period.label}. Pastikan angka yang diinput
-                            sesuai dengan laporan tutup buku gudang.
-                        </div>
+                            {/* Hidden Fields untuk memastikan month/year terkirim */}
+                            <input type="hidden" {...form.register("month")} />
+                            <input type="hidden" {...form.register("year")} />
+                        </CardContent>
+                    </Card>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <SelectForm
-                                required
-                                name="product_id"
-                                control={form.control}
-                                label="Produk"
-                                canSearching
-                                options={productOptions}
-                                placeholder="Pilih produk"
-                                error={form.formState.errors.product_id}
-                                isLoading={create.isPending}
-                            />
-
-                            <InputForm
-                                required
-                                name="quantity"
-                                control={form.control}
-                                label="Total Quantity Terjual"
-                                type="number"
-                                placeholder="Contoh: 2500"
-                                error={form.formState.errors.quantity}
-                                disabled={create.isPending}
-                            />
-                        </div>
-
-                        {/* Hidden Fields untuk memastikan month/year terkirim */}
-                        <input type="hidden" {...form.register("month")} />
-                        <input type="hidden" {...form.register("year")} />
-
-                        <Button
-                            type="submit"
-                            variant="success"
-                            className="w-full h-11 text-base font-semibold shadow-sm"
-                            disabled={create.isPending}
-                        >
-                            {create.isPending ? (
-                                <>
-                                    Memproses... <Loader2 className="animate-spin ml-2" />
-                                </>
-                            ) : (
-                                <>
-                                    Simpan Data Aktual <Send className="ml-2 size-4" />
-                                </>
-                            )}
-                        </Button>
-                    </Form>
-                </CardContent>
-            </Card>
+                {/* Kolom Kanan: Actions */}
+                <div className="lg:col-span-4 space-y-6">
+                    <Card className="h-fit pt-0 border-none shadow-sm rounded-xl overflow-hidden sticky top-6">
+                        <CardHeader className="bg-slate-50 border-b pt-4">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => router.back()}
+                                    disabled={isPending}
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => form.reset()}
+                                    disabled={isPending}
+                                    className="text-muted-foreground"
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="p-4 bg-teal-50 rounded-lg border border-teal-100 mb-6">
+                                <h4 className="text-sm font-bold text-teal-900 mb-1">
+                                    Status Recon
+                                </h4>
+                                <p className="text-xs text-teal-700 italic">
+                                    Data untuk bulan {period.label} sedang dalam tahap pengumpulan
+                                    data aktual sebelum dilakukan Reconcile.
+                                </p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="p-6 pt-0">
+                            <Button
+                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-teal-100"
+                                variant="teal"
+                                disabled={isPending}
+                            >
+                                {isPending ? (
+                                    <>
+                                        Memproses...{" "}
+                                        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                                    </>
+                                ) : (
+                                    <>
+                                        Simpan Penjualan <Save className="ml-2 h-4 w-4" />
+                                    </>
+                                )}
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </Form>
         </section>
     );
 }
+
+// Add memo for optimizations
+import { useMemo } from "react";

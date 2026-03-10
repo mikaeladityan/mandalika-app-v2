@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
 import { Search, ChevronDown, PlusCircle, Import } from "lucide-react";
-
 import { useSaleQuery, useSaleTableState } from "@/app/(application)/sales/server/use.sales";
 import { useType } from "@/app/(application)/products/(component)/type/server/use.type";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
@@ -19,23 +17,37 @@ import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "../../ui/table/data";
 import { SalesColumns } from "./table/column";
 import Link from "next/link";
+import { ResponseWarehouseDTO } from "@/app/(application)/warehouses/server/warehouse.schema";
+import { ResponseSalesDTO } from "@/app/(application)/sales/server/sales.schema";
+import { useFormSales } from "@/app/(application)/sales/server/use.sales";
+import { Input } from "@/components/ui/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Loader2, Trash2 } from "lucide-react";
 
 export function Sales() {
     const table = useSaleTableState();
 
-    const { sales, isLoading, isFetching } = useSaleQuery(table.queryParams);
-    const { data: typeList, isLoading: typesLoading, isRefetching: typesRefetching } = useType();
+    const { data: salesList, total, isLoading, isFetching } = useSaleQuery(table.queryParams);
+    const { data: typeList, isLoading: typesLoading } = useType();
 
     /**
      * Ambil period dari response (single source of truth)
      */
     const periods = useMemo(() => {
-        if (!sales?.sales?.length) return [];
-        return sales.sales[0].quantity.map((q) => ({
+        if (!salesList || salesList.length === 0) return [];
+        return salesList[0].quantity.map((q) => ({
             year: q.year,
             month: q.month,
         }));
-    }, [sales]);
+    }, [salesList]);
 
     const columns = useMemo(
         () =>
@@ -48,21 +60,21 @@ export function Sales() {
         [periods, table.sortBy, table.sortOrder, table.onSort],
     );
 
-    const isTableLoading = isLoading || isFetching;
+    const isDataLoading = isLoading;
 
     return (
-        <>
+        <section className="space-y-6">
             <header className="space-y-1 mb-6">
                 <h2 className="text-2xl font-bold">Manajemen Penjualan</h2>
-                <p className="text-muted-foreground">Monitoring tren penjualan produk</p>
+                <p className="text-muted-foreground">Monitoring tren penjualan produk aktual</p>
             </header>
 
-            <Card>
-                <CardHeader className="space-y-4">
+            <Card className="border-none shadow-sm rounded-xl overflow-hidden">
+                <CardHeader className="space-y-4 bg-white/50 border-b">
                     <div className="flex flex-col gap-4 justify-start items-start md:items-start">
                         <InputGroup className="w-full md:max-w-sm">
                             <InputGroupInput
-                                placeholder="Cari produk..."
+                                placeholder="Cari kode atau nama produk..."
                                 value={table.search}
                                 onChange={(e) => table.setSearch(e.target.value)}
                             />
@@ -73,7 +85,6 @@ export function Sales() {
                     </div>
                     <CardDescription className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 w-full">
                         {/* ===== Filters ===== */}
-                        {/* Menggunakan grid-cols-2 di mobile, dan flex-row di layar md/lg */}
                         <div className="grid grid-cols-2 md:flex md:flex-row gap-2 w-full lg:w-auto">
                             {/* Gender */}
                             <DropdownMenu>
@@ -142,7 +153,7 @@ export function Sales() {
                                     <Button
                                         variant="outline"
                                         className="w-full md:w-48 justify-between"
-                                        disabled={typesLoading || typesRefetching}
+                                        disabled={typesLoading}
                                     >
                                         <span className="truncate">
                                             {table.variant
@@ -208,48 +219,50 @@ export function Sales() {
                         </div>
 
                         {/* ===== Action Buttons ===== */}
-                        {/* Menggunakan flex w-full di mobile agar tombol terbagi 2 rata dan tidak overflow */}
                         <div className="flex w-full lg:w-auto gap-3">
                             <Link href={"/sales/create"} className="flex-1 lg:flex-none">
                                 <Button
-                                    variant="default"
+                                    variant="teal"
                                     size="sm"
-                                    className="w-full cursor-pointer"
+                                    className="w-full cursor-pointer font-bold shadow-sm shadow-teal-50"
                                 >
-                                    <PlusCircle className="mr-2 h-4 w-4" />{" "}
-                                    {/* Opsional: margin kanan untuk icon */}
-                                    Penjualan
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Input Penjualan
                                 </Button>
                             </Link>
                             <Link href="/sales/import" className="flex-1 lg:flex-none">
                                 <Button variant="outline" size="sm" className="w-full">
-                                    <Import className="mr-2 h-4 w-4" />{" "}
-                                    {/* Opsional: margin kanan untuk icon */}
-                                    Import
+                                    <Import className="mr-2 h-4 w-4" />
+                                    Import CSV/Excel
                                 </Button>
                             </Link>
                         </div>
                     </CardDescription>
                 </CardHeader>
 
-                {isTableLoading ? (
-                    <CardContent>
+                <CardContent className="pt-6 relative">
+                    {/* Overlay fetching state for smoother UX during pagination/filter */}
+                    {isFetching && !isLoading && (
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    )}
+
+                    {isDataLoading ? (
                         <TableSkeleton />
-                    </CardContent>
-                ) : (
-                    <CardContent>
+                    ) : (
                         <DataTable
                             columns={columns}
-                            data={sales?.sales ?? []}
+                            data={salesList}
                             page={table.queryParams.page ?? 1}
-                            pageSize={table.queryParams.take ?? 10}
-                            total={sales?.len ?? 0}
+                            pageSize={table.queryParams.take ?? 25}
+                            total={total}
                             onPageChange={table.setPage}
                             onPageSizeChange={table.setPageSize}
                         />
-                    </CardContent>
-                )}
+                    )}
+                </CardContent>
             </Card>
-        </>
+        </section>
     );
 }

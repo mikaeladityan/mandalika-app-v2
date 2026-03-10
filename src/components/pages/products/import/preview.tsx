@@ -22,6 +22,8 @@ export function PreviewTable({ rows }: { rows: ProductImportPreviewDTO[] }) {
                     <TableHead>Size</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Unit</TableHead>
+                    <TableHead>Edar (%)</TableHead>
+                    <TableHead>Safety (%)</TableHead>
                     <TableHead>Status</TableHead>
                 </TableRow>
             </TableHeader>
@@ -35,6 +37,10 @@ export function PreviewTable({ rows }: { rows: ProductImportPreviewDTO[] }) {
                         <TableCell>{row.size}</TableCell>
                         <TableCell>{row.type ?? "-"}</TableCell>
                         <TableCell>{row.unit ?? "-"}</TableCell>
+                        <TableCell>
+                            {((row.distribution_percentage ?? 0) * 100).toFixed(0)}%
+                        </TableCell>
+                        <TableCell>{((row.safety_percentage ?? 0) * 100).toFixed(0)}%</TableCell>
                         <TableCell>
                             <Badge variant={row.errors.length ? "destructive" : "default"}>
                                 {row.errors.length ? "Invalid" : "Valid"}

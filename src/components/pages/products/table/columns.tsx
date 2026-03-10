@@ -130,40 +130,48 @@ export const ProductColumns = ({
         cell: ({ row }) => <>{ParseDate(row.original.updated_at)} WIB</>,
     },
     {
+        id: "distribution_percentage",
+        accessorKey: "distribution_percentage",
+        header: () => (
+            <SortableHeader
+                label="Edar (%)"
+                sortKey="distribution_percentage"
+                activeSortBy={sortBy}
+                activeSortOrder={sortOrder}
+                onSort={onSort}
+            />
+        ),
+        cell: ({ row }) => (
+            <div className="font-mono text-blue-600 font-bold">
+                {((row.original.distribution_percentage ?? 0) * 100).toFixed(0)}%
+            </div>
+        ),
+    },
+    {
+        id: "safety_percentage",
+        accessorKey: "safety_percentage",
+        header: () => (
+            <SortableHeader
+                label="Safety (%)"
+                sortKey="safety_percentage"
+                activeSortBy={sortBy}
+                activeSortOrder={sortOrder}
+                onSort={onSort}
+            />
+        ),
+        cell: ({ row }) => (
+            <div className="font-mono text-emerald-600 font-bold">
+                {((row.original.safety_percentage ?? 0) * 100).toFixed(0)}%
+            </div>
+        ),
+    },
+    {
         id: "status",
         accessorKey: "status",
         enableHiding: true,
         header: "Status",
         cell: ({ row }) => <BadgeStatus status={row.original.status as StatusEnumDTO} />,
     },
-    // {
-    //     id: "actions",
-    //     enableHiding: false, // ❗ action wajib tampil
-    //     header: "Opsi",
-    //     cell: ({ row }) => {
-    //         const { restore } = useActionProduct();
-
-    //         return (
-    //             <div className="flex items-center gap-1">
-    //                 {row.original.status === "DELETE" ? (
-    //                     <Button
-    //                         size="icon"
-    //                         variant="ghost"
-    //                         onClick={() => restore.mutateAsync({ code: row.original.code })}
-    //                     >
-    //                         {restore.isPending ? (
-    //                             <Loader2 className="animate-spin" />
-    //                         ) : (
-    //                             <DatabaseBackup size={16} />
-    //                         )}
-    //                     </Button>
-    //                 ) : (
-    //                     <DialogDelete data={row.original} />
-    //                 )}
-    //             </div>
-    //         );
-    //     },
-    // },
 ];
 
 /* ===== Badge Status tetap ===== */
@@ -226,65 +234,3 @@ function BadgeStatus({ status, className }: BadgeStatusProps) {
         </Badge>
     );
 }
-// function DialogDelete({ data }: { data: ResponseProductDTO }) {
-//     const [confirm, setConfirm] = useState<string>("");
-//     const [err, setErr] = useState<string>("");
-//     const { deleted } = useActionProduct();
-//     const onConfirm = async (code: string) => {
-//         setErr("");
-
-//         if (!confirm) {
-//             setErr("Konfirmasi tidak boleh kosong");
-//             return;
-//         }
-
-//         if (confirm !== data.name) {
-//             setErr("Konfirmasi tidak valid");
-//             return;
-//         }
-
-//         await deleted.mutateAsync({ code });
-//     };
-
-//     return (
-//         <Dialog>
-//             <DialogTrigger className="text-rose-500 cursor-pointer">
-//                 {deleted.isPending ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
-//             </DialogTrigger>
-//             <DialogContent>
-//                 <DialogHeader>
-//                     <DialogTitle className="font-semibold text-lg">
-//                         Hapus Produk (Finish Good)
-//                     </DialogTitle>
-//                     <DialogDescription>
-//                         Apakah anda yakin untuk menghapus Produk (Finish Good){" "}
-//                         <span className="px-1 rounded bg-gray-100 font-medium">{data.name}</span>?
-//                     </DialogDescription>
-//                 </DialogHeader>
-//                 <div>
-//                     <label htmlFor="confirm" className="text-sm font-medium text-gray-700">
-//                         Konfirmasi
-//                     </label>
-//                     <Input
-//                         name="confirm"
-//                         onChange={(e) => setConfirm(e.target.value)}
-//                         value={confirm}
-//                         placeholder="Tulis kembali nama Produk"
-//                         disabled={deleted.isPending}
-//                     />
-//                     {err && <small className="text-rose-500">{err}</small>}
-//                 </div>
-//                 <DialogFooter>
-//                     <Button
-//                         variant={"teal"}
-//                         type="button"
-//                         size={"sm"}
-//                         onClick={() => onConfirm(data.code)}
-//                     >
-//                         {deleted.isPending ? <Loader2 className="animate-spin" /> : " Yakin"}
-//                     </Button>
-//                 </DialogFooter>
-//             </DialogContent>
-//         </Dialog>
-//     );
-// }

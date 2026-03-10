@@ -84,6 +84,8 @@ export function CreateProduct() {
             lead_time: 0,
             review_period: 0,
             z_value: 1.65,
+            distribution_percentage: 0,
+            safety_percentage: 0,
         },
     });
 
@@ -216,6 +218,24 @@ export function CreateProduct() {
                                     placeholder="0"
                                     type="number"
                                     error={form.formState.errors.review_period}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="distribution_percentage"
+                                    label="Persentase Edar (EDAR)"
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.01"
+                                    error={form.formState.errors.distribution_percentage}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="safety_percentage"
+                                    label="Safety Stock (%)"
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.01"
+                                    error={form.formState.errors.safety_percentage}
                                 />
                             </CardContent>
                         </Card>

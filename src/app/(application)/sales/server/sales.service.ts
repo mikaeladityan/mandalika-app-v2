@@ -1,13 +1,15 @@
 import { api, setupCSRFToken } from "@/lib/api";
-import { QuerySalesDTO, RequestSalesDTO, ResponseSalesDTO } from "./sales.schema";
+import { QuerySalesDTO, RequestSalesDTO, ResponseSalesDTO, SalesListItemDTO } from "./sales.schema";
 import { ApiSuccessResponse, RedisProduct } from "@/shared/types";
 
 const API = `${process.env.NEXT_PUBLIC_API}/api/app/sales`;
+
 export type QueryDetailSale = {
     product_id: number;
     year: number;
     month: number;
 };
+
 export class SalesService {
     static async detail(query: QueryDetailSale) {
         try {
@@ -20,20 +22,12 @@ export class SalesService {
             throw error;
         }
     }
+
     static async list(params: QuerySalesDTO) {
         try {
             const { data } = await api.get<
                 ApiSuccessResponse<{
-                    sales: Array<
-                        ResponseSalesDTO & {
-                            quantity: Array<{
-                                year: number;
-                                month: number;
-                                quantity: number;
-                                trend: string;
-                            }>;
-                        }
-                    >;
+                    sales: Array<SalesListItemDTO>;
                     len: number;
                 }>
             >(API, { params });

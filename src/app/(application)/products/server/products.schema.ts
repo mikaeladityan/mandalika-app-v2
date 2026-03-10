@@ -11,13 +11,15 @@ export const RequestProductSchema = z.object({
         .min(5, "Nama produk minimal memiliki 5 karakter")
         .max(100, "Nama produk tidak boleh melebihi 100 karakter"),
     size: z.coerce.number("Ukuran tidak boleh kosong").min(2),
-    gender: z.enum(GENDER).optional(),
+    gender: z.enum(GENDER).optional().default("UNISEX"),
     status: z.enum(STATUS).default("PENDING").optional(),
     z_value: z.number().default(1.65),
     lead_time: z.coerce.number().int().min(1).default(14),
     review_period: z.coerce.number().int().min(1).default(30),
     unit: z.string().nullable().optional(),
     product_type: z.string().nullable().optional(),
+    distribution_percentage: z.coerce.number().min(0).default(0).optional(),
+    safety_percentage: z.coerce.number().min(0).default(0).optional(),
 });
 
 export const ResponseProductSchema = RequestProductSchema.extend({
@@ -48,7 +50,18 @@ export const QueryProductSchema = z.object({
     search: z.string().optional(),
     status: z.enum(STATUS).optional(),
     sortBy: z
-        .enum(["code", "name", "updated_at", "created_at", "gender", "type", "size", "lead_time"])
+        .enum([
+            "code",
+            "name",
+            "updated_at",
+            "created_at",
+            "gender",
+            "type",
+            "size",
+            "lead_time",
+            "distribution_percentage",
+            "safety_percentage",
+        ])
         .default("name"),
     sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
