@@ -20,7 +20,7 @@ import {
     useRawMatStocksQuery,
     useRawMatStockTableState,
 } from "@/app/(application)/rawmat/stocks/server/use.rawmat.stock";
-import { useCategory } from "@/app/(application)/rawmat/categories/server/use.category";
+import { useCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
 import { useParams } from "next/navigation";

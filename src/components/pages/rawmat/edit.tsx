@@ -4,9 +4,9 @@ import {
     RequestRawMaterialSchema,
 } from "@/app/(application)/rawmat/server/rawmat.schema";
 import { useFormRawMat, useRawMaterial } from "@/app/(application)/rawmat/server/use.rawmat";
-import { useCategoriesQuery } from "@/app/(application)/rawmat/categories/server/use.category";
-import { useSuppliersQuery } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
-import { useUnitsQuery } from "@/app/(application)/rawmat/units/server/use.unit";
+import { useCategoriesQuery } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
+import { useSuppliersQuery } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
+import { useUnitsQuery } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";

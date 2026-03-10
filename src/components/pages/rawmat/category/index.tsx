@@ -19,7 +19,7 @@ import { DataTable } from "@/components/ui/table/data";
 import {
     useCategoriesQuery,
     useCategoryTableState,
-} from "@/app/(application)/rawmat/categories/server/use.category";
+} from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { CategoryColumns } from "./table/column";
 import { cn } from "@/lib/utils";
 

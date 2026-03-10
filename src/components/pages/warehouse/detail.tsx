@@ -1,105 +1,35 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { Search, Loader2, Warehouse, Calendar, ArrowLeft } from "lucide-react";
+import { Loader2, Warehouse, MapPin, Calendar, ArrowLeft, Info, Home, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useWarehouse } from "@/app/(application)/warehouses/server/use.warehouse";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { DataTable } from "@/components/ui/table/data";
 import { Badge } from "@/components/ui/badge";
-import { LogData } from "@/components/log";
+import { Separator } from "@/components/ui/separator";
 
 export function DetailWarehouse() {
     const { id } = useParams();
-    const [month, setMonth] = useState(new Date().getMonth() + 1);
-    const [year, setYear] = useState(new Date().getFullYear());
 
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { detail, isLoading } = useWarehouse(undefined, Number(id));
 
-    const {
-        detail_w_stock,
-        isLoading,
-        month: effectiveMonth,
-        year: effectiveYear,
-    } = useWarehouse(
-        {
-            month,
-            year,
-            type: "FINISH_GOODS",
-            page,
-            take: pageSize,
-            sortBy: "updated_at",
-            sortOrder: "desc",
-        },
-        Number(id),
-        true,
-    );
+    if (isLoading) {
+        return (
+            <div className="py-20 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="animate-spin size-12 text-primary" strokeWidth={1.5} />
+                <p className="text-sm text-muted-foreground">Memuat data gudang...</p>
+            </div>
+        );
+    }
 
-    const months = [
-        "Januari",
-        "Februari",
-        "Maret",
-        "April",
-        "Mei",
-        "Juni",
-        "Juli",
-        "Agustus",
-        "September",
-        "Oktober",
-        "November",
-        "Desember",
-    ];
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
-
-    const productColumns = [
-        { header: "Kode Produk", accessorKey: "code" },
-        { header: "Nama Produk", accessorKey: "name" },
-        {
-            header: "Jumlah Stok",
-            accessorKey: "quantity",
-            cell: ({ row }: any) => {
-                const qty = row.original.quantity;
-                const isLow = qty <= (row.original.min_stock || 0);
-                return <Badge variant={isLow ? "destructive" : "outline"}>{qty}</Badge>;
-            },
-        },
-        {
-            header: "Update Terakhir",
-            accessorKey: "updated_at",
-            cell: ({ row }: any) => new Date(row.original.updated_at).toLocaleDateString("id-ID"),
-        },
-    ];
-
-    const rawMatColumns = [
-        { header: "Barcode/Kode", accessorKey: "code" },
-        { header: "Nama Material", accessorKey: "name" },
-        {
-            header: "Jumlah Stok",
-            accessorKey: "quantity",
-            cell: ({ row }: any) => {
-                const qty = row.original.quantity;
-                const isLow = qty <= (row.original.min_stock || 0);
-                return <Badge variant={isLow ? "destructive" : "outline"}>{qty}</Badge>;
-            },
-        },
-        {
-            header: "Update Terakhir",
-            accessorKey: "updated_at",
-            cell: ({ row }: any) => new Date(row.original.updated_at).toLocaleDateString("id-ID"),
-        },
-    ];
-
-    const warehouseName = (detail_w_stock as any)?.warehouse?.name || "Gudang";
+    if (!detail) {
+        return (
+            <div className="py-20 flex flex-col items-center justify-center gap-4">
+                <p className="text-sm text-muted-foreground">Data gudang tidak ditemukan.</p>
+                <Button onClick={() => window.history.back()}>Kembali</Button>
+            </div>
+        );
+    }
 
     return (
         <section className="space-y-6">
@@ -114,104 +44,201 @@ export function DetailWarehouse() {
                         >
                             <ArrowLeft size={18} />
                         </Button>
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            Stok Gudang: {warehouseName}
+                        <h2 className="text-2xl font-bold tracking-tight">
+                            Detail Gudang: {detail.name}
                         </h2>
                     </div>
                     <p className="text-sm text-muted-foreground ml-10">
-                        Manajemen dan penelusuran stok inventory secara historis
+                        Informasi lengkap mengenai lokasi dan status gudang pilihan.
                     </p>
                 </div>
-
-                <div className="flex items-center gap-2 bg-white p-1 rounded-lg border shadow-sm">
-                    <div className="flex items-center gap-2 px-2 border-r mr-2">
-                        <Calendar size={14} className="text-muted-foreground" />
-                        <span className="text-xs font-medium uppercase text-muted-foreground">
-                            Periode
-                        </span>
-                    </div>
-                    <Select
-                        value={String(month || effectiveMonth)}
-                        onValueChange={(val) => setMonth(Number(val))}
+                <div className="flex gap-2">
+                    <Badge
+                        variant="secondary"
+                        className={`px-3 py-1 uppercase text-[10px] tracking-wider font-bold ${
+                            detail.type === "FINISH_GOODS"
+                                ? "bg-teal-100 text-teal-700 hover:bg-teal-200 border-teal-200"
+                                : "bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200"
+                        }`}
                     >
-                        <SelectTrigger className="w-[130px] border-none shadow-none focus:ring-0 h-8 text-sm">
-                            <SelectValue placeholder="Bulan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {months.map((m, i) => (
-                                <SelectItem key={m} value={String(i + 1)}>
-                                    {m}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Select
-                        value={String(year || effectiveYear)}
-                        onValueChange={(val) => setYear(Number(val))}
-                    >
-                        <SelectTrigger className="w-[100px] border-none shadow-none focus:ring-0 h-8 text-sm">
-                            <SelectValue placeholder="Tahun" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {years.map((y) => (
-                                <SelectItem key={y} value={String(y)}>
-                                    {y}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        {detail.type === "FINISH_GOODS" ? "Produk Jadi" : "Bahan Baku"}
+                    </Badge>
                 </div>
             </header>
 
-            {isLoading ? (
-                <div className="py-20 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="animate-spin size-12 text-primary" strokeWidth={1.5} />
-                    <p className="text-sm text-muted-foreground">Memuat data inventory...</p>
-                </div>
-            ) : (
-                <div className="grid gap-6">
-                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
-                        <CardHeader className="bg-white border-b flex flex-row items-center justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Info */}
+                <Card className="lg:col-span-2 border-none pt-0 shadow-sm rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm">
+                    <CardHeader className="border-b bg-white pt-4">
+                        <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
+                            <Info className="size-4 text-primary" />
+                            Informasi Utama
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground uppercase">
+                                    Nama Gudang
+                                </p>
+                                <p className="text-lg font-semibold">{detail.name}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground uppercase">
+                                    Tipe Penyimpanan
+                                </p>
+                                <p className="text-lg font-semibold">
+                                    {detail.type === "FINISH_GOODS"
+                                        ? "Gudang Barang Jadi"
+                                        : "Gudang Bahan Baku"}
+                                </p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="size-4 text-rose-500" />
+                                <h3 className="font-bold">Lokasi & Alamat</h3>
+                            </div>
+
+                            {detail.warehouse_address ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
+                                    <div className="space-y-3">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                                                <Home className="size-3" /> Alamat Jalan
+                                            </p>
+                                            <p className="text-sm leading-relaxed">
+                                                {detail.warehouse_address.street}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase">
+                                                Area
+                                            </p>
+                                            <p className="text-sm">
+                                                {detail.warehouse_address.sub_district},{" "}
+                                                {detail.warehouse_address.district}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase">
+                                                Kota & Provinsi
+                                            </p>
+                                            <p className="text-sm">
+                                                {detail.warehouse_address.city},{" "}
+                                                {detail.warehouse_address.province}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                                                <Globe className="size-3" /> Kode Pos & Negara
+                                            </p>
+                                            <p className="text-sm">
+                                                {detail.warehouse_address.postal_code},{" "}
+                                                {detail.warehouse_address.country}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground italic p-4 bg-slate-50 rounded-lg">
+                                    Informasi alamat belum ditambahkan.
+                                </p>
+                            )}
+
+                            {detail.warehouse_address?.notes && (
+                                <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
+                                    <p className="font-semibold mb-1">Catatan Tambahan:</p>
+                                    {detail.warehouse_address.notes}
+                                </div>
+                            )}
+
+                            {detail.warehouse_address?.url_google_maps && (
+                                <Button variant="outline" className="w-full md:w-auto" asChild>
+                                    <a
+                                        href={detail.warehouse_address.url_google_maps}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <MapPin className="mr-2 h-4 w-4" /> Buka di Google Maps
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Sidebar Info */}
+                <div className="space-y-6">
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+                        <CardHeader className="border-b">
                             <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-teal-500" />
-                                Stok Produk (Finish Goods)
+                                <Calendar className="size-4 text-blue-500" />
+                                Jejak Waktu
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6">
-                            <DataTable
-                                columns={productColumns as any}
-                                data={detail_w_stock?.product_inventories || []}
-                                total={detail_w_stock?.product_inventories?.length || 0}
-                                page={page}
-                                pageSize={pageSize}
-                                onPageChange={setPage}
-                                onPageSizeChange={setPageSize}
-                            />
+                        <CardContent className="pt-6 space-y-4">
+                            <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground uppercase">
+                                    Dibuat Pada
+                                </p>
+                                <p className="text-sm font-medium">
+                                    {new Date(detail.created_at).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground uppercase">
+                                    Update Terakhir
+                                </p>
+                                <p className="text-sm font-medium">
+                                    {new Date(detail.updated_at).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
-                        <CardHeader className="bg-white border-b flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-orange-500" />
-                                Stok Bahan Baku (Raw Materials)
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <DataTable
-                                columns={rawMatColumns as any}
-                                data={detail_w_stock?.raw_material_inventories || []}
-                                total={detail_w_stock?.raw_material_inventories?.length || 0}
-                                page={page}
-                                pageSize={pageSize}
-                                onPageChange={setPage}
-                                onPageSizeChange={setPageSize}
-                            />
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-slate-900 text-white">
+                        <CardContent className="p-6 text-center space-y-4">
+                            <div className="flex justify-center">
+                                <div className="p-4 bg-white/10 rounded-full">
+                                    <Warehouse size={48} className="text-teal-400" />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold">Kapasitas Gudang</h3>
+                                <p className="text-sm text-slate-400">
+                                    Pencatatan stok untuk gudang ini dilakukan melalui modul
+                                    Inventori pusat.
+                                </p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="w-full border-slate-700 hover:bg-slate-800 text-white cursor-not-allowed"
+                                disabled
+                            >
+                                Lihat Inventori Terkait
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>
-            )}
+            </div>
         </section>
     );
 }

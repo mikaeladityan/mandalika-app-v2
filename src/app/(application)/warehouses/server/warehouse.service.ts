@@ -1,9 +1,5 @@
 import { api, setupCSRFToken } from "@/lib/api";
-import {
-    QueryProductInventoryDTO,
-    RequestWarehouseDTO,
-    ResponseWarehouseDTO,
-} from "./warehouse.schema";
+import { QueryWarehouseDTO, RequestWarehouseDTO, ResponseWarehouseDTO } from "./warehouse.schema";
 import { ApiSuccessResponse, StatusEnumDTO } from "@/shared/types";
 
 const API = `${process.env.NEXT_PUBLIC_API}/api/app/warehouses`;
@@ -35,23 +31,24 @@ export class WarehouseService {
     static async changeStatus(id: number, status: StatusEnumDTO) {
         try {
             await setupCSRFToken();
-            const { data } = await api.post<ApiSuccessResponse<{ name: string }>>(`${API}/${id}`, {
-                status,
-            });
+            // Backend uses PATCH and status is in query
+            const { data } = await api.patch<ApiSuccessResponse<{ name: string }>>(
+                `${API}/${id}`,
+                undefined,
+                { params: { status } },
+            );
             return data.data;
         } catch (error) {
             throw error;
         }
     }
 
-    static async list(params: QueryProductInventoryDTO) {
+    static async list(params: QueryWarehouseDTO) {
         try {
             const { data } = await api.get<
                 ApiSuccessResponse<{
-                    data: Array<Omit<ResponseWarehouseDTO, "warehouse_address">>;
+                    data: ResponseWarehouseDTO[];
                     len: number;
-                    month: number;
-                    year: number;
                 }>
             >(API, { params });
 
@@ -63,11 +60,9 @@ export class WarehouseService {
 
     static async detail(id: number) {
         try {
-            const { data } = await api.get<
-                ApiSuccessResponse<
-                    Omit<ResponseWarehouseDTO, "product_inventories" | "raw_material_inventories">
-                >
-            >(`${API}/${id}`);
+            const { data } = await api.get<ApiSuccessResponse<ResponseWarehouseDTO>>(
+                `${API}/${id}`,
+            );
 
             return data.data;
         } catch (error) {
@@ -79,18 +74,6 @@ export class WarehouseService {
         try {
             await setupCSRFToken();
             await api.delete(`${API}/${id}`);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    static async detailWithStock(id: number, params: QueryProductInventoryDTO) {
-        try {
-            const { data } = await api.get<
-                ApiSuccessResponse<ResponseWarehouseDTO & { month: number; year: number }>
-            >(`${API}/${id}/stock`, { params });
-
-            return data.data;
         } catch (error) {
             throw error;
         }

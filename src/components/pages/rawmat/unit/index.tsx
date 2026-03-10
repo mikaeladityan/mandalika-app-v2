@@ -16,7 +16,10 @@ import {
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
 import { UnitColumns } from "./table/column";
-import { useUnitsQuery, useUnitTableState } from "@/app/(application)/rawmat/units/server/use.unit";
+import {
+    useUnitsQuery,
+    useUnitTableState,
+} from "@/app/(application)/rawmat/(component)/units/server/use.unit";
 
 export function Units() {
     const table = useUnitTableState();

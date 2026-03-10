@@ -34,7 +34,7 @@ export function CreateWarehouse() {
                 street: "",
                 sub_district: "",
                 url_google_maps: "",
-            },
+            } as any,
         },
     });
 
@@ -42,8 +42,20 @@ export function CreateWarehouse() {
         { label: "Bahan Baku", value: "RAW_MATERIAL" },
         { label: "Produk Jadi", value: "FINISH_GOODS" },
     ];
+
     const onSubmit = async (body: RequestWarehouseDTO) => {
-        await create.mutateAsync(body);
+        // Handle optional fields that might be empty strings
+        const formattedBody = {
+            ...body,
+            warehouse_address: body.warehouse_address
+                ? {
+                      ...body.warehouse_address,
+                      notes: body.warehouse_address.notes || null,
+                      url_google_maps: body.warehouse_address.url_google_maps || null,
+                  }
+                : undefined,
+        };
+        await create.mutateAsync(formattedBody as RequestWarehouseDTO);
         form.reset();
     };
 
@@ -54,169 +66,201 @@ export function CreateWarehouse() {
     const isPending = create.isPending;
 
     return (
-        <section>
+        <section className="w-full">
             <Form
                 methods={form}
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="grid gap-3 xl:grid-cols-4 2xl:w-8/12"
+                className="grid gap-6 lg:grid-cols-12"
             >
-                <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle className="text-xl">Informasi Gudang</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-5">
-                        <InputForm
-                            required
-                            control={form.control}
-                            name="name"
-                            label="Nama Gudang"
-                            placeholder="Contoh: Gudang Distribusi Jakarta"
-                            disabled={isPending}
-                            error={form.formState.errors.name}
-                        />
-                        <SelectForm
-                            name="type"
-                            control={form.control}
-                            error={form.formState.errors.type}
-                            label={"Tipe Gudang"}
-                            options={typeOptions}
-                            isLoading={isPending}
-                        />
+                {/* Kolom Kiri: Informasi Utama & Alamat */}
+                <div className="lg:col-span-8 space-y-6">
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
+                        <CardHeader className="border-b bg-white/50">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <div className="h-4 w-1 bg-primary rounded-full" />
+                                Informasi Gudang
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-6 pt-6">
+                            <div className="grid md:grid-cols-2 gap-5">
+                                <InputForm
+                                    required
+                                    control={form.control}
+                                    name="name"
+                                    label="Nama Gudang"
+                                    placeholder="Contoh: Gudang Distribusi Jakarta"
+                                    disabled={isPending}
+                                    error={form.formState.errors.name}
+                                />
+                                <SelectForm
+                                    name="type"
+                                    control={form.control}
+                                    error={form.formState.errors.type}
+                                    label={"Tipe Gudang"}
+                                    options={typeOptions}
+                                    isLoading={isPending}
+                                />
+                            </div>
 
-                        <div className="grid grid-cols-2 gap-5">
-                            <InputForm
+                            <SeparatorLabel label="Lokasi Wilayah" />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                <InputForm
+                                    required
+                                    control={form.control}
+                                    name="warehouse_address.province"
+                                    label="Provinsi"
+                                    placeholder="Jawa Barat"
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.province}
+                                />
+                                <InputForm
+                                    required
+                                    control={form.control}
+                                    name="warehouse_address.city"
+                                    label="Kota/Kabupaten"
+                                    placeholder="Bekasi"
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.city}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="warehouse_address.district"
+                                    label="Kecamatan"
+                                    placeholder="Tambun Selatan"
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.district}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="warehouse_address.sub_district"
+                                    label="Kelurahan"
+                                    placeholder="Lambangjaya"
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.sub_district}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="warehouse_address.postal_code"
+                                    label="Kode Pos"
+                                    placeholder="17510"
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.postal_code}
+                                />
+                                <InputForm
+                                    control={form.control}
+                                    name="warehouse_address.country"
+                                    label="Negara"
+                                    disabled={true}
+                                    error={form.formState.errors.warehouse_address?.country}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
+                        <CardHeader className="border-b bg-white/50">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <MapPin className="size-5 text-rose-500" />
+                                Detail Alamat & G-Maps
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-6 pt-6">
+                            <TextareaForm
                                 required
                                 control={form.control}
-                                name="warehouse_address.province"
-                                label="Provinsi"
-                                placeholder="Jawa Barat"
+                                name="warehouse_address.street"
+                                label="Alamat Lengkap (Jalan)"
+                                placeholder="Jl. Raya Boulevard No. 123..."
                                 disabled={isPending}
-                                error={form.formState.errors.warehouse_address?.province}
+                                error={form.formState.errors.warehouse_address?.street}
                             />
-                            <InputForm
-                                required
-                                control={form.control}
-                                name="warehouse_address.city"
-                                label="Kota/Kabupaten"
-                                placeholder="Bekasi"
-                                disabled={isPending}
-                                error={form.formState.errors.warehouse_address?.city}
-                            />
-                            <InputForm
-                                control={form.control}
-                                name="warehouse_address.district"
-                                label="Kecamatan"
-                                placeholder="Tambun Selatan"
-                                disabled={isPending}
-                                error={form.formState.errors.warehouse_address?.district}
-                            />
-                            <InputForm
-                                control={form.control}
-                                name="warehouse_address.sub_district"
-                                label="Kelurahan"
-                                placeholder="Lambangjaya"
-                                disabled={isPending}
-                                error={form.formState.errors.warehouse_address?.sub_district}
-                            />
-                            <InputForm
-                                control={form.control}
-                                name="warehouse_address.postal_code"
-                                label="Kode Pos"
-                                placeholder="17510"
-                                disabled={isPending}
-                                error={form.formState.errors.warehouse_address?.postal_code}
-                            />
-                            <InputForm
-                                control={form.control}
-                                name="warehouse_address.country"
-                                label="Negara"
-                                disabled={true}
-                                error={form.formState.errors.warehouse_address?.country}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="grid md:grid-cols-2 gap-5">
+                                <InputForm
+                                    control={form.control}
+                                    name="warehouse_address.url_google_maps"
+                                    label="URL Google Maps"
+                                    placeholder="https://maps.app.goo.gl/..."
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.url_google_maps}
+                                />
+                                <TextareaForm
+                                    control={form.control}
+                                    name="warehouse_address.notes"
+                                    label="Catatan Alamat"
+                                    placeholder="Samping gedung biru..."
+                                    disabled={isPending}
+                                    error={form.formState.errors.warehouse_address?.notes}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                <Card className="h-fit">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                        <Button
-                            type="button"
-                            size="sm"
-                            className="cursor-pointer"
-                            onClick={() => window.history.back()}
-                            variant="default"
-                            disabled={isPending}
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            onClick={onReset}
-                            className="cursor-pointer"
-                            variant="warning"
-                            disabled={isPending}
-                        >
-                            <RefreshCcw className="mr-2 h-4 w-4" /> Reset
-                        </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-xs text-muted-foreground italic">
-                            Pastikan data alamat sudah sesuai dengan lokasi fisik gudang untuk
-                            memudahkan logistik.
-                        </p>
-                    </CardContent>
-                    <CardFooter>
-                        <Button
-                            className="w-full cursor-pointer"
-                            variant="teal"
-                            disabled={isPending}
-                        >
-                            {isPending ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Save className="mr-2 h-4 w-4" />
-                            )}
-                            Simpan Gudang
-                        </Button>
-                    </CardFooter>
-                </Card>
-
-                <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle className="text-xl flex items-center gap-2">
-                            <MapPin className="size-5" /> Detail Lokasi & Alamat
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-5">
-                        <TextareaForm
-                            required
-                            control={form.control}
-                            name="warehouse_address.street"
-                            label="Alamat Lengkap (Jalan)"
-                            placeholder="Jl. Raya Boulevard No. 123..."
-                            disabled={isPending}
-                            error={form.formState.errors.warehouse_address?.street}
-                        />
-                        <InputForm
-                            control={form.control}
-                            name="warehouse_address.url_google_maps"
-                            label="URL Google Maps"
-                            placeholder="https://maps.app.goo.gl/..."
-                            disabled={isPending}
-                            error={form.formState.errors.warehouse_address?.url_google_maps}
-                        />
-                        <TextareaForm
-                            control={form.control}
-                            name="warehouse_address.notes"
-                            label="Catatan Alamat"
-                            placeholder="Samping gedung biru, masuk lewat gerbang belakang..."
-                            disabled={isPending}
-                            error={form.formState.errors.warehouse_address?.notes}
-                        />
-                    </CardContent>
-                </Card>
+                {/* Kolom Kanan: Actions */}
+                <div className="lg:col-span-4 space-y-6">
+                    <Card className="h-fit border-none shadow-sm pt-0 rounded-xl overflow-hidden sticky top-6">
+                        <CardHeader className="bg-slate-50 border-b pt-4">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    className="cursor-pointer"
+                                    onClick={() => window.history.back()}
+                                    variant="outline"
+                                    disabled={isPending}
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={onReset}
+                                    className="cursor-pointer"
+                                    variant="ghost"
+                                    disabled={isPending}
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-4">
+                            <div className="p-4 bg-teal-50 rounded-lg border border-teal-100">
+                                <h4 className="text-sm font-bold text-teal-900 mb-1">Informasi</h4>
+                                <p className="text-xs text-teal-700 leading-relaxed italic">
+                                    Pastikan data alamat sudah sesuai dengan lokasi fisik gudang
+                                    untuk memudahkan operasional logistik perusahaan.
+                                </p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="p-6 pt-0">
+                            <Button
+                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-teal-100"
+                                variant="teal"
+                                disabled={isPending}
+                            >
+                                {isPending ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Save className="mr-2 h-4 w-4" />
+                                )}
+                                Simpan Data Gudang
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
             </Form>
         </section>
+    );
+}
+
+function SeparatorLabel({ label }: { label: string }) {
+    return (
+        <div className="flex items-center gap-4 my-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                {label}
+            </span>
+            <div className="h-px bg-slate-100 w-full" />
+        </div>
     );
 }

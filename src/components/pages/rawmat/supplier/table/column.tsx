@@ -5,8 +5,8 @@ import Link from "next/link";
 import { SortableHeader } from "@/components/ui/table/sortable";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
-import { useFormCategory } from "@/app/(application)/rawmat/categories/server/use.category";
-import { ResponseSupplierDTO } from "@/app/(application)/rawmat/suppliers/server/supplier.schema";
+import { useFormCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
+import { ResponseSupplierDTO } from "@/app/(application)/rawmat/(component)/suppliers/server/supplier.schema";
 import { ParseDate } from "@/lib/utils";
 import {
     Dialog,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useFormSupplier } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
+import { useFormSupplier } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 
 type Props = {
     sortBy?: string;

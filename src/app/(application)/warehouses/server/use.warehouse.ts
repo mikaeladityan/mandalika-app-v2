@@ -4,10 +4,11 @@ import { useSetAtom } from "jotai";
 import { errorAtom, notificationAtom } from "@/shared/store";
 import { useRouter } from "next/navigation";
 import { FetchError, ResponseError } from "@/lib/utils/error";
-import { QueryProductInventoryDTO, RequestWarehouseDTO } from "./warehouse.schema";
+import { QueryWarehouseDTO, RequestWarehouseDTO } from "./warehouse.schema";
 import { StatusEnumDTO } from "@/shared/types";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 export function useFormWarehouse(id?: number) {
     const setNotif = useSetAtom(notificationAtom);
     const setErr = useSetAtom(errorAtom);
@@ -43,13 +44,13 @@ export function useFormWarehouse(id?: number) {
     });
 
     const changeStatus = useMutation<{ name: string }, ResponseError, { status: StatusEnumDTO }>({
-        mutationKey: ["warehouse", "update"],
+        mutationKey: ["warehouse", "changeStatus"],
         mutationFn: ({ status }) => WarehouseService.changeStatus(Number(id), status),
         onError: (err) => FetchError(err, setErr),
         onSuccess: (data) => {
             setNotif({
-                title: `Pengaturan Gudang ${data.name}`,
-                message: `Berhasil melakukan perubahaan data gudang ${data.name} baru`,
+                title: `Status Gudang ${data.name}`,
+                message: `Berhasil mengubah status data gudang ${data.name}`,
             });
             queryClient.invalidateQueries({ queryKey: ["warehouse"], type: "all" });
             routes.replace("/warehouses");
@@ -73,37 +74,29 @@ export function useFormWarehouse(id?: number) {
     return { create, update, changeStatus, deleted };
 }
 
-export function useWarehouse(params?: QueryProductInventoryDTO, id?: number, stock?: boolean) {
+export function useWarehouse(params?: QueryWarehouseDTO, id?: number) {
     const list = useQuery({
         queryKey: ["warehouse", params],
         queryFn: () => WarehouseService.list(params!),
-        enabled: !!params && !id && !stock,
+        enabled: !!params && !id,
     });
     const detail = useQuery({
         queryKey: ["warehouse", id],
         queryFn: () => WarehouseService.detail(Number(id)),
-        enabled: !!id && !stock && !params,
-    });
-
-    const detailWithStock = useQuery({
-        queryKey: ["warehouse", "Stock", id, params],
-        queryFn: () => WarehouseService.detailWithStock(Number(id), params!),
-        enabled: !!id && !!stock && !!params,
+        enabled: !!id && !params,
     });
 
     return {
         list: list.data?.data ?? [],
-        month: list.data?.month,
-        year: list.data?.year,
         total: list.data?.len ?? 0,
         detail: detail.data,
-        detail_w_stock: detailWithStock.data,
-        isLoading: list.isLoading || detail.isLoading || detailWithStock.isLoading,
-        isRefetching: list.isRefetching || detail.isRefetching || detailWithStock.isRefetching,
-        isError: list.isError || detail.isError || detailWithStock.isError,
-        refetch: list.refetch || detail.refetch || detailWithStock.refetch,
+        isLoading: list.isLoading || detail.isLoading,
+        isRefetching: list.isRefetching || detail.isRefetching,
+        isError: list.isError || detail.isError,
+        refetch: list.refetch || detail.refetch,
     };
 }
+
 export function useWarehouseTableState() {
     const { get, batchSet, searchParams } = useQueryParams();
 
@@ -118,7 +111,7 @@ export function useWarehouseTableState() {
     // 2. Sort Logic
     const sortBy = get("sortBy") ?? "updated_at";
     const sortOrder = (get("sortOrder") as "asc" | "desc") ?? "asc";
-    const newType = (get("type") as QueryProductInventoryDTO["type"]) ?? undefined;
+    const newType = (get("type") as QueryWarehouseDTO["type"]) ?? undefined;
 
     const onSort = useCallback(
         (key: string) => {
@@ -130,23 +123,20 @@ export function useWarehouseTableState() {
 
     // 3. Pagination & Take Logic
     const setPage = (page: number) => batchSet({ page: String(page) });
-
-    // Tambahkan fungsi ini untuk mereset page ke 1 saat jumlah data per halaman berubah
     const setPageSize = (size: number) => batchSet({ take: String(size), page: "1" });
 
-    const setType = (newType?: QueryProductInventoryDTO["type"]) => {
-        batchSet({ type: newType || undefined, page: "1" }); // Reset ke page 1 jika ganti kategori
+    const setType = (type?: QueryWarehouseDTO["type"]) => {
+        batchSet({ type: type || undefined, page: "1" });
     };
 
-    // Update queryParams agar sinkron dengan perubahan type
-    const queryParams = useMemo<QueryProductInventoryDTO>(
+    const queryParams = useMemo<QueryWarehouseDTO>(
         () => ({
             take: Number(get("take") ?? 25),
             page: Number(get("page") ?? 1),
             search: get("search") ?? undefined,
             sortBy: sortBy as any,
             sortOrder: sortOrder as any,
-            type: newType, // Ambil langsung dari URL
+            type: newType,
             month: get("month") ? Number(get("month")) : undefined,
             year: get("year") ? Number(get("year")) : undefined,
         }),
@@ -161,38 +151,34 @@ export function useWarehouseTableState() {
         onSort,
         queryParams,
         setPage,
-        setPageSize, // <--- Wajib di-return
+        setPageSize,
         setType,
     };
 }
 
-export function useWarehouseQuery(params: QueryProductInventoryDTO) {
+export function useWarehouseQuery(params: QueryWarehouseDTO) {
     const query = useQuery({
-        queryKey: ["warehouse", params], // Key berubah saat params berubah
+        queryKey: ["warehouse", params],
         queryFn: () => WarehouseService.list(params),
     });
 
     return {
         list: query.data?.data ?? [],
-        month: query.data?.month,
-        year: query.data?.year,
         total: query.data?.len ?? 0,
         ...query,
     };
 }
-// Hook khusus untuk ambil daftar Gudang (Hanya sekali/Static untuk Card)
-export function useWarehouseStatic(params: QueryProductInventoryDTO) {
+
+export function useWarehouseStatic(params: QueryWarehouseDTO) {
     const query = useQuery({
         queryKey: ["warehouse", "static-list", params.type],
         queryFn: () => WarehouseService.list(params),
-        staleTime: Infinity, // Agar tidak loading terus
+        staleTime: Infinity,
     });
 
     return {
         ...query,
         data: query.data?.data ?? [],
-        month: query.data?.month,
-        year: query.data?.year,
         total: query.data?.len ?? 0,
     };
 }

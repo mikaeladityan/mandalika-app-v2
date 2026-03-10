@@ -18,7 +18,7 @@ import { DataTable } from "@/components/ui/table/data";
 import {
     useSuppliersQuery,
     useSupplierTableState,
-} from "@/app/(application)/rawmat/suppliers/server/use.supplier";
+} from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 import { SupplierColumns } from "./table/column";
 
 export function Suppliers() {

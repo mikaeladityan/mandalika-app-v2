@@ -1,60 +1,6 @@
 import z from "zod";
 
-export const RequestProductInventorySchema = z.object({
-    product_id: z.coerce
-        .number({
-            error: "Product ID wajib diisi",
-        })
-        .positive(),
-
-    warehouse_id: z.coerce
-        .number({
-            error: "Warehouse ID wajib diisi",
-        })
-        .positive(),
-
-    quantity: z.coerce.number().min(0, "Quantity tidak boleh negatif").default(0),
-
-    min_stock: z.coerce.number().min(0, "Min stock tidak boleh negatif").nullish(),
-});
-
-export const ResponseProductInventorySchema = RequestProductInventorySchema.extend({
-    created_at: z.date(),
-    updated_at: z.date().optional(),
-});
-
-export type RequestProductInventoryDTO = z.infer<typeof RequestProductInventorySchema>;
-
-export const RequestRawMaterialInventorySchema = z.object({
-    raw_material_id: z.coerce
-        .number({
-            error: "Raw Material ID wajib diisi",
-        })
-        .positive(),
-
-    warehouse_id: z.coerce
-        .number({
-            error: "Warehouse ID wajib diisi",
-        })
-        .positive(),
-
-    quantity: z.coerce.number().min(0, "Quantity tidak boleh negatif").default(0),
-
-    min_stock: z.coerce.number().min(0, "Min stock tidak boleh negatif").nullish(),
-});
-
-export const ResponseRawMaterialInventorySchema = RequestRawMaterialInventorySchema.extend({
-    created_at: z.date(),
-    updated_at: z.date().optional(),
-});
-
-export type RequestRawMaterialInventoryDTO = z.infer<typeof RequestRawMaterialInventorySchema>;
-
-export const UpdateInventoryQtySchema = RequestProductInventorySchema.pick({
-    quantity: true,
-});
-
-const RequestWarehouseAddressSchema = z.object({
+export const RequestWarehouseAddressSchema = z.object({
     street: z
         .string("Jalan tidak boleh kosong")
         .max(200, "Jalan tidak boleh lebih dari 200 karakter"),
@@ -64,13 +10,18 @@ const RequestWarehouseAddressSchema = z.object({
     province: z.string("Provinsi tidak boleh kosong"),
     country: z.string().max(100),
     postal_code: z.string().max(6, "Kode Pos tidak boleh lebih dari 6 karakter"),
-    notes: z.string().max(200, "Catatan tidak boleh lebih dari 200 karakter").nullable(),
-    url_google_maps: z.url().max(200, "Url gmaps tidak boleh lebih dari 200 karakter").nullable(),
+    notes: z.string().max(200, "Catatan tidak boleh lebih dari 200 karakter").nullable().optional(),
+    url_google_maps: z
+        .string()
+        .url()
+        .max(200, "Url gmaps tidak boleh lebih dari 200 karakter")
+        .nullable()
+        .optional(),
 });
 
 const ResponseWarehouseAddressSchema = RequestWarehouseAddressSchema.extend({
-    created_at: z.date(),
-    updated_at: z.date(),
+    created_at: z.coerce.date(),
+    updated_at: z.coerce.date(),
 });
 
 export const RequestWarehouseSchema = z.object({
@@ -83,27 +34,24 @@ export const ResponseWarehouseSchema = RequestWarehouseSchema.pick({
     name: true,
     type: true,
 }).extend({
-    warehouse_address: ResponseWarehouseAddressSchema.optional(),
-    product_inventories: z.array(ResponseProductInventorySchema),
-    raw_material_inventories: z.array(ResponseRawMaterialInventorySchema),
+    warehouse_address: ResponseWarehouseAddressSchema.optional().nullable(),
     id: z.number(),
-    created_at: z.date(),
-    updated_at: z.date(),
-    deleted_at: z.date().nullable(),
+    created_at: z.coerce.date(),
+    updated_at: z.coerce.date(),
+    deleted_at: z.coerce.date().nullable(),
+});
+
+export const QueryWarehouseSchema = z.object({
+    page: z.coerce.number().int().positive().default(1).optional(),
+    type: z.enum(["RAW_MATERIAL", "FINISH_GOODS"]).optional(),
+    take: z.coerce.number().int().positive().max(100).default(25).optional(),
+    search: z.string().optional(),
+    month: z.coerce.number().int().min(1).max(12).optional(),
+    year: z.coerce.number().int().min(2000).optional(),
+    sortBy: z.enum(["name", "created_at", "updated_at"]).default("updated_at"),
+    sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
 
 export type RequestWarehouseDTO = z.input<typeof RequestWarehouseSchema>;
 export type ResponseWarehouseDTO = z.output<typeof ResponseWarehouseSchema>;
-
-export const QueryProductInventorySchema = z.object({
-    page: z.number().int().positive().default(1).optional(),
-    type: z.enum(["RAW_MATERIAL", "FINISH_GOODS"]),
-    take: z.number().int().positive().max(100).default(10).optional(),
-
-    search: z.string().optional(),
-    month: z.coerce.number().int().min(1).max(12).optional(),
-    year: z.coerce.number().int().min(2000).optional(),
-    sortBy: z.enum(["code", "name", "quantity", "created_at", "updated_at"]).default("updated_at"),
-    sortOrder: z.enum(["asc", "desc"]).default("asc"),
-});
-export type QueryProductInventoryDTO = z.infer<typeof QueryProductInventorySchema>;
+export type QueryWarehouseDTO = z.infer<typeof QueryWarehouseSchema>;

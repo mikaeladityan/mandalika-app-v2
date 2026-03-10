@@ -49,7 +49,7 @@ export const QueryProductSchema = z.object({
     status: z.enum(STATUS).optional(),
     sortBy: z
         .enum(["code", "name", "updated_at", "created_at", "gender", "type", "size", "lead_time"])
-        .default("updated_at"),
+        .default("name"),
     sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
 

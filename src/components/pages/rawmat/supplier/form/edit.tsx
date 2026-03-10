@@ -3,11 +3,11 @@
 import {
     RequestSupplierDTO,
     RequestSupplierSchema,
-} from "@/app/(application)/rawmat/suppliers/server/supplier.schema";
+} from "@/app/(application)/rawmat/(component)/suppliers/server/supplier.schema";
 import {
     useFormSupplier,
     useSupplier,
-} from "@/app/(application)/rawmat/suppliers/server/use.supplier";
+} from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputForm } from "@/components/ui/form/input";

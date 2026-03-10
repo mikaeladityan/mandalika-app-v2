@@ -6,8 +6,8 @@ import { SortableHeader } from "@/components/ui/table/sortable";
 import { ParseDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
-import { ResponseRawMatCategoryDTO } from "@/app/(application)/rawmat/categories/server/category.schema";
-import { useFormCategory } from "@/app/(application)/rawmat/categories/server/use.category";
+import { ResponseRawMatCategoryDTO } from "@/app/(application)/rawmat/(component)/categories/server/category.schema";
+import { useFormCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { StatusEnumDTO } from "@/shared/types";
 import { useState } from "react";
 import {

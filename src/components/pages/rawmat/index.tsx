@@ -39,9 +39,9 @@ import { RawMaterialColumns } from "./table/column";
 import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
-import { useCategory } from "@/app/(application)/rawmat/categories/server/use.category";
-import { useSupplier } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
-import { useUnit } from "@/app/(application)/rawmat/units/server/use.unit";
+import { useCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
+import { useSupplier } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
+import { useUnit } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
 
 export function RawMaterials() {
     const router = useRouter();

@@ -1,13 +1,13 @@
 "use client";
 
-import { useCategoriesQuery } from "@/app/(application)/rawmat/categories/server/use.category";
+import { useCategoriesQuery } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import {
     RequestRawMaterialDTO,
     RequestRawMaterialSchema,
 } from "@/app/(application)/rawmat/server/rawmat.schema";
 import { useFormRawMat } from "@/app/(application)/rawmat/server/use.rawmat";
-import { useSuppliersQuery } from "@/app/(application)/rawmat/suppliers/server/use.supplier";
-import { useUnitsQuery } from "@/app/(application)/rawmat/units/server/use.unit";
+import { useSuppliersQuery } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
+import { useUnitsQuery } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedCreatableCombobox } from "@/components/ui/form/createable.combobox";

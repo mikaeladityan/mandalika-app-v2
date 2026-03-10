@@ -2,11 +2,11 @@
 import {
     RequestRawMatCategoryDTO,
     RequestRawMatCategorySchema,
-} from "@/app/(application)/rawmat/categories/server/category.schema";
+} from "@/app/(application)/rawmat/(component)/categories/server/category.schema";
 import {
     useCategory,
     useFormCategory,
-} from "@/app/(application)/rawmat/categories/server/use.category";
+} from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { useAuth } from "@/app/auth/server/use.auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

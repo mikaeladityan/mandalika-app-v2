@@ -1,4 +1,4 @@
-import { QueryProductInventoryDTO } from "@/app/(application)/warehouses/server/warehouse.schema";
+import { QueryWarehouseDTO } from "@/app/(application)/warehouses/server/warehouse.schema";
 
 /**
  * Transformasi data dinamis untuk Product & Raw Material
