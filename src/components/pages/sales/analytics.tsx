@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, BarChart2 } from "lucide-react";
+import { ChevronDown, BarChart2, Loader2 } from "lucide-react";
 
 import { useSaleQuery, useSaleTableState } from "@/app/(application)/sales/server/use.sales";
-import { useRecipeUtilsOption } from "@/app/(application)/recipes/server/use.recipe";
+import { useProductsQuery } from "@/app/(application)/products/server/use.products";
+import { useDebounce } from "@/shared/hooks";
 
 import {
     BarChart,
@@ -42,7 +43,22 @@ import { cn } from "@/lib/utils";
 export function SalesAnalytics() {
     const table = useSaleTableState();
     const { sales, isLoading, isFetching } = useSaleQuery(table.queryParams);
-    const { product } = useRecipeUtilsOption();
+
+    const [search1, setSearch1] = useState("");
+    const [search2, setSearch2] = useState("");
+    const debouncedSearch1 = useDebounce(search1, 500);
+    const debouncedSearch2 = useDebounce(search2, 500);
+
+    const { data: pList1, isFetching: pLoading1 } = useProductsQuery({
+        search: debouncedSearch1,
+        take: 15,
+        page: 1,
+    } as any);
+    const { data: pList2, isFetching: pLoading2 } = useProductsQuery({
+        search: debouncedSearch2,
+        take: 15,
+        page: 1,
+    } as any);
 
     const activeHorizon = table.horizon ?? 12;
     const [openProductSelector, setOpenProductSelector] = useState(false);
@@ -103,7 +119,7 @@ export function SalesAnalytics() {
         });
     }, [sales, chartData]);
 
-    const isDataLoading = isLoading || isFetching || product.isLoading;
+    const isDataLoading = isLoading || isFetching;
 
     const isTrendUp =
         chartData.length > 1
@@ -143,19 +159,26 @@ export function SalesAnalytics() {
                                             {(() => {
                                                 if (!table.product_id)
                                                     return "Pilih Produk Utama...";
-                                                const selectedProduct = product.data?.find(
-                                                    (p) => p.id === table.product_id,
+
+                                                const sItem = sales?.sales?.find(
+                                                    (s: any) => s.product_id === table.product_id,
                                                 );
-                                                if (!selectedProduct) return "Produk P1";
+
+                                                if (!sItem)
+                                                    return isDataLoading
+                                                        ? "Memuat..."
+                                                        : "Produk P1";
+
+                                                const selectedProduct = sItem.product;
 
                                                 return (
                                                     <>
                                                         <span className="font-semibold">
                                                             {selectedProduct.name}
                                                         </span>
-                                                        {selectedProduct.type && (
+                                                        {selectedProduct.product_type && (
                                                             <span className="text-xs text-muted-foreground uppercase">
-                                                                {selectedProduct.type}
+                                                                {selectedProduct.product_type.name}
                                                             </span>
                                                         )}
                                                         <span className="text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
@@ -169,12 +192,25 @@ export function SalesAnalytics() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-fit p-0" align="start">
-                                    <Command>
-                                        <CommandInput placeholder="Cari nama atau kode produk..." />
+                                    <Command shouldFilter={false}>
+                                        <CommandInput
+                                            placeholder="Cari nama atau kode..."
+                                            value={search1}
+                                            onValueChange={setSearch1}
+                                        />
                                         <CommandList>
-                                            <CommandEmpty>Produk tidak ditemukan.</CommandEmpty>
+                                            <CommandEmpty>
+                                                {pLoading1 ? (
+                                                    <div className="flex justify-center p-4 text-muted-foreground">
+                                                        <Loader2 className="animate-spin h-4 w-4" />
+                                                    </div>
+                                                ) : (
+                                                    "Produk tidak ditemukan."
+                                                )}
+                                            </CommandEmpty>
                                             <CommandGroup>
                                                 <CommandItem
+                                                    value="PILIH_OTOMATIS"
                                                     onSelect={() => {
                                                         table.setProductId(undefined);
                                                         setOpenProductSelector(false);
@@ -183,10 +219,10 @@ export function SalesAnalytics() {
                                                 >
                                                     Pilih Otomatis (Produk Terlaris)
                                                 </CommandItem>
-                                                {product.data?.map((p) => (
+                                                {pList1?.map((p: any) => (
                                                     <CommandItem
                                                         key={p.id}
-                                                        value={`${p.name} ${p.code}`}
+                                                        value={String(p.id)}
                                                         onSelect={() => {
                                                             table.setProductId(p.id);
                                                             setOpenProductSelector(false);
@@ -194,8 +230,21 @@ export function SalesAnalytics() {
                                                     >
                                                         <div className="flex flex-col">
                                                             <span>
-                                                                {p.name} {p.type?.toUpperCase()} [
-                                                                {String(p.size).toUpperCase()}]
+                                                                {p.name}{" "}
+                                                                {String(
+                                                                    p.product_type?.name ||
+                                                                        p.type?.name ||
+                                                                        p.type ||
+                                                                        "",
+                                                                ).toUpperCase()}{" "}
+                                                                [
+                                                                {String(
+                                                                    p.product_size?.size ||
+                                                                        p.size?.size ||
+                                                                        p.size ||
+                                                                        "",
+                                                                ).toUpperCase()}
+                                                                ML]
                                                             </span>
                                                             <span className="text-xs text-muted-foreground">
                                                                 Kode: {p.code}
@@ -236,19 +285,26 @@ export function SalesAnalytics() {
                                             />
                                             {(() => {
                                                 if (!table.product_id_2) return "Bandingkan...";
-                                                const selectedProduct2 = product.data?.find(
-                                                    (p) => p.id === table.product_id_2,
+
+                                                const sItem = sales?.sales?.find(
+                                                    (s: any) => s.product_id === table.product_id_2,
                                                 );
-                                                if (!selectedProduct2) return "Produk P2";
+
+                                                if (!sItem)
+                                                    return isDataLoading
+                                                        ? "Memuat..."
+                                                        : "Produk P2";
+
+                                                const selectedProduct2 = sItem.product;
 
                                                 return (
                                                     <>
                                                         <span className="font-semibold">
                                                             {selectedProduct2.name}
                                                         </span>
-                                                        {selectedProduct2.type && (
+                                                        {selectedProduct2.product_type && (
                                                             <span className="text-xs text-muted-foreground uppercase">
-                                                                {selectedProduct2.type}
+                                                                {selectedProduct2.product_type.name}
                                                             </span>
                                                         )}
                                                         <span className="text-[10px] font-medium bg-blue-100/50 text-blue-700 px-1.5 py-0.5 rounded uppercase">
@@ -262,12 +318,25 @@ export function SalesAnalytics() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-fit p-0" align="start">
-                                    <Command>
-                                        <CommandInput placeholder="Cari nama atau kode produk..." />
+                                    <Command shouldFilter={false}>
+                                        <CommandInput
+                                            placeholder="Cari nama atau kode..."
+                                            value={search2}
+                                            onValueChange={setSearch2}
+                                        />
                                         <CommandList>
-                                            <CommandEmpty>Produk tidak ditemukan.</CommandEmpty>
+                                            <CommandEmpty>
+                                                {pLoading2 ? (
+                                                    <div className="flex justify-center p-4 text-muted-foreground">
+                                                        <Loader2 className="animate-spin h-4 w-4" />
+                                                    </div>
+                                                ) : (
+                                                    "Produk tidak ditemukan."
+                                                )}
+                                            </CommandEmpty>
                                             <CommandGroup>
                                                 <CommandItem
+                                                    value="HAPUS_PERBANDINGAN"
                                                     onSelect={() => {
                                                         table.setProductId2(undefined);
                                                         setOpenProductSelector2(false);
@@ -276,10 +345,10 @@ export function SalesAnalytics() {
                                                 >
                                                     Hapus Perbandingan
                                                 </CommandItem>
-                                                {product.data?.map((p) => (
+                                                {pList2?.map((p: any) => (
                                                     <CommandItem
                                                         key={p.id}
-                                                        value={`${p.name} ${p.code}`}
+                                                        value={String(p.id)}
                                                         onSelect={() => {
                                                             table.setProductId2(p.id);
                                                             setOpenProductSelector2(false);
@@ -287,8 +356,21 @@ export function SalesAnalytics() {
                                                     >
                                                         <div className="flex flex-col">
                                                             <span>
-                                                                {p.name} {p.type?.toUpperCase()} [
-                                                                {String(p.size).toUpperCase()}]
+                                                                {p.name}{" "}
+                                                                {String(
+                                                                    p.product_type?.name ||
+                                                                        p.type?.name ||
+                                                                        p.type ||
+                                                                        "",
+                                                                ).toUpperCase()}{" "}
+                                                                [
+                                                                {String(
+                                                                    p.product_size?.size ||
+                                                                        p.size?.size ||
+                                                                        p.size ||
+                                                                        "",
+                                                                ).toUpperCase()}
+                                                                ]
                                                             </span>
                                                             <span className="text-xs text-muted-foreground">
                                                                 Kode: {p.code}

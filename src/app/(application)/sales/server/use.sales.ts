@@ -78,6 +78,7 @@ export const useSales = (params?: QuerySalesDTO, queryDetail?: QueryDetailSale) 
         products: productsOption.data,
         isLoading: list.isLoading || detail.isLoading,
         isFetching: list.isFetching || detail.isFetching,
+        isRefetching: list.isRefetching || detail.isRefetching,
         isError: list.isError || detail.isError,
         refetch: list.refetch || detail.refetch,
         productsOption,
@@ -164,6 +165,16 @@ export function useSaleTableState() {
         ],
     );
 
+    const resetFilters = useCallback(() => {
+        setSearch("");
+        setGender(undefined);
+        setSize(undefined);
+        setVariant(undefined);
+        setHorizon(undefined);
+        setProductId(undefined);
+        setProductId2(undefined);
+    }, []);
+
     return {
         search,
         setSearch,
@@ -185,6 +196,7 @@ export function useSaleTableState() {
         queryParams,
         setPage,
         setPageSize,
+        resetFilters,
     };
 }
 
