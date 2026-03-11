@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RecipeImportService } from "../server/import.service";
+import { RecipeImportService } from "./import.service";
 import { ResponseRecipeImportDTO } from "./import.schema";
 
 export function usePreviewImportRecipe() {

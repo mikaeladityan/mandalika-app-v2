@@ -11,6 +11,7 @@ import {
     CommandItem,
     CommandInput,
     CommandEmpty,
+    CommandList,
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 
@@ -80,7 +81,7 @@ export function SelectForm({
                             </label>
                         )}
 
-                        <Popover open={open} onOpenChange={setOpen}>
+                        <Popover open={open} onOpenChange={setOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
@@ -122,43 +123,45 @@ export function SelectForm({
                                         </div>
                                     )}
 
-                                    <CommandEmpty>No results found</CommandEmpty>
+                                    <CommandList className="max-h-65 overflow-y-auto overscroll-contain">
+                                        <CommandEmpty>No results found</CommandEmpty>
 
-                                    <CommandGroup className="max-h-65 overflow-y-auto overscroll-contain">
-                                        {filteredOptions.map((option) => (
-                                            <CommandItem
-                                                key={option.value}
-                                                value={String(option.value)}
-                                                disabled={option.disabled}
-                                                onSelect={() => {
-                                                    field.onChange(option.value);
-                                                    onValueChange?.(String(option.value));
-                                                    setOpen(false);
-                                                }}
-                                                className="flex flex-col items-start"
-                                            >
-                                                <div className="flex items-center w-full">
-                                                    <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4 shrink-0",
-                                                            String(field.value) ===
-                                                                String(option.value)
-                                                                ? "opacity-100"
-                                                                : "opacity-0",
-                                                        )}
-                                                    />
-                                                    <span className="font-medium">
-                                                        {option.label}
-                                                    </span>
-                                                </div>
-                                                {option.description && (
-                                                    <span className="text-xs font-medium text-muted-foreground ml-6">
-                                                        {option.description}
-                                                    </span>
-                                                )}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
+                                        <CommandGroup>
+                                            {filteredOptions.map((option) => (
+                                                <CommandItem
+                                                    key={option.value}
+                                                    value={String(option.value)}
+                                                    disabled={option.disabled}
+                                                    onSelect={() => {
+                                                        field.onChange(option.value);
+                                                        onValueChange?.(String(option.value));
+                                                        setOpen(false);
+                                                    }}
+                                                    className="flex flex-col items-start"
+                                                >
+                                                    <div className="flex items-center w-full">
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4 shrink-0",
+                                                                String(field.value) ===
+                                                                    String(option.value)
+                                                                    ? "opacity-100"
+                                                                    : "opacity-0",
+                                                            )}
+                                                        />
+                                                        <span className="font-medium">
+                                                            {option.label}
+                                                        </span>
+                                                    </div>
+                                                    {option.description && (
+                                                        <span className="text-xs font-medium text-muted-foreground ml-6">
+                                                            {option.description}
+                                                        </span>
+                                                    )}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
                                 </Command>
                             </PopoverContent>
                         </Popover>
@@ -217,7 +220,7 @@ export function SelectFilter({
 
     return (
         <div className={cn("relative", className)}>
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={open} onOpenChange={setOpen} modal={true}>
                 <PopoverTrigger asChild>
                     <Button
                         variant={isActive ? "default" : "outline"}
@@ -266,53 +269,55 @@ export function SelectFilter({
                             </div>
                         )}
 
-                        <CommandEmpty>Tidak ada hasil</CommandEmpty>
+                        <CommandList className="max-h-65 overflow-y-auto overscroll-contain">
+                            <CommandEmpty>Tidak ada hasil</CommandEmpty>
 
-                        <CommandGroup className="max-h-65 overflow-y-auto overscroll-contain">
-                            {isActive && onReset && (
-                                <CommandItem
-                                    onSelect={() => {
-                                        onReset();
-                                        setOpen(false);
-                                    }}
-                                    className="text-muted-foreground italic flex border-b rounded-none mb-1"
-                                >
-                                    Hapus Filter...
-                                </CommandItem>
-                            )}
-                            {filteredOptions.length === 0 && !isActive && (
-                                <div className="py-6 text-center text-sm">Tidak ada opsi</div>
-                            )}
-                            {filteredOptions.map((option) => (
-                                <CommandItem
-                                    key={option.value}
-                                    value={String(option.value)}
-                                    disabled={option.disabled}
-                                    onSelect={() => {
-                                        onChange(option.value);
-                                        setOpen(false);
-                                    }}
-                                    className="flex flex-col items-start"
-                                >
-                                    <div className="flex items-center w-full">
-                                        <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4 shrink-0",
-                                                String(value) === String(option.value)
-                                                    ? "opacity-100"
-                                                    : "opacity-0",
-                                            )}
-                                        />
-                                        <span className="font-medium">{option.label}</span>
-                                    </div>
-                                    {option.description && (
-                                        <span className="text-xs font-medium text-muted-foreground ml-6">
-                                            {option.description}
-                                        </span>
-                                    )}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
+                            <CommandGroup>
+                                {isActive && onReset && (
+                                    <CommandItem
+                                        onSelect={() => {
+                                            onReset();
+                                            setOpen(false);
+                                        }}
+                                        className="text-muted-foreground italic flex border-b rounded-none mb-1"
+                                    >
+                                        Hapus Filter...
+                                    </CommandItem>
+                                )}
+                                {filteredOptions.length === 0 && !isActive && (
+                                    <div className="py-6 text-center text-sm">Tidak ada opsi</div>
+                                )}
+                                {filteredOptions.map((option) => (
+                                    <CommandItem
+                                        key={option.value}
+                                        value={String(option.value)}
+                                        disabled={option.disabled}
+                                        onSelect={() => {
+                                            onChange(option.value);
+                                            setOpen(false);
+                                        }}
+                                        className="flex flex-col items-start"
+                                    >
+                                        <div className="flex items-center w-full">
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4 shrink-0",
+                                                    String(value) === String(option.value)
+                                                        ? "opacity-100"
+                                                        : "opacity-0",
+                                                )}
+                                            />
+                                            <span className="font-medium">{option.label}</span>
+                                        </div>
+                                        {option.description && (
+                                            <span className="text-xs font-medium text-muted-foreground ml-6">
+                                                {option.description}
+                                            </span>
+                                        )}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
                     </Command>
                 </PopoverContent>
             </Popover>

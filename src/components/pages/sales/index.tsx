@@ -220,44 +220,15 @@ export function Sales() {
                                     Input Penjualan
                                 </Button>
                             </Link>
+                        </div>
 
+                        <div className="flex gap-2">
                             <Link href="/sales/import">
                                 <Button variant="outline" className="w-full">
                                     <Import className="mr-2 h-4 w-4" />
                                     Import
                                 </Button>
                             </Link>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        Kolom
-                                        <ChevronDown className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {(Object.entries(columnVisibility) as [string, boolean][]).map(
-                                        ([key, value]) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={key}
-                                                checked={value as CheckedState}
-                                                onCheckedChange={(checked) =>
-                                                    setColumnVisibility(
-                                                        (prev: Record<string, boolean>) => ({
-                                                            ...prev,
-                                                            [key]: Boolean(checked),
-                                                        }),
-                                                    )
-                                                }
-                                            >
-                                                {key.replace("_", " ").toUpperCase()}
-                                            </DropdownMenuCheckboxItem>
-                                        ),
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
 
                             <Button variant="success" className="cursor-pointer">
                                 <Download className="h-4 w-4" />

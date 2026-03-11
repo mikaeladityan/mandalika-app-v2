@@ -52,11 +52,15 @@ export function RecipeImportForm() {
     }
 
     async function handleImport() {
-        if (!importId || stats.invalid > 0) return;
+        if (!importId) return;
 
         await executeMutation.mutateAsync(importId);
 
-        toast.success("Import completed");
+        toast.success("Import completed", {
+            description: stats.invalid > 0
+                ? `${stats.valid} rows imported, ${stats.invalid} invalid rows were skipped`
+                : `${stats.valid} rows imported successfully`,
+        });
 
         setImportId(null);
         setRows([]);
@@ -113,7 +117,7 @@ export function RecipeImportForm() {
 
                     <Button
                         onClick={handleImport}
-                        disabled={!importId || stats.invalid > 0 || executeMutation.isPending}
+                        disabled={!importId || stats.valid === 0 || executeMutation.isPending}
                     >
                         <Database />
                         Import
@@ -121,9 +125,12 @@ export function RecipeImportForm() {
                 </div>
 
                 {stats.invalid > 0 && (
-                    <Alert variant="destructive">
+                    <Alert variant="default" className="border-yellow-500 text-yellow-700 [&>svg]:text-yellow-500">
                         <AlertCircle />
-                        <AlertDescription>{stats.invalid} invalid rows detected</AlertDescription>
+                        <AlertDescription>
+                            <strong>{stats.invalid} baris tidak valid</strong> dan akan dilewati saat import.{" "}
+                            Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses.
+                        </AlertDescription>
                     </Alert>
                 )}
 
@@ -138,13 +145,11 @@ export function RecipeImportForm() {
                     </TabsContent>
 
                     <TabsContent value="errors">
-                        <pre className="text-xs">
-                            {JSON.stringify(
-                                rows.filter((r) => r.errors.length),
-                                null,
-                                2,
-                            )}
-                        </pre>
+                        {rows.filter((r) => r.errors.length).length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-4 text-center">No errors found.</p>
+                        ) : (
+                            <PreviewTable rows={rows.filter((r) => r.errors.length)} />
+                        )}
                     </TabsContent>
                 </Tabs>
             </CardContent>

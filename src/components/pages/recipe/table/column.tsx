@@ -60,20 +60,20 @@ export const RecipeColumns = ({
                 "-"
             ),
     },
-    {
-        accessorKey: "version",
-        header: "Version",
-        cell: ({ row }) => (
-            <div className="flex flex-col">
-                <span className="font-bold text-slate-700">v{row.original.version}</span>
-                {row.original.description && (
-                    <span className="text-[10px] text-slate-400 max-w-[150px] truncate">
-                        {row.original.description}
-                    </span>
-                )}
-            </div>
-        ),
-    },
+    // {
+    //     accessorKey: "version",
+    //     header: "Version",
+    //     cell: ({ row }) => (
+    //         <div className="flex flex-col">
+    //             <span className="font-bold text-slate-700">v{row.original.version}</span>
+    //             {row.original.description && (
+    //                 <span className="text-[10px] text-slate-400 max-w-[150px] truncate">
+    //                     {row.original.description}
+    //                 </span>
+    //             )}
+    //         </div>
+    //     ),
+    // },
     {
         id: "raw_material",
         header: "Raw Material",
