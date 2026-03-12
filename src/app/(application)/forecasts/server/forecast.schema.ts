@@ -1,88 +1,32 @@
 import { z } from "zod";
-const ForecastBaseSchema = z.object({
-    product_id: z.number().int().positive("Produk tidak valid"),
 
-    horizon: z
-        .number()
-        .int()
-        .min(1, "Horizon minimal 1 bulan")
-        .max(12, "Horizon maksimal 12 bulan"),
-
-    forecast_model: z
-        .enum([
-            "SIMPLE_MOVING_AVERAGE",
-            "EXPONENTIAL_SMOOTHING",
-            "HOLT_WINTERS",
-            "LINEAR_REGRESSION",
-            "ENSEMBLE",
-            "AUTO",
-            // "ARIMA",
-        ])
-        .default("AUTO"),
-
-    year: z.number().int().min(2000).optional(),
-    month: z.number().int().min(1).max(12).optional(),
-    preview: z.boolean().optional().default(false),
+export const RunForecastSchema = z.object({
+    product_id: z.coerce.number().optional().nullable(),
+    start_month: z.coerce.number().int().min(1).max(12),
+    start_year: z.coerce.number().int().min(2000).max(2100),
+    horizon: z.coerce.number().int().min(1).max(12).default(12),
 });
-
-export const RequestForecastSchema = ForecastBaseSchema.refine(
-    (data) => (data.year && data.month) || (!data.year && !data.month),
-    {
-        message: "tahun dan bulan harus diisi bersamaan",
-        path: ["year", "month"],
-    },
-);
-
-export const RequestReconcileSchema = ForecastBaseSchema.pick({
-    product_id: true,
-    year: true,
-    month: true,
-})
-    .extend({
-        additionalRatio: z.coerce.number().optional(),
-    })
-    .refine((data) => (data.year && data.month) || (!data.year && !data.month), {
-        message: "tahun dan bulan harus diisi bersamaan",
-        path: ["year", "month"],
-    });
 
 export const QueryForecastSchema = z.object({
-    horizon: z.coerce.number().int().min(12).max(24).optional(),
-
-    page: z.coerce.number().int().positive().default(1).optional(),
-    take: z.coerce.number().int().positive().max(100).default(10).optional(),
-
     search: z.string().optional(),
+    status: z.enum(["DRAFT", "FINALIZED", "ADJUSTED"]).optional(),
+    page: z.coerce.number().int().positive().default(1).optional(),
+    take: z.coerce.number().int().positive().max(1000).default(25).optional(),
+    horizon: z.coerce.number().int().min(12).max(24).default(12).optional(),
 });
 
-export const RequestAddRatioForecastSchema = ForecastBaseSchema.omit({
-    horizon: true,
-    preview: true,
-    forecast_model: true,
-    month: true,
-    year: true,
-}).extend({
-    year: z.number().int().min(2000),
-    month: z.number().int().min(1).max(12),
-    additionalRatio: z.number(),
-});
-
-export type RequestForecastDTO = z.input<typeof RequestForecastSchema>;
-export type RequestReconcileDTO = z.input<typeof RequestReconcileSchema>;
-export type RequestAddRatioForecastDTO = z.input<typeof RequestAddRatioForecastSchema>;
+export type RunForecastDTO = z.infer<typeof RunForecastSchema>;
 export type QueryForecastDTO = z.infer<typeof QueryForecastSchema>;
-type MonthlyData = {
+export type RequestReconcileDTO = { 
+    product_id: number;
+    month?: number;
+    year?: number;
+};
+export type RequestAddRatioForecastDTO = {
+    product_id: number;
     month: number;
     year: number;
-    period: Date | string;
-    base_forecast: number;
-    final_forecast: number | null;
-    additional_ratio: number;
-    system_ratio: number;
-    absolute_error: number | null;
-    trend: string;
-    is_current_month: boolean;
-    is_actionable: boolean;
+    additionalRatio: number;
 };
 
 export type ResponseForecastDTO = {
@@ -91,15 +35,24 @@ export type ResponseForecastDTO = {
     product_name: string;
     product_type: string;
     product_size: string;
-    brand: string | null;
     z_value: number;
-    monthly_data: Array<MonthlyData>;
-    need_produce: number;
+    distribution_percentage: number | null;
+    safety_percentage: number | null;
+    monthly_data: Array<{
+        month: number;
+        year: number;
+        period: string;
+        base_forecast: number;
+        final_forecast: number | null;
+        trend: string;
+        status: string | null;
+        is_current_month: boolean;
+        is_actionable: boolean;
+        percentage_value: number | null;
+    }>;
     safety_stock_summary: {
-        mean_absolute_error: number;
-        safety_stock_quantity: number;
-        safety_stock_ratio: number | string;
-        additional_ratio: number;
+        safety_stock_quantity: number | null;
+        safety_stock_ratio: number | null;
         last_updated: Date | null;
-    };
+    } | null;
 };

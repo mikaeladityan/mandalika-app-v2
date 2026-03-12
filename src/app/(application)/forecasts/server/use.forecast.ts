@@ -2,9 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { forecastService } from "./forecast.service";
 import {
     QueryForecastDTO,
-    RequestAddRatioForecastDTO,
-    RequestForecastDTO,
-    RequestReconcileDTO,
+    RunForecastDTO,
 } from "./forecast.schema";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useEffect, useMemo, useState } from "react";
@@ -48,7 +46,7 @@ export function useForecastTableState() {
      * Pagination
      */
     const page = Number(get("page") ?? 1);
-    const take = Number(get("take") ?? 10);
+    const take = Number(get("take") ?? 25);
 
     const setPage = (page: number | undefined) =>
         batchSet({
@@ -108,75 +106,23 @@ export function useFormForecast() {
     const setNotif = useSetAtom(notificationAtom);
     const queryClient = useQueryClient();
 
-    const generate = useMutation<unknown, ResponseError, Omit<RequestForecastDTO, "product_id" | "preview">>({
-        mutationKey: ["forecasting"],
-        mutationFn: (body) => forecastService.generateForecast(body),
+    const run = useMutation<any, ResponseError, RunForecastDTO>({
+        mutationKey: ["forecasting", "run"],
+        mutationFn: (body) => forecastService.runForecast(body),
         onError: (err) => {
             FetchError(err, setErr);
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
             setNotif({
-                title: "Run Forecasting...",
-                message: "Batch forecasting sedang diproses di latar belakang.",
-            });
-        },
-    });
-
-    const generateForecast = useMutation<unknown, ResponseError, RequestForecastDTO>({
-        mutationKey: ["forecasting"],
-        mutationFn: (body) => forecastService.generateBaseForecast(body),
-        onError: (err) => {
-            FetchError(err, setErr);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
-            setNotif({
-                title: "Run Forecasting...",
-                message: "Batch forecasting sedang diproses di latar belakang.",
-            });
-        },
-    });
-
-    const addRatio = useMutation<unknown, ResponseError, RequestAddRatioForecastDTO>({
-        mutationKey: ["forecasting", "add-ratio"],
-        mutationFn: (body) => forecastService.addRatio(body),
-        onError: (err) => {
-            FetchError(err, setErr);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
-            setNotif({
-                title: "Run Add Ratio Forecasting",
-                message: "Berhasil melakukan add ratio forecasting",
-            });
-        },
-    });
-
-    const reconcile = useMutation<unknown, ResponseError, RequestReconcileDTO>({
-        mutationKey: ["reconciling"],
-        mutationFn: (body) => forecastService.reconcileForecast(body),
-        onError: (err) => {
-            FetchError(err, setErr);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["forecast"], type: "all" });
-            setNotif({
-                title: "Run Reconciling...",
-                message: "Berhasil melakukan reconciling forecast",
+                title: "Run Forecasting Sukses",
+                message: data?.message || "Berhasil memproses data forecast.",
             });
         },
     });
 
     return {
-        generate: generate.mutateAsync,
-        reconcile: reconcile.mutateAsync,
-        addRatio: addRatio.mutateAsync,
-        generateForecast: generateForecast.mutateAsync,
-        isPending:
-            generate.isPending ||
-            reconcile.isPending ||
-            addRatio.isPending ||
-            generateForecast.isPending,
+        run: run.mutateAsync,
+        isPending: run.isPending,
     };
 }

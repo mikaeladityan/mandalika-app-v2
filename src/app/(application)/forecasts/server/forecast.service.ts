@@ -2,10 +2,8 @@ import { api, setupCSRFToken } from "@/lib/api";
 import { ApiSuccessResponse } from "@/shared/types";
 import {
     QueryForecastDTO,
-    RequestAddRatioForecastDTO,
-    RequestForecastDTO,
-    RequestReconcileDTO,
     ResponseForecastDTO,
+    RunForecastDTO,
 } from "./forecast.schema";
 
 const API = `${process.env.NEXT_PUBLIC_API}/api/app/forecasts`;
@@ -36,45 +34,13 @@ class ForecastService {
         }
     }
 
-    async generateForecast(body: Omit<RequestForecastDTO, "product_id" | "preview">) {
-        try {
-            await setupCSRFToken();
-            const { data } = await api.post(`${API}/generate-all`, body, {
-                timeout: 100000,
-            });
-            return data.data;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async generateBaseForecast(body: RequestForecastDTO) {
+    async runForecast(body: RunForecastDTO) {
         try {
             await setupCSRFToken();
             const { data } = await api.post(API, body, {
                 timeout: 100000,
             });
             return data.data;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async addRatio(data: RequestAddRatioForecastDTO) {
-        try {
-            await setupCSRFToken();
-            await api.post(`${API}/add-ratio`, data, {
-                timeout: 100000,
-            });
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async reconcileForecast(data: RequestReconcileDTO) {
-        try {
-            await setupCSRFToken();
-            await api.post(`${API}/reconcile`, data);
         } catch (error) {
             throw error;
         }

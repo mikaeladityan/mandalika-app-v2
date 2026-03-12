@@ -36,7 +36,9 @@ export const ResponseRecipeSchema = z.object({
         unit_raw_material: true,
         price: true,
         current_stock: true,
+        barcode: true,
     }).optional(),
+    total_material: z.number().optional(),
 });
 export const QueryRecipeSchema = z.object({
     product_id: z.number().optional(),
@@ -46,7 +48,7 @@ export const QueryRecipeSchema = z.object({
     page: z.number().int().positive().default(1).optional(),
     take: z.number().int().positive().max(100).default(10).optional(),
 
-    sortBy: z.enum(["product", "quantity", "current_stock"]).default("product"),
+    sortBy: z.enum(["product", "quantity", "current_stock", "total_material", "totalMaterial"]).default("product"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 

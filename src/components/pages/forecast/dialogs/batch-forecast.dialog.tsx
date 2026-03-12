@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { Zap } from "lucide-react";
 
-import { RequestForecastDTO } from "@/app/(application)/forecasts/server/forecast.schema";
+import { RunForecastDTO } from "@/app/(application)/forecasts/server/forecast.schema";
 
 import {
     Dialog,
@@ -21,7 +21,7 @@ import { useFormForecast } from "@/app/(application)/forecasts/server/use.foreca
 type BatchForecastDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSuccess: (jobId: string) => void;
+    onSuccess: () => void;
 };
 
 const HORIZON_OPTIONS = Array.from({ length: 12 }).map((_, i) => ({
@@ -29,12 +29,7 @@ const HORIZON_OPTIONS = Array.from({ length: 12 }).map((_, i) => ({
     label: `${i + 1} bulan`,
 }));
 
-const FORECAST_MODEL_OPTIONS = [
-    { value: "AUTO", label: "Auto (Recommended)" },
-    { value: "HOLT_WINTERS", label: "Holt Winters" },
-    { value: "LINEAR_REGRESSION", label: "Linear Regression" },
-    { value: "ENSEMBLE", label: "Ensemble" },
-];
+
 
 const MONTH_OPTIONS = [
     { value: 1, label: "Januari" },
@@ -53,21 +48,15 @@ const MONTH_OPTIONS = [
 
 const getDefaultForecastPeriod = () => {
     const now = new Date();
-
-    let month = now.getMonth(); 
-    let year = now.getFullYear();
-
-    if (month === 0) {
-        month = 12;
-        year -= 1;
-    }
-
+    // Default start month: Bulan Sekarang
+    const month = now.getMonth() + 1; // 1-indexed
+    const year = now.getFullYear();
     return { month, year };
 };
 const { month: DEFAULT_MONTH, year: DEFAULT_YEAR } = getDefaultForecastPeriod();
 
 const YEAR_OPTIONS = Array.from({ length: 5 }).map((_, i) => {
-    const year = DEFAULT_YEAR - 2 + i;
+    const year = DEFAULT_YEAR - 1 + i;
     return {
         value: year,
         label: year.toString(),
@@ -75,30 +64,26 @@ const YEAR_OPTIONS = Array.from({ length: 5 }).map((_, i) => {
 });
 
 export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchForecastDialogProps) {
-    const { generateForecast, isPending } = useFormForecast();
+    const { run, isPending } = useFormForecast();
 
-    const form = useForm<Omit<RequestForecastDTO, "product_id" | "preview">>({
+    const form = useForm<RunForecastDTO>({
         mode: "onSubmit",
         defaultValues: {
             horizon: 12,
-            forecast_model: "HOLT_WINTERS",
-            month: DEFAULT_MONTH,
-            year: DEFAULT_YEAR,
-        } as any, // bypassing zod since it requires product_id
+            start_month: DEFAULT_MONTH,
+            start_year: DEFAULT_YEAR,
+        },
     });
 
     const onSubmit = async (values: any) => {
         try {
             const payload = {
-                ...values,
                 horizon: Number(values.horizon),
-                month: Number(values.month),
-                year: Number(values.year),
+                start_month: Number(values.start_month),
+                start_year: Number(values.start_year),
             };
-            const res: any = await generateForecast(payload);
-            if (res?.job_id) {
-                onSuccess(res.job_id);
-            }
+            await run(payload);
+            onSuccess();
         } catch (error) {
             console.error("Gagal inisialisasi forecast", error);
         }
@@ -116,7 +101,8 @@ export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchFore
                             Batch Kalkulasi Forecast
                         </DialogTitle>
                         <DialogDescription className="text-slate-500 font-medium pt-2">
-                            Engine akan menganalisis data historis untuk memprediksi kebutuhan stok seluruh produk aktif.
+                            Engine akan menganalisis data historis untuk memprediksi kebutuhan stok
+                            seluruh produk aktif dimulai dari bulan yang dipilih.
                         </DialogDescription>
                     </DialogHeader>
                 </div>
@@ -125,25 +111,26 @@ export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchFore
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                         <div className="flex items-center justify-center gap-5">
                             <SelectForm
-                                name="month"
-                                label="Anchor Month"
+                                name="start_month"
+                                label="Bulan Mulai Forecast"
                                 required
                                 control={form.control}
                                 options={MONTH_OPTIONS}
                                 placeholder="Pilih bulan"
-                                onValueChange={(val) => form.setValue("month", Number(val))}
+                                onValueChange={(val) => form.setValue("start_month", Number(val))}
                             />
 
                             <SelectForm
-                                name="year"
-                                label="Anchor Year"
+                                name="start_year"
+                                label="Tahun Mulai Forecast"
                                 required
                                 control={form.control}
                                 options={YEAR_OPTIONS}
                                 placeholder="Pilih tahun"
-                                onValueChange={(val) => form.setValue("year", Number(val))}
+                                onValueChange={(val) => form.setValue("start_year", Number(val))}
                             />
                         </div>
+
 
                         <div className="flex items-center justify-center gap-5">
                             <SelectForm
@@ -154,15 +141,6 @@ export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchFore
                                 options={HORIZON_OPTIONS}
                                 placeholder="Pilih horizon"
                                 onValueChange={(val) => form.setValue("horizon", Number(val))}
-                            />
-
-                            <SelectForm
-                                name="forecast_model"
-                                label="Forecast Model"
-                                required
-                                control={form.control}
-                                options={FORECAST_MODEL_OPTIONS}
-                                placeholder="Pilih model"
                             />
                         </div>
 

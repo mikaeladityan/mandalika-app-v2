@@ -1,37 +1,17 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import {
-    Loader2,
-    Search,
-    Zap,
-    Info,
-    X,
-    CheckCircle2,
-    AlertCircle,
-    Bug,
-    Factory,
-    CalendarRange,
-    ArrowRight,
-    LayoutDashboard,
-} from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutationState } from "@tanstack/react-query";
+import { Loader2, Search, Zap, Factory, CalendarRange, LayoutDashboard, Percent } from "lucide-react";
+import Link from "next/link";
 
 // Shadcn UI Components
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+
 import {
     Select,
     SelectContent,
@@ -40,33 +20,32 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
 
 import {
     useForecast,
     useForecastTableState,
+    useFormForecast,
 } from "@/app/(application)/forecasts/server/use.forecast";
 
 import { ForecastColumns } from "./table/column";
-import { forecastService } from "@/app/(application)/forecasts/server/forecast.service";
 import { useBulkProduction } from "@/app/(application)/production/server/use.production";
 import { BatchForecastDialog } from "./dialogs/batch-forecast.dialog";
 import { SyncProductionDialog } from "./dialogs/sync-production.dialog";
-import { toast } from "sonner";
 
 export function Forecast() {
-    const queryClient = useQueryClient();
-
     // UI States
     const [openForecastDialog, setOpenForecastDialog] = useState(false);
     const [openProductionDialog, setOpenProductionDialog] = useState(false);
-    const [activeJobId, setActiveJobId] = useState<string | null>(null);
-    // const [showErrorDetail, setShowErrorDetail] = useState(false);
 
     // Business Logic Hooks
     const table = useForecastTableState();
     const { list } = useForecast(table.queryParams);
+    const mutationStates = useMutationState({
+        filters: { mutationKey: ["forecasting", "run"], status: "pending" },
+    });
+    const isProcessingForecast = mutationStates.length > 0;
 
     const now = new Date();
     const bulkProduction = useBulkProduction({
@@ -74,117 +53,26 @@ export function Forecast() {
         year: now.getFullYear(),
     });
 
-    // --- JOB MONITORING LOGIC ---
-    useEffect(() => {
-        const savedJobId = sessionStorage.getItem("active_forecast_job");
-        if (savedJobId) setActiveJobId(savedJobId);
-    }, []);
-
-    const job = useQuery({
-        queryKey: ["forecast-job-status", activeJobId],
-        queryFn: () => forecastService.getStatusJob(activeJobId!),
-        enabled: !!activeJobId,
-        refetchInterval: (query) => (query.state.data?.status === "PROCESSING" ? 2000 : false),
-    });
-
-    useEffect(() => {
-        if (job.data?.status === "SUCCESS") {
-            queryClient.invalidateQueries({ queryKey: ["forecast"] });
-            sessionStorage.removeItem("active_forecast_job");
-            if (!job.data?.error) {
-                const timer = setTimeout(() => setActiveJobId(null), 8000);
-                return () => clearTimeout(timer);
-            }
-        }
-        if (job.data?.status === "ERROR") {
-            sessionStorage.removeItem("active_forecast_job");
-        }
-    }, [job.data?.status, queryClient]);
-
-    const onHitRunForecast = (jobId: string) => {
-        setOpenForecastDialog(false);
-        setActiveJobId(jobId);
-        sessionStorage.setItem("active_forecast_job", jobId);
-        toast.success("Kalkulasi engine dimulai");
-    };
-
-    const isProcessingForecast = job.data?.status === "PROCESSING";
     const isSyncingProduction = bulkProduction.isPending;
-    const progressValue = job.data ? (job.data.current / job.data.total) * 100 : 0;
+
+    const groupedData = useMemo(() => {
+        return (list.data?.data as any) || [];
+    }, [list.data]);
 
     const periods = useMemo(() => {
-        if (!list.data?.data?.length) return [];
-        return list.data.data[0].monthly_data.map((m: any) => ({
+        if (!groupedData.length) return [];
+        return groupedData[0].monthly_data.map((m: any) => ({
             year: m.year,
             month: m.month,
             period: m.period,
+            percentage_value: m.percentage_value,
         }));
-    }, [list.data]);
+    }, [groupedData]);
 
     const columns = useMemo(() => ForecastColumns({ periods }), [periods]);
 
     return (
         <div className="flex flex-col gap-6 p-2 md:p-4">
-            {/* ALERT SECTION: Job Progress */}
-            {activeJobId && job.data && (
-                <Card className="overflow-hidden border-none shadow-lg bg-white/50 backdrop-blur-sm ring-1 ring-slate-200">
-                    <CardContent className="p-0">
-                        <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div
-                                    className={`p-2.5 rounded-xl ${
-                                        job.data.status === "SUCCESS"
-                                            ? "bg-emerald-100 text-emerald-600"
-                                            : job.data.status === "ERROR"
-                                              ? "bg-red-100 text-red-600"
-                                              : "bg-amber-100 text-amber-600"
-                                    }`}
-                                >
-                                    {isProcessingForecast ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : job.data.status === "SUCCESS" ? (
-                                        <CheckCircle2 className="h-5 w-5" />
-                                    ) : (
-                                        <AlertCircle className="h-5 w-5" />
-                                    )}
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                        Engine Forecasting
-                                        <Badge
-                                            variant="secondary"
-                                            className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0"
-                                        >
-                                            {job.data.status}
-                                        </Badge>
-                                    </h4>
-                                    <p className="text-xs text-slate-500 font-medium">
-                                        Progress: {job.data.current} dari {job.data.total} item
-                                        diproses
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="text-right hidden md:block">
-                                    <span className="text-xl font-black text-slate-900">
-                                        {Math.round(progressValue)}%
-                                    </span>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setActiveJobId(null)}
-                                    className="rounded-full hover:bg-slate-100"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                        <Progress value={progressValue} className="h-1 rounded-none bg-slate-100" />
-                    </CardContent>
-                </Card>
-            )}
-
             {/* MAIN CONTENT CARD */}
             <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
                 <CardHeader className="space-y-6 p-6 lg:p-8">
@@ -204,6 +92,16 @@ export function Forecast() {
                         </div>
 
                         <div className="flex items-center gap-2 self-end md:self-auto">
+                            <Link href="/forecasts/percentages">
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-700 h-11"
+                                >
+                                    <Percent className="mr-2 h-4 w-4 text-emerald-500" />
+                                    Forecast Percentages
+                                </Button>
+                            </Link>
+
                             <Button
                                 onClick={() => setOpenProductionDialog(true)}
                                 disabled={isSyncingProduction || isProcessingForecast}
@@ -222,8 +120,12 @@ export function Forecast() {
                                 disabled={isProcessingForecast}
                                 className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white h-11 shadow-md px-6 transition-all active:scale-95"
                             >
-                                <Zap className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" />
-                                Run Analytics
+                                {isProcessingForecast ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-amber-400" />
+                                ) : (
+                                    <Zap className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" />
+                                     )}
+                                {isProcessingForecast ? "Inisialisasi..." : "Run Analytics"}
                             </Button>
                         </div>
                     </div>
@@ -278,10 +180,10 @@ export function Forecast() {
                         <div className="border-t border-slate-50">
                             <DataTable
                                 columns={columns}
-                                data={list.data?.data ?? []}
+                                data={groupedData}
                                 page={table.page}
                                 pageSize={table.take}
-                                total={list.data?.len ?? 0}
+                                total={list.data?.len || 0}
                                 onPageChange={table.setPage}
                                 onPageSizeChange={table.setPageSize}
                             />
@@ -294,7 +196,7 @@ export function Forecast() {
             <BatchForecastDialog
                 open={openForecastDialog}
                 onOpenChange={setOpenForecastDialog}
-                onSuccess={onHitRunForecast}
+                onSuccess={() => setOpenForecastDialog(false)}
             />
 
             <SyncProductionDialog

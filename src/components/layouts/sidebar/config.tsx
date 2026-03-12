@@ -101,7 +101,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
             label: "Produksi",
             items: [
                 { title: "Resep", url: "/recipes", icon: FlaskConical },
-                { title: "BOM", url: "/bom", icon: Flame },
+                // { title: "BOM", url: "/bom", icon: Flame },
             ],
         },
 

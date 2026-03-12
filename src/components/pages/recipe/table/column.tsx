@@ -4,12 +4,36 @@ import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
 import { SortableHeader } from "@/components/ui/table/sortable";
-import {
-    QueryRecipeDTO,
-    ResponseRecipeDTO,
-} from "@/app/(application)/recipes/server/recipe.schema";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { QueryRecipeDTO } from "@/app/(application)/recipes/server/recipe.schema";
+import { Beaker } from "lucide-react";
+
+export interface GroupedRecipe {
+    id: number;
+    code: string;
+    name: string;
+    size: {
+        id: number;
+        size: number;
+    } | null;
+    product_type: {
+        id: number;
+        name: string;
+    } | null;
+    unit: {
+        id: number;
+        name: string;
+    } | null;
+    total_material?: number;
+    materials: Array<{
+        id: number;
+        name: string;
+        barcode: string | null;
+        quantity: number;
+        unit: string;
+        stock: number;
+        price: number;
+    }>;
+}
 
 type Props = {
     sortBy?: QueryRecipeDTO["sortBy"];
@@ -17,137 +41,128 @@ type Props = {
     onSort: (key: string) => void;
 };
 
-export const RecipeColumns = ({
-    sortBy,
-    sortOrder,
-    onSort,
-}: Props): ColumnDef<ResponseRecipeDTO>[] => [
+export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<GroupedRecipe>[] => [
     {
-        id: "product",
-        enableHiding: false,
+        id: "product_info",
         header: () => (
             <SortableHeader
-                label="Product"
+                label="Produk (Finish Good)"
                 sortKey="product"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
                 onSort={onSort}
             />
         ),
-        cell: ({ row }) =>
-            row.original.product ? (
-                <Link href={`/recipes/form/${row.original.product.id}`}>
-                    <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">{row.original.product.code}</p>
-                        {row.original.is_active && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200">
-                                ACTIVE
-                            </span>
-                        )}
-                    </div>
-                    <p className="font-bold tracking-wider">{row.original.product.name}</p>
-                    <div className="mt-1 space-x-1">
-                        <span className="text-xs font-medium px-2 bg-gray-100 text-gray-600 rounded">
-                            {row.original.product.product_type?.name.toUpperCase()}
-                        </span>
-                        <span className="text-xs font-medium px-2 bg-gray-100 text-gray-600 rounded">
-                            {row.original.product.size?.size}{" "}
-                            {row.original.product.unit?.name.toUpperCase()}
-                        </span>
-                    </div>
+        cell: ({ row }) => (
+            <div className="flex flex-col gap-1 min-w-50 p-2">
+                <Link href={`/recipes/form/${row.original.id}`} className="hover:underline">
+                    <span className="font-bold text-slate-900 leading-tight">
+                        {row.original.name}
+                    </span>
                 </Link>
-            ) : (
-                "-"
-            ),
-    },
-    // {
-    //     accessorKey: "version",
-    //     header: "Version",
-    //     cell: ({ row }) => (
-    //         <div className="flex flex-col">
-    //             <span className="font-bold text-slate-700">v{row.original.version}</span>
-    //             {row.original.description && (
-    //                 <span className="text-[10px] text-slate-400 max-w-[150px] truncate">
-    //                     {row.original.description}
-    //                 </span>
-    //             )}
-    //         </div>
-    //     ),
-    // },
-    {
-        id: "raw_material",
-        header: "Raw Material",
-        cell: ({ row }) =>
-            row.original.raw_material ? (
-                <div>
-                    <p className="font-medium">{row.original.raw_material.name}</p>
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono bg-blue-50 text-blue-700 w-fit px-1.5 py-0.5 rounded border border-blue-100 uppercase">
+                        {row.original.code}
+                    </span>
+                    <span className="text-[10px] font-mono bg-slate-100 text-slate-600 w-fit px-1.5 py-0.5 rounded border border-slate-200 uppercase">
+                        {row.original.size?.size} {row.original.unit?.name}
+                    </span>
                 </div>
-            ) : (
-                "-"
-            ),
+                <div className="mt-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded uppercase">
+                        {row.original.product_type?.name}
+                    </span>
+                </div>
+            </div>
+        ),
     },
-
     {
-        accessorKey: "quantity",
+        id: "material_details",
+        header: () => (
+            <div className="grid grid-cols-12 w-full gap-2 px-2">
+                <div className="col-span-8 text-left uppercase text-[10px] font-bold text-slate-500">
+                    Bahan Baku / Material
+                </div>
+                <div className="col-span-2 text-right uppercase text-[10px] font-bold text-slate-500">
+                    Kebutuhan
+                </div>
+                <div className="col-span-2 text-right uppercase text-[10px] font-bold text-slate-500">
+                    Stok
+                </div>
+            </div>
+        ),
+        cell: ({ row }) => (
+            <div className="flex flex-col min-w-150">
+                {row.original.materials.map((mat, idx) => (
+                    <div
+                        key={idx}
+                        className={`grid grid-cols-12 w-full items-center py-2 px-2 ${
+                            idx !== row.original.materials.length - 1
+                                ? "border-b border-slate-50"
+                                : ""
+                        } hover:bg-slate-50/50 transition-colors`}
+                    >
+                        {/* Nama Material */}
+                        <div className="col-span-8 flex flex-col pr-4">
+                            <span className="text-sm font-medium text-slate-700">{mat.name}</span>
+                            <span className="text-[10px] font-mono text-slate-400 uppercase">
+                                {mat.barcode || "-"}
+                            </span>
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="col-span-2 text-right">
+                            <span className="text-sm font-bold text-slate-700">
+                                {Number(mat.quantity).toLocaleString()}
+                            </span>
+                            <span className="text-[10px] text-slate-400 ml-1 uppercase">
+                                {mat.unit}
+                            </span>
+                        </div>
+
+                        {/* Stock */}
+                        <div className="col-span-2 text-right">
+                            <span
+                                className={`text-sm font-medium ${
+                                    Number(mat.stock) < Number(mat.quantity)
+                                        ? "text-rose-500"
+                                        : "text-slate-500"
+                                }`}
+                            >
+                                {Math.round(Number(mat.stock)).toLocaleString()}
+                            </span>
+                            <span className="text-[10px] text-slate-400 ml-1 uppercase">
+                                {mat.unit}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ),
+    },
+    {
+        id: "total_material",
         header: () => (
             <SortableHeader
-                label="Kebutuhan Material"
-                sortKey="quantity"
+                label="Total"
+                sortKey="totalMaterial"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
                 onSort={onSort}
             />
         ),
-        cell: ({ row }) => {
-            const qty = Number(row.original.quantity);
-            const uom = row.original.raw_material?.unit_raw_material?.name?.toUpperCase() || "UNIT";
-            return `${qty} ${uom}`;
-        },
-    },
-
-    {
-        id: "current_stock",
-        header: () => (
-            <SortableHeader
-                label="Stok Material"
-                sortKey="current_stock"
-                activeSortBy={sortBy}
-                activeSortOrder={sortOrder}
-                onSort={onSort}
-            />
-        ),
-        cell: ({ row }) => {
-            return (
-                <div className="flex items-center justify-start gap-1">
-                    <p className="font-medium text-gray-500">
-                        {Math.round(Number(row.original.raw_material?.current_stock ?? 0))}
-                    </p>
-                    <p className="text-gray-500 text-xs font-bold">
-                        {row.original.raw_material?.unit_raw_material?.name?.toUpperCase() ||
-                            "UNIT"}
-                    </p>
+        cell: ({ row }) => (
+            <div className="flex flex-col items-center justify-center gap-1 text-slate-500 min-w-24">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                    <Beaker className="h-3 w-3" />
+                    <span className="text-xs font-bold leading-none">
+                        {row.original.total_material || 0}
+                    </span>
                 </div>
-            );
-        },
+                <span className="text-[9px] font-bold uppercase tracking-tighter">Material</span>
+            </div>
+        ),
     },
-    // {
-    //     id: "actions",
-    //     header: () => <div className="text-center">Aksi</div>,
-    //     cell: ({ row }: any) => (
-    //         <div className="text-center">
-    //             <Link href={`/recipes/${row.original.id}`}>
-    //                 <Button
-    //                     variant="ghost"
-    //                     size="sm"
-    //                     className="h-8 px-2 text-primary hover:text-primary hover:bg-primary/10"
-    //                 >
-    //                     <Eye className="h-4 w-4 mr-2" />
-    //                     Detail
-    //                 </Button>
-    //             </Link>
-    //         </div>
-    //     ),
-    // },
 ];
 // function DialogDelete({ data }: { data: ResponseProductDTO }) {
 //     const [confirm, setConfirm] = useState<string>("");

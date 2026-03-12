@@ -14,6 +14,34 @@ import { LogData } from "@/components/log";
 export function Recipe() {
     const table = useRecipeTableState();
     const { data, meta, isLoading, isFetching, isRefetching } = useRecipeQuery(table.queryParams);
+    const groupedData = useMemo(() => {
+        if (!data || data.length === 0) return [];
+        const groups: Record<number, any> = {};
+
+        data.forEach((item) => {
+            if (!item.product) return;
+            const productId = item.product.id;
+            if (!groups[productId]) {
+                groups[productId] = {
+                    ...item.product,
+                    product: item.product, // for compatibility
+                    total_material: item.total_material,
+                    materials: [],
+                };
+            }
+            groups[productId].materials.push({
+                id: item.id,
+                name: item.raw_material?.name,
+                barcode: item.raw_material?.barcode,
+                quantity: item.quantity,
+                unit: item.raw_material?.unit_raw_material?.name,
+                stock: item.raw_material?.current_stock,
+                price: item.raw_material?.price,
+            });
+        });
+        return Object.values(groups);
+    }, [data]);
+
     const columns = useMemo(
         () =>
             RecipeColumns({
@@ -96,7 +124,7 @@ export function Recipe() {
                     ) : (
                         <DataTable
                             columns={columns}
-                            data={data || []}
+                            data={groupedData || []}
                             page={table.queryParams.page ?? 1}
                             pageSize={table.queryParams.take ?? 10}
                             total={meta?.len ?? 0}

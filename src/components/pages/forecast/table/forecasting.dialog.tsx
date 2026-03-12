@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
-    RequestForecastSchema,
-    RequestForecastDTO,
+    RunForecastSchema,
+    RunForecastDTO,
 } from "@/app/(application)/forecasts/server/forecast.schema";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,13 +25,6 @@ const HORIZON_OPTIONS = Array.from({ length: 12 }).map((_, i) => ({
     label: `${i + 1} bulan`,
 }));
 
-const FORECAST_MODEL_OPTIONS = [
-    { value: "AUTO", label: "Auto (Recommended)" },
-    // { value: "ARIMA", label: "ARIMA" },
-    { value: "HOLT_WINTERS", label: "Holt Winters" },
-    { value: "LINEAR_REGRESSION", label: "Linear Regression" },
-    { value: "ENSEMBLE", label: "Ensemble" },
-];
 
 const MONTH_OPTIONS = [
     { value: 1, label: "Januari" },
@@ -50,21 +43,15 @@ const MONTH_OPTIONS = [
 
 const getDefaultForecastPeriod = () => {
     const now = new Date();
-
-    let month = now.getMonth(); // 0–11 → previous month
-    let year = now.getFullYear();
-
-    if (month === 0) {
-        month = 12;
-        year -= 1;
-    }
-
+    // Default start month: Bulan Sekarang
+    const month = now.getMonth() + 1; // 1-indexed
+    const year = now.getFullYear();
     return { month, year };
 };
 const { month: DEFAULT_MONTH, year: DEFAULT_YEAR } = getDefaultForecastPeriod();
 
 const YEAR_OPTIONS = Array.from({ length: 5 }).map((_, i) => {
-    const year = DEFAULT_YEAR - 2 + i;
+    const year = DEFAULT_YEAR - 1 + i;
     return {
         value: year,
         label: year.toString(),
@@ -76,22 +63,24 @@ export function ForecastRunDialog({
     productId,
     productName,
 }: ForecastRunDialogProps) {
-    const { generateForecast, isPending } = useFormForecast();
+    const { run, isPending } = useFormForecast();
 
-    const form = useForm<RequestForecastDTO>({
-        resolver: zodResolver(RequestForecastSchema),
+    const form = useForm<RunForecastDTO>({
+        resolver: zodResolver(RunForecastSchema) as any,
         mode: "onSubmit",
         defaultValues: {
-            product_id: productId,
             horizon: 12,
-            forecast_model: "HOLT_WINTERS",
-            month: DEFAULT_MONTH,
-            year: DEFAULT_YEAR,
+            start_month: DEFAULT_MONTH,
+            start_year: DEFAULT_YEAR,
+            product_id: productId,
         },
     });
 
-    const onSubmit = async (values: RequestForecastDTO) => {
-        await generateForecast(values);
+    const onSubmit = async (values: RunForecastDTO) => {
+        await run({
+            ...values,
+            product_id: productId,
+        });
         onOpenChange(false);
     };
 
@@ -114,48 +103,37 @@ export function ForecastRunDialog({
                         control={form.control}
                         options={HORIZON_OPTIONS}
                         placeholder="Pilih horizon"
-                        error={form.formState.errors.horizon}
+                        error={form.formState.errors.horizon as any}
                         onValueChange={(val) => {
                             form.setValue("horizon", Number(val));
                         }}
                     />
 
-                    {/* Forecast Model */}
-                    <SelectForm
-                        name="forecast_model"
-                        label="Forecast Model"
-                        required
-                        control={form.control}
-                        options={FORECAST_MODEL_OPTIONS}
-                        placeholder="Pilih model"
-                        error={form.formState.errors.forecast_model}
-                    />
-
                     {/* Month & Years */}
                     <div className="flex items-center justify-center gap-5">
                         <SelectForm
-                            name="month"
-                            label="Forecast Start Month"
+                            name="start_month"
+                            label="Bulan Mulai Forecast"
                             required
                             control={form.control}
                             options={MONTH_OPTIONS}
                             placeholder="Pilih bulan"
-                            error={form.formState.errors.month}
+                            error={form.formState.errors.start_month as any}
                             onValueChange={(val) => {
-                                form.setValue("month", Number(val));
+                                form.setValue("start_month", Number(val));
                             }}
                         />
 
                         <SelectForm
-                            name="year"
-                            label="Forecast Year"
+                            name="start_year"
+                            label="Tahun Mulai Forecast"
                             required
                             control={form.control}
                             options={YEAR_OPTIONS}
                             placeholder="Pilih tahun"
-                            error={form.formState.errors.year}
+                            error={form.formState.errors.start_year as any}
                             onValueChange={(val) => {
-                                form.setValue("year", Number(val));
+                                form.setValue("start_year", Number(val));
                             }}
                         />
                     </div>
