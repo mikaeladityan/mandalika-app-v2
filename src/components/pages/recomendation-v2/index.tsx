@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { LayoutGrid, Search, TrendingUp, CalendarDays } from "lucide-react";
+import { Search, TrendingUp, CalendarDays } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -32,8 +32,18 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     const columns = useMemo(() => RecomendationV2Columns(), []);
 
     const months = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
     ];
 
     return (
@@ -66,7 +76,11 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
                                     {months.map((m, i) => (
-                                        <SelectItem key={m} value={String(i + 1)} className="rounded-xl">
+                                        <SelectItem
+                                            key={m}
+                                            value={String(i + 1)}
+                                            className="rounded-xl"
+                                        >
                                             {m}
                                         </SelectItem>
                                     ))}
@@ -87,7 +101,11 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                         { length: 5 },
                                         (_, i) => new Date().getFullYear() - 2 + i,
                                     ).map((y) => (
-                                        <SelectItem key={y} value={String(y)} className="rounded-xl">
+                                        <SelectItem
+                                            key={y}
+                                            value={String(y)}
+                                            className="rounded-xl"
+                                        >
                                             {y}
                                         </SelectItem>
                                     ))}
@@ -106,7 +124,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                         />
                     </div>
                 </CardHeader>
-                
+
                 <CardContent className="p-0">
                     <div className="px-8 lg:px-10 py-10">
                         {list.isLoading ? (

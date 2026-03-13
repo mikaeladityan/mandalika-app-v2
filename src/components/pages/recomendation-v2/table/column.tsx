@@ -74,19 +74,4 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
             </Badge>
         ),
     },
-    {
-        accessorKey: "recommendation_quantity",
-        header: "Rekomendasi",
-        cell: ({ row }) => {
-            const val = row.original.recommendation_quantity;
-            return (
-                <div className="flex flex-col">
-                    <span className={`text-sm font-black ${val > 0 ? "text-indigo-600" : "text-slate-400"}`}>
-                        {formatNumber(val)}
-                    </span>
-                    {val > 0 && <span className="text-[9px] text-indigo-400 font-bold uppercase">BELI SEGERA</span>}
-                </div>
-            );
-        },
-    }
 ];
