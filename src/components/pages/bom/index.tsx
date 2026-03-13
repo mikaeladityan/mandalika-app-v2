@@ -59,16 +59,6 @@ export default function BOMPage() {
                         Manajemen kebutuhan bahan baku berdasarkan forecast dan riwayat penjualan.
                     </p>
                 </div>
-
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-white hover:bg-slate-50 border-slate-200 text-slate-600 font-bold gap-2"
-                    >
-                        <Download size={16} /> Export Excel
-                    </Button>
-                </div>
             </div>
 
             <Card className="border-slate-200/60 shadow-md shadow-slate-200/20 overflow-hidden bg-white/50 backdrop-blur-sm rounded-xl">

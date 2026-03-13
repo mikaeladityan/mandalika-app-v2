@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
     useRecomendationV2,
     useRecomendationV2TableState,
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { Search, TrendingUp, CalendarDays } from "lucide-react";
+import { Search, TrendingUp, CalendarDays, Settings2, ChevronDown } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -18,6 +18,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { VisibilityState } from "@tanstack/react-table";
 
 interface RecomendationV2Props {
     title: string;
@@ -28,6 +36,7 @@ interface RecomendationV2Props {
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
     const tableState = useRecomendationV2TableState({ defaultType: type });
     const { list } = useRecomendationV2(tableState.queryParams);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
     const columns = useMemo(() => RecomendationV2Columns(), []);
 
@@ -65,52 +74,99 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-white p-2 rounded-3xl border border-indigo-100 shadow-sm">
-                            <CalendarDays className="size-4 text-indigo-400 ml-2" />
-                            <Select
-                                value={String(tableState.month)}
-                                onValueChange={(val) => tableState.setMonth(Number(val))}
-                            >
-                                <SelectTrigger className="w-[140px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
-                                    <SelectValue placeholder="Bulan" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
-                                    {months.map((m, i) => (
-                                        <SelectItem
-                                            key={m}
-                                            value={String(i + 1)}
-                                            className="rounded-xl"
-                                        >
-                                            {m}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-3xl border border-indigo-100 shadow-sm">
+                                <CalendarDays className="size-4 text-indigo-400 ml-2" />
+                                <Select
+                                    value={String(tableState.month)}
+                                    onValueChange={(val) => tableState.setMonth(Number(val))}
+                                >
+                                    <SelectTrigger className="w-[140px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
+                                        <SelectValue placeholder="Bulan" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
+                                        {months.map((m, i) => (
+                                            <SelectItem
+                                                key={m}
+                                                value={String(i + 1)}
+                                                className="rounded-xl"
+                                            >
+                                                {m}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
 
-                            <div className="w-px h-6 bg-indigo-100" />
+                                <div className="w-px h-6 bg-indigo-100" />
 
-                            <Select
-                                value={String(tableState.year)}
-                                onValueChange={(val) => tableState.setYear(Number(val))}
-                            >
-                                <SelectTrigger className="w-[100px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
-                                    <SelectValue placeholder="Tahun" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
-                                    {Array.from(
-                                        { length: 5 },
-                                        (_, i) => new Date().getFullYear() - 2 + i,
-                                    ).map((y) => (
-                                        <SelectItem
-                                            key={y}
-                                            value={String(y)}
-                                            className="rounded-xl"
-                                        >
-                                            {y}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <Select
+                                    value={String(tableState.year)}
+                                    onValueChange={(val) => tableState.setYear(Number(val))}
+                                >
+                                    <SelectTrigger className="w-[100px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
+                                        <SelectValue placeholder="Tahun" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
+                                        {Array.from(
+                                            { length: 5 },
+                                            (_, i) => new Date().getFullYear() - 2 + i,
+                                        ).map((y) => (
+                                            <SelectItem
+                                                key={y}
+                                                value={String(y)}
+                                                className="rounded-xl"
+                                            >
+                                                {y}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="h-14 bg-white border-indigo-100 rounded-3xl font-black text-slate-600 hover:bg-slate-50 transition-all border-dashed shadow-sm px-6"
+                                    >
+                                        <Settings2 className="mr-2 h-5 w-5 text-indigo-500" />
+                                        Kolom <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-indigo-50"
+                                >
+                                    <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        Konfigurasi Kolom
+                                    </div>
+                                    <div className="space-y-1 mt-2">
+                                        {columns.map((column: any) => {
+                                            const columnId = column.accessorKey || column.id;
+                                            const header = column.header;
+
+                                            if (!columnId || typeof header !== "string")
+                                                return null;
+
+                                            return (
+                                                <DropdownMenuCheckboxItem
+                                                    key={columnId}
+                                                    className="rounded-xl capitalize font-bold text-slate-600 py-3 data-[state=checked]:bg-indigo-50 data-[state=checked]:text-indigo-600 cursor-pointer"
+                                                    checked={columnVisibility[columnId] !== false}
+                                                    onCheckedChange={(value) => {
+                                                        setColumnVisibility((prev) => ({
+                                                            ...prev,
+                                                            [columnId]: !!value,
+                                                        }));
+                                                    }}
+                                                >
+                                                    {header.toLowerCase()}
+                                                </DropdownMenuCheckboxItem>
+                                            );
+                                        })}
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
 
@@ -141,6 +197,8 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     total={list.data?.meta?.total ?? 0}
                                     onPageChange={tableState.setPage}
                                     onPageSizeChange={tableState.setTake}
+                                    state={{ columnVisibility }}
+                                    onColumnVisibilityChange={setColumnVisibility}
                                     enableMultiSelect={true}
                                 />
                             </div>
