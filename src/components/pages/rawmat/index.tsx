@@ -11,7 +11,6 @@ import {
     BrushCleaning,
     Loader2,
     ArrowRight,
-    Loader,
     Import,
     X,
 } from "lucide-react";

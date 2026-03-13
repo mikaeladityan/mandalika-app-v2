@@ -49,27 +49,7 @@ export class RecipeService {
         }
     }
 
-    static async getProductOptions() {
-        try {
-            const { data } = await api.get<ApiSuccessResponse<Array<RedisProduct>>>(
-                `${process.env.NEXT_PUBLIC_API}/api/app/products/redis`,
-            );
-            return data.data;
-        } catch (error) {
-            throw error;
-        }
-    }
 
-    static async getRawMaterialOptions() {
-        try {
-            const { data } = await api.get<ApiSuccessResponse<Array<RedisRawMaterial>>>(
-                `${process.env.NEXT_PUBLIC_API}/api/app/rawmat/redis`,
-            );
-            return data.data;
-        } catch (error) {
-            throw error;
-        }
-    }
 
     static async bom(params: QueryBOMDTO) {
         try {

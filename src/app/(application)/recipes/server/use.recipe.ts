@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useProductsQuery } from "../../products/server/use.products";
+import { useRawMaterialsQuery } from "../../rawmat/server/use.rawmat";
 import { QueryRecipeDTO, RequestRecipeDTO } from "./recipe.schema";
 import { RecipeService } from "./recipe.service";
 import { FetchError, ResponseError } from "@/lib/utils/error";
@@ -31,14 +33,8 @@ export function useRecipe(params?: QueryRecipeDTO, id?: number) {
 }
 
 export function useRecipeUtilsOption() {
-    const product = useQuery({
-        queryKey: ["product", "redis"],
-        queryFn: RecipeService.getProductOptions,
-    });
-    const rawmat = useQuery({
-        queryKey: ["rawmat", "redis"],
-        queryFn: RecipeService.getRawMaterialOptions,
-    });
+    const product = useProductsQuery({ page: 1, take: 100, status: "ACTIVE", sortBy: "name", sortOrder: "asc" });
+    const rawmat = useRawMaterialsQuery({ page: 1, take: 100, status: "actived", sortBy: "name", sortOrder: "asc" });
 
     return { product, rawmat };
 }

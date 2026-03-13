@@ -23,6 +23,9 @@ export interface GroupedRecipe {
         id: number;
         name: string;
     } | null;
+    version: number;
+    is_active: boolean;
+    description: string | null;
     total_material?: number;
     materials: Array<{
         id: number;
@@ -55,11 +58,21 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
         ),
         cell: ({ row }) => (
             <div className="flex flex-col gap-1 min-w-50 p-2">
-                <Link href={`/recipes/form/${row.original.id}`} className="hover:underline">
-                    <span className="font-bold text-slate-900 leading-tight">
-                        {row.original.name}
+                <div className="flex items-center gap-2">
+                    <Link href={`/recipes/form/${row.original.id}`} className="hover:underline">
+                        <span className="font-bold text-slate-900 leading-tight">
+                            {row.original.name}
+                        </span>
+                    </Link>
+                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">
+                        v.{row.original.version}
                     </span>
-                </Link>
+                    {row.original.is_active && (
+                        <span className="text-[9px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                            Active
+                        </span>
+                    )}
+                </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono bg-blue-50 text-blue-700 w-fit px-1.5 py-0.5 rounded border border-blue-100 uppercase">
                         {row.original.code}
@@ -68,6 +81,11 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
                         {row.original.size?.size} {row.original.unit?.name}
                     </span>
                 </div>
+                {row.original.description && (
+                    <p className="text-[10px] text-slate-400 italic mt-1 line-clamp-1">
+                        "{row.original.description}"
+                    </p>
+                )}
                 <div className="mt-1">
                     <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded uppercase">
                         {row.original.product_type?.name}

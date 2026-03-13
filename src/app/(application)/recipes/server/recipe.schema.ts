@@ -3,8 +3,10 @@ import { ResponseProductSchema } from "../../products/server/products.schema";
 import { ResponseRawMaterialSchema } from "../../rawmat/server/rawmat.schema";
 
 export const RequestRecipeSchema = z.object({
-    product_id: z.number("Produk tidak boleh kosong"),
-    description: z.string().optional(),
+    product_id: z.number({ message: "Produk tidak boleh kosong" }),
+    version: z.number().int().min(1).default(1),
+    is_active: z.boolean().default(true),
+    description: z.string().optional().nullable(),
     raw_material: z
         .array(
             z.object({
@@ -19,8 +21,8 @@ export const RequestRecipeSchema = z.object({
 });
 export const ResponseRecipeSchema = z.object({
     id: z.number(),
-    version: z.number(),
     is_active: z.boolean(),
+    version: z.number(),
     description: z.string().nullable(),
     quantity: z.number().optional(),
     product: ResponseProductSchema.pick({
@@ -58,7 +60,6 @@ export type QueryRecipeDTO = z.input<typeof QueryRecipeSchema>;
 
 // POV Product
 export type ResponseDetailRecipeDTO = {
-    id: number;
     version: number;
     description: string | null;
     is_active: boolean;
@@ -67,7 +68,7 @@ export type ResponseDetailRecipeDTO = {
     name: string;
     unit: string;
     type: string;
-    items: Array<{
+    recipes: Array<{
         raw_mat_id: number;
         barcode: string | null;
         name: string;

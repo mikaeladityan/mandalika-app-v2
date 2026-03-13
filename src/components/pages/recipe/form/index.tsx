@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputForm } from "@/components/ui/form/input";
 import { SelectForm } from "@/components/ui/form/select";
+
 import { Form } from "@/components/ui/form/main";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +23,7 @@ import { ArrowLeft, Loader2, Plus, Save, Trash } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { CheckboxForm } from "@/components/ui/form/checkbox";
 
 export function FormRecipe() {
     const { id } = useParams<{ id: string }>();
@@ -33,6 +35,8 @@ export function FormRecipe() {
         resolver: zodResolver(RequestRecipeSchema),
         defaultValues: {
             product_id: undefined,
+            version: 1,
+            is_active: true,
             description: "",
             raw_material: [
                 {
@@ -60,8 +64,10 @@ export function FormRecipe() {
 
         form.reset({
             product_id: detail.data.product_id,
+            version: detail.data.version,
+            is_active: detail.data.is_active,
             description: detail.data.description || "",
-            raw_material: detail.data.items.map((r) => ({
+            raw_material: detail.data.recipes.map((r) => ({
                 raw_material_id: r.raw_mat_id,
                 quantity: r.quantity,
             })),
@@ -131,15 +137,35 @@ export function FormRecipe() {
                                 // Label utama lebih bersih
                                 label: `${p.name}`,
                                 // Info detail ditaruh di bawah label (description)
-                                description: `Kode: ${p.code} | Tipe: ${p.type?.toUpperCase()} | Size: ${p.size?.toUpperCase()}`,
+                                description: `Kode: ${p.code} | Tipe: ${p.product_type?.name?.toUpperCase()} | Size: ${p.size?.size}`,
                             }))}
                             placeholder="Pilih produk..."
                         />
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <InputForm
+                                name="version"
+                                type="number"
+                                control={form.control}
+                                label="Versi Resep"
+                                required
+                                disabled={isDisabled}
+                                error={form.formState.errors.version}
+                            />
+                            <div className="flex items-end pb-2">
+                                <CheckboxForm
+                                    name="is_active"
+                                    control={form.control}
+                                    label="Pasang sebagai Resep Aktif"
+                                    disabled={isDisabled}
+                                />
+                            </div>
+                        </div>
+
                         <InputForm
                             name="description"
                             control={form.control}
-                            label="Keterangan / Versi Info"
+                            label="Keterangan / Catatan Versi"
                             placeholder="Contoh: Penyesuaian aroma vanila v2"
                             disabled={isDisabled}
                             error={form.formState.errors.description}

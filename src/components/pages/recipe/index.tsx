@@ -16,20 +16,24 @@ export function Recipe() {
     const { data, meta, isLoading, isFetching, isRefetching } = useRecipeQuery(table.queryParams);
     const groupedData = useMemo(() => {
         if (!data || data.length === 0) return [];
-        const groups: Record<number, any> = {};
+        const groups: Record<string, any> = {};
 
         data.forEach((item) => {
             if (!item.product) return;
-            const productId = item.product.id;
-            if (!groups[productId]) {
-                groups[productId] = {
+            const key = `${item.product.id}_${item.version}`;
+            if (!groups[key]) {
+                groups[key] = {
                     ...item.product,
-                    product: item.product, // for compatibility
+                    id: item.id, // Recipe ID
+                    product_id: item.product.id, // Original Product ID
+                    version: item.version,
+                    is_active: item.is_active,
+                    description: item.description,
                     total_material: item.total_material,
                     materials: [],
                 };
             }
-            groups[productId].materials.push({
+            groups[key].materials.push({
                 id: item.id,
                 name: item.raw_material?.name,
                 barcode: item.raw_material?.barcode,
