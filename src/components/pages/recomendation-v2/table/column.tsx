@@ -76,7 +76,23 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
     },
     {
         accessorKey: "current_stock",
-        header: "Current Stock",
+        header: "Pure Stock",
+        cell: ({ row }) => {
+            const stock = row.original.current_stock;
+            return (
+                <div className="flex flex-col">
+                    <span className="text-xs font-black text-slate-800">
+                        {formatNumber(stock)}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                </div>
+            );
+        },
+        size: 100,
+    },
+    {
+        id: "available_stock",
+        header: "Ready Stock (S+P)",
         cell: ({ row }) => {
             const stock = row.original.current_stock;
             const openPo = row.original.open_po;
@@ -86,11 +102,11 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
 
             return (
                 <div className="flex flex-col min-w-[120px]">
-                    <span className="text-xs font-black text-slate-800">
-                        {formatNumber(stock)} <span className="text-[10px] text-slate-400">{row.original.uom}</span>
+                    <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 w-fit">
+                        {formatNumber(available)} <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
                     </span>
                     <span
-                        className={`text-[9px] mt-1 font-bold uppercase tracking-wider ${
+                        className={`text-[9px] mt-1 font-black uppercase tracking-wider ${
                             isSufficient ? "text-emerald-600" : "text-red-500"
                         }`}
                     >
@@ -99,7 +115,7 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
                 </div>
             );
         },
-        size: 130,
+        size: 140,
     },
     {
         accessorKey: "open_po",

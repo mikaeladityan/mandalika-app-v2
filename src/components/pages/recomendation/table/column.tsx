@@ -196,7 +196,20 @@ export const RecomendationColumns = ({
         },
         {
             accessorKey: "current_stock",
-            header: "TOTAL STOCK RAW MATERIAL",
+            header: "Pure Stock",
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <span className="font-bold text-xs text-slate-800">
+                        {formatNumber(row.original.current_stock)}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                </div>
+            ),
+            size: 100,
+        },
+        {
+            id: "available_stock",
+            header: "Ready Stock (S+P)",
             cell: ({ row }) => {
                 const stock = row.original.current_stock;
                 const availableStock = stock + (row.original.open_po || 0);
@@ -214,12 +227,12 @@ export const RecomendationColumns = ({
                 }
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-xs text-slate-800">
-                            {formatNumber(stock)} {row.original.uom.toUpperCase()}
+                    <div className="flex flex-col min-w-[140px]">
+                        <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 w-fit">
+                            {formatNumber(availableStock)} <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
                         </span>
                         <span
-                            className={`text-[8px] mt-1 uppercase tracking-wider ${
+                            className={`text-[9px] mt-1 font-black uppercase tracking-wider ${
                                 monthsLasted > 0 ? "text-emerald-600" : "text-red-500"
                             }`}
                         >
@@ -228,7 +241,7 @@ export const RecomendationColumns = ({
                         {row.original.status === "ACC" && row.original.open_po_expected_arrival && (
                             <Badge
                                 variant="outline"
-                                className="mt-1 w-fit border-blue-200 bg-blue-50 text-blue-700"
+                                className="mt-1 w-fit border-blue-200 bg-blue-50 text-blue-700 text-[10px]"
                             >
                                 <Clock className="w-3 h-3 mr-1" />
                                 ETA:{" "}
@@ -238,6 +251,7 @@ export const RecomendationColumns = ({
                     </div>
                 );
             },
+            size: 150,
         },
         {
             accessorKey: "open_po",
