@@ -139,7 +139,7 @@ export function useSaleTableState() {
 
     const queryParams = useMemo<QuerySalesDTO>(
         () => ({
-            take: Number(get("take") ?? 25),
+            take: Number(get("take") ?? 50),
             page: Number(get("page") ?? 1),
             search: get("search") ?? undefined,
             sortBy: sortBy as any,

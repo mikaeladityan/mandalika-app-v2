@@ -79,7 +79,7 @@ export function EditRawmat() {
             min_stock: Number(rawMaterial.min_stock ?? 0),
             supplier_id: rawMaterial.supplier?.id ?? undefined,
             raw_mat_category: rawMaterial.raw_mat_category?.slug ?? "",
-            unit: rawMaterial.unit_raw_material.slug ?? "",
+            unit: rawMaterial.unit_raw_material.name ?? "",
         });
     }, [rawMaterial, form]);
 

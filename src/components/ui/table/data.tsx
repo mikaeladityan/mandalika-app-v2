@@ -164,7 +164,7 @@ export function DataTable<TData, TValue>({
                                         <th
                                             key={header.id}
                                             className={cn(
-                                                "sticky top-0 z-20 px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider",
+                                                "sticky top-0 z-20 px-4 py-4 text-left text-xs font-bold uppercase tracking-wider",
                                                 "bg-muted border-b border-border text-muted-foreground",
                                                 "transition-colors duration-200",
                                                 // Tambahkan border kanan kecuali kolom terakhir untuk kesan grid yang rapih
@@ -196,7 +196,7 @@ export function DataTable<TData, TValue>({
                                             <td
                                                 key={cell.id}
                                                 className={cn(
-                                                    "px-4 py-3 text-sm text-foreground/80 border-b border-border",
+                                                    "px-4 text-sm text-foreground/80 border-b border-border",
                                                     "group-last:border-b-0", // Hilangkan border bawah di baris terakhir
                                                     index !== row.getVisibleCells().length - 1 &&
                                                         "border-r border-border/30",

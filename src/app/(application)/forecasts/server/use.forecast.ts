@@ -1,9 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { forecastService } from "./forecast.service";
-import {
-    QueryForecastDTO,
-    RunForecastDTO,
-} from "./forecast.schema";
+import { QueryForecastDTO, RunForecastDTO } from "./forecast.schema";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
@@ -34,7 +31,7 @@ export function useForecastTableState() {
     /**
      * Horizon
      */
-    const horizon = get("horizon") ? Number(get("horizon")) : 12;
+    const horizon = get("horizon") ? Number(get("horizon")) : 4;
 
     const setHorizon = (value: number | undefined) =>
         batchSet({
@@ -46,7 +43,7 @@ export function useForecastTableState() {
      * Pagination
      */
     const page = Number(get("page") ?? 1);
-    const take = Number(get("take") ?? 25);
+    const take = Number(get("take") ?? 100);
 
     const setPage = (page: number | undefined) =>
         batchSet({

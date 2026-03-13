@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useMutationState } from "@tanstack/react-query";
-import { Loader2, Search, Zap, Factory, CalendarRange, LayoutDashboard, Percent } from "lucide-react";
+import {
+    Loader2,
+    Search,
+    Zap,
+    Factory,
+    CalendarRange,
+    LayoutDashboard,
+    Percent,
+} from "lucide-react";
 import Link from "next/link";
 
 // Shadcn UI Components
@@ -102,7 +110,7 @@ export function Forecast() {
                                 </Button>
                             </Link>
 
-                            <Button
+                            {/* <Button
                                 onClick={() => setOpenProductionDialog(true)}
                                 disabled={isSyncingProduction || isProcessingForecast}
                                 variant="outline"
@@ -114,7 +122,7 @@ export function Forecast() {
                                     <Factory className="mr-2 h-4 w-4 text-indigo-500" />
                                 )}
                                 Sync Production
-                            </Button>
+                            </Button> */}
                             <Button
                                 onClick={() => setOpenForecastDialog(true)}
                                 disabled={isProcessingForecast}
@@ -124,7 +132,7 @@ export function Forecast() {
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin text-amber-400" />
                                 ) : (
                                     <Zap className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" />
-                                     )}
+                                )}
                                 {isProcessingForecast ? "Inisialisasi..." : "Run Analytics"}
                             </Button>
                         </div>
@@ -158,11 +166,17 @@ export function Forecast() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-slate-200 shadow-xl">
+                                        <SelectItem value="3" className="font-bold">
+                                            3 Bulan
+                                        </SelectItem>
+                                        <SelectItem value="4" className="font-bold">
+                                            4 Bulan
+                                        </SelectItem>
+                                        <SelectItem value="6" className="font-bold">
+                                            6 Bulan
+                                        </SelectItem>
                                         <SelectItem value="12" className="font-bold">
                                             12 Bulan
-                                        </SelectItem>
-                                        <SelectItem value="24" className="font-bold">
-                                            24 Bulan
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>

@@ -2,100 +2,261 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import { SortableHeader } from "@/components/ui/table/sortable";
+import { QueryBOMDTO, ResponseGroupedBOMDTO } from "@/app/(application)/bom/server/bom.schema";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Factory, TrendingUp, History, ShieldCheck } from "lucide-react";
 
-const formatMonthHeader = (key: string) => {
-    const [month, year] = key.split("-");
-    const date = new Date(Number(year), Number(month) - 1);
-    return date.toLocaleString("id-ID", { month: "short", year: "2-digit" }).toUpperCase();
+type Props = {
+    sortBy?: QueryBOMDTO["sortBy"];
+    sortOrder?: QueryBOMDTO["sortOrder"];
+    onSort: (key: string) => void;
 };
 
-export const BOMColumns = (monthlyKeys: string[]): ColumnDef<any>[] => {
+export const BOMColumns = ({
+    sortBy,
+    sortOrder,
+    onSort,
+}: Props): ColumnDef<ResponseGroupedBOMDTO>[] => {
     return [
         {
-            id: "product_info",
-            header: "Produk (Finish Good)",
+            id: "product",
+            header: () => (
+                <SortableHeader
+                    label="Produk"
+                    sortKey="product_name"
+                    activeSortBy={sortBy}
+                    activeSortOrder={sortOrder}
+                    onSort={onSort}
+                />
+            ),
             cell: ({ row }) => (
-                <div className="flex flex-col gap-1 min-w-50 p-2">
-                    <span className="font-bold text-slate-900 leading-tight">
-                        {row.original.product_name}
-                    </span>
-                    <span className="text-xs font-mono bg-blue-50 text-blue-700 w-fit px-1.5 py-0.5 rounded border border-blue-100 uppercase">
-                        {row.original.product_code} | {row.original.product_size}
-                    </span>
+                <div className="flex flex-col gap-1 min-w-[200px] py-3 px-2">
+                    <Link
+                        href={`/products/${row.original.product.id}`}
+                        className="hover:underline font-bold text-slate-900 text-sm leading-tight"
+                    >
+                        {row.original.product.name}
+                    </Link>
+                    <div className="flex flex-wrap gap-1">
+                        <Badge
+                            variant="outline"
+                            className="text-[9px] font-mono px-1 py-0 uppercase"
+                        >
+                            {row.original.product.code}
+                        </Badge>
+                        <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 py-0 bg-blue-50 border-blue-100 text-blue-600 uppercase"
+                        >
+                            {row.original.product.gender}
+                        </Badge>
+                        <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 py-0 bg-amber-50 border-amber-100 text-amber-600 uppercase"
+                        >
+                            {row.original.product.size} {row.original.product.uom}
+                        </Badge>
+                    </div>
+                    <div className="text-xs font-bold text-gray-500 uppercase">
+                        {row.original.product.type}
+                    </div>
                 </div>
             ),
+            size: 220,
         },
         {
-            id: "material_details",
+            id: "material",
             header: () => (
-                <div className="grid grid-cols-12 w-full gap-2 px-2">
-                    <div className="col-span-12 text-left">Detail Material & Komposisi</div>
-                    {/* <div className="col-span-6 flex justify-around">
-                        {monthlyKeys.map((key) => (
-                            <div key={key} className="text-center font-bold">
-                                {formatMonthHeader(key)}
-                            </div>
-                        ))}
-                    </div> */}
+                <div className="text-left py-2 px-3 text-[10px] uppercase font-black text-slate-500">
+                    Material
                 </div>
             ),
             cell: ({ row }) => (
-                <div className="flex flex-col min-w-150">
-                    {row.original.materials.map((mat: any, idx: number) => (
+                <div className="flex flex-col min-w-[180px]">
+                    {row.original.items.map((item, idx) => (
                         <div
                             key={idx}
-                            className={`grid grid-cols-12 w-full items-center py-3 px-2 ${
-                                idx !== row.original.materials.length - 1
-                                    ? "border-b border-slate-100"
-                                    : ""
-                            } hover:bg-slate-50/50 transition-colors`}
+                            className={`flex flex-col py-3 px-3 h-[60px] justify-center ${idx !== row.original.items.length - 1 ? "border-b border-slate-100" : ""}`}
                         >
-                            {/* Nama Material */}
-                            <Link
-                                href={`/bom/${mat.material_code}/`}
-                                className="col-span-12 flex flex-col pr-4 group"
+                            <span
+                                className="text-[11px] font-bold text-slate-700 truncate"
+                                title={item.material.name}
                             >
-                                <span className="text-sm font-semibold text-slate-700 group-hover:text-emerald-600 truncate">
-                                    {mat.material_name}
-                                </span>
-                                <span className="text-xs font-mono text-slate-400 uppercase">
-                                    {mat.material_code} • Resep: {Number(mat.recipes)}{" "}
-                                    {/* <LogData data={mat} /> */}
-                                    {mat.material_unit === "null" || !mat.material_unit
-                                        ? "UNIT"
-                                        : mat.material_unit.toUpperCase()}
-                                </span>
-                            </Link>
-
-                            {/* Data Bulanan untuk Material ini dihidden sesuai request user */}
-                            {/* <div className="col-span-6 flex justify-around items-center">
-                                {monthlyKeys.map((key) => {
-                                    const mData = mat.monthly_data[key];
-                                    if (!mData)
-                                        return (
-                                            <div key={key} className="text-slate-300">
-                                                -
-                                            </div>
-                                        );
-
-                                    return (
-                                        <div key={key} className="flex flex-col items-center">
-                                            <span className="text-sm font-bold text-emerald-600 font-mono">
-                                                {mData.requirement.toLocaleString()}
-                                            </span>
-                                            <span className="text-xs text-slate-400 italic">
-                                                {mData.need_produce === "0"
-                                                    ? mData.need_produce.toLocaleString()
-                                                    : mData.forecast.toLocaleString()}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
-                            </div> */}
+                                {item.material.name}
+                            </span>
+                            <span className="text-[9px] font-mono text-slate-400">
+                                {item.material.barcode || "-"}
+                            </span>
                         </div>
                     ))}
                 </div>
             ),
+            size: 200,
+        },
+        {
+            id: "bom_qty",
+            header: () => (
+                <div className="text-center py-2 text-[10px] uppercase font-black text-slate-500">
+                    Qty
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex flex-col min-w-[60px]">
+                    {row.original.items.map((item, idx) => (
+                        <div
+                            key={idx}
+                            className={`flex items-center justify-center py-3 h-[60px] ${idx !== row.original.items.length - 1 ? "border-b border-slate-100" : ""}`}
+                        >
+                            <span className="text-xs font-black text-indigo-600 tabular-nums">
+                                {Number(item.material.quantity).toLocaleString("id-ID")}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ),
+            size: 70,
+        },
+        {
+            id: "sales_history",
+            header: () => (
+                <div className="flex flex-col items-center gap-1 py-1 px-2 border-slate-100 min-w-[150px]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        <History size={12} /> Sales
+                    </div>
+                    <span className="text-[8px] text-slate-400 font-mono">Past 4 Mo</span>
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex gap-1.5 px-3 h-full items-center justify-center min-w-[150px]">
+                    {row.original.sales_history.map((s, idx) => (
+                        <div key={idx} className="flex flex-col items-center">
+                            <span className="text-[8px] font-bold text-slate-400 uppercase leading-none mb-1">
+                                {s.period.split("/")[0]}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-600 tabular-nums bg-white border border-slate-100 px-1 rounded shadow-sm">
+                                {Math.round(s.value).toLocaleString("id-ID")}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ),
+            size: 160,
+        },
+        {
+            id: "forecast",
+            header: () => (
+                <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[220px]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-emerald-600 tracking-widest">
+                        <TrendingUp size={12} /> Forecast
+                    </div>
+                    <span className="text-[8px] text-emerald-500 font-mono">Next 6 Mo</span>
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex gap-1 px-3 h-full items-center justify-center min-w-[220px]">
+                    {row.original.forecast.map((f, idx) => (
+                        <div key={idx} className="flex flex-col items-center">
+                            <span className="text-[8px] font-bold text-emerald-400 uppercase leading-none mb-1">
+                                {f.period.split("/")[0]}
+                            </span>
+                            <span className="text-[10px] font-black text-emerald-700 tabular-nums bg-white border border-emerald-100 px-1 rounded shadow-sm">
+                                {Math.round(f.value).toLocaleString("id-ID")}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ),
+            size: 240,
+        },
+        {
+            id: "needs_to_buy",
+            header: () => (
+                <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[220px]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-orange-600 tracking-widest leading-none">
+                        <Factory size={12} /> Needs Buy
+                    </div>
+                    <span className="text-[8px] text-orange-500 font-mono">Mat Req</span>
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex flex-col min-w-[220px]">
+                    {row.original.items.map((item, idx) => (
+                        <div
+                            key={idx}
+                            className={`flex gap-1 justify-between px-3 py-3 h-[60px] items-center ${idx !== row.original.items.length - 1 ? "border-b border-slate-100" : ""}`}
+                        >
+                            {item.needs_to_buy.map((n, nIdx) => (
+                                <div key={nIdx} className="flex flex-col items-center">
+                                    <span className="text-[8px] font-bold text-orange-400 uppercase leading-none mb-1">
+                                        {n.period.split("/")[0]}
+                                    </span>
+                                    <span className="text-[10px] font-black text-orange-700 tabular-nums bg-white border border-orange-100 px-1 rounded shadow-sm">
+                                        {Math.round(n.value).toLocaleString("id-ID")}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            ),
+            size: 240,
+        },
+        {
+            id: "safety_stock",
+            header: () => (
+                <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[120px]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 tracking-widest leading-none">
+                        <ShieldCheck size={12} /> Safety Target
+                    </div>
+                    <span className="text-[8px] text-blue-500 font-mono">Current Month</span>
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex flex-col min-w-[120px] divide-y divide-slate-100">
+                    {row.original.items.map((item, idx) => (
+                        <div
+                            key={idx}
+                            className={`flex flex-col justify-center gap-0.5 px-3 py-2 h-[60px] ${idx !== row.original.items.length - 1 ? "border-b border-slate-100" : ""}`}
+                        >
+                            {/* FG Target */}
+                            <div className="flex justify-between items-center bg-blue-50/50 px-1.5 py-0.5 rounded border border-blue-100/50">
+                                <span className="text-[8px] font-bold text-blue-400">SAFETY</span>
+                                <span className="text-[10px] font-bold text-blue-700 tabular-nums">
+                                    {Math.round(row.original.safety_stock).toLocaleString("id-ID")}
+                                </span>
+                            </div>
+                            {/* Material Prop */}
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="flex justify-between items-center bg-indigo-50/50 px-1.5 py-0.5 rounded border border-indigo-100/50 cursor-help">
+                                            <span className="text-[8px] font-bold text-indigo-400">
+                                                MAT
+                                            </span>
+                                            <span className="text-[10px] font-black text-indigo-700 tabular-nums">
+                                                {Math.round(item.safety_stock_x_bom).toLocaleString(
+                                                    "id-ID",
+                                                )}
+                                            </span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="left">
+                                        <p className="text-[10px] font-bold">
+                                            {item.material.name}
+                                        </p>
+                                        <p className="text-[9px]">
+                                            Proporsional Safety Stock (Qty x BOM)
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                    ))}
+                </div>
+            ),
+            size: 150,
         },
     ];
 };

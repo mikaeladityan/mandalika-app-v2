@@ -132,7 +132,8 @@ export function SalesAnalytics() {
             <header className="space-y-1">
                 <h2 className="text-2xl font-bold">Analitik Penjualan</h2>
                 <p className="text-muted-foreground">
-                    Analisis data penjualan produk dalam rentang {activeHorizon} bulan terakhir.
+                    Analisis data penjualan produk hingga bulan lalu (M-1) dalam rentang{" "}
+                    {activeHorizon} bulan.
                 </p>
             </header>
 
@@ -537,22 +538,35 @@ export function SalesAnalytics() {
                             Tidak ada data penjualan untuk kriteria ini.
                         </div>
                     ) : (
-                        <div className={cn("h-[400px] w-full", isDataLoading && "opacity-50")}>
+                        <div className={cn("h-[450px] w-full", isDataLoading && "opacity-50")}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart
                                     data={chartData}
-                                    margin={{ top: 35, right: 30, left: 0, bottom: 0 }}
+                                    margin={{ top: 40, right: 30, left: 0, bottom: 20 }}
+                                    barGap={8}
                                 >
                                     <defs>
-                                        <linearGradient id="colorQty" x1="0" y1="0" x2="0" y2="1">
+                                        <linearGradient id="colorP1" x1="0" y1="0" x2="0" y2="1">
                                             <stop
                                                 offset="5%"
-                                                stopColor={chartColor}
+                                                stopColor="#10b981"
                                                 stopOpacity={0.3}
                                             />
                                             <stop
                                                 offset="95%"
-                                                stopColor={chartColor}
+                                                stopColor="#10b981"
+                                                stopOpacity={0}
+                                            />
+                                        </linearGradient>
+                                        <linearGradient id="colorP2" x1="0" y1="0" x2="0" y2="1">
+                                            <stop
+                                                offset="5%"
+                                                stopColor="#3b82f6"
+                                                stopOpacity={0.3}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor="#3b82f6"
                                                 stopOpacity={0}
                                             />
                                         </linearGradient>
@@ -561,6 +575,7 @@ export function SalesAnalytics() {
                                         strokeDasharray="3 3"
                                         vertical={false}
                                         stroke="hsl(var(--border))"
+                                        opacity={0.4}
                                     />
                                     <XAxis
                                         dataKey="period"
@@ -568,66 +583,195 @@ export function SalesAnalytics() {
                                         tickLine={false}
                                         tick={{
                                             fill: "hsl(var(--muted-foreground))",
-                                            fontSize: 12,
-                                            fontWeight: "bold",
+                                            fontSize: 11,
+                                            fontWeight: 600,
                                         }}
-                                        dy={10}
+                                        dy={15}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                        tick={{
+                                            fill: "hsl(var(--muted-foreground))",
+                                            fontSize: 11,
+                                        }}
+                                        tickFormatter={(val) => val.toLocaleString("id-ID")}
                                     />
                                     <Tooltip
-                                        cursor={{ fill: "hsl(var(--muted))", opacity: 0.2 }}
-                                        contentStyle={{
-                                            backgroundColor: "#FFFFFF",
-                                            borderColor: "hsl(var(--border))",
-                                            borderRadius: "8px",
-                                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                                            color: "hsl(var(--foreground))",
+                                        cursor={{
+                                            stroke: "hsl(var(--primary))",
+                                            strokeWidth: 1,
+                                            strokeDasharray: "4 4",
+                                            fill: "hsl(var(--muted))",
+                                            opacity: 0.1,
                                         }}
-                                        itemStyle={{
-                                            color: chartColor,
-                                            fontWeight: 600,
-                                        }}
-                                        labelStyle={{
-                                            color: "hsl(var(--foreground))",
-                                            fontWeight: "bold",
-                                            marginBottom: "4px",
+                                        content={({ active, payload, label }) => {
+                                            if (active && payload && payload.length) {
+                                                // Filter unique entries by dataKey to avoid duplicates from Area/Bar/Line layers
+                                                const filteredPayload = payload.filter(
+                                                    (v, i, a) =>
+                                                        a.findIndex(
+                                                            (t) => t.dataKey === v.dataKey,
+                                                        ) === i &&
+                                                        !v.dataKey
+                                                            ?.toString()
+                                                            .startsWith("display"),
+                                                );
+
+                                                return (
+                                                    <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-2xl min-w-[220px]">
+                                                        <div className="flex justify-between items-center mb-3 border-b pb-2">
+                                                            <span className="font-black text-slate-800 tracking-tight">
+                                                                {label}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">
+                                                                Penjualan
+                                                            </span>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            {filteredPayload.map(
+                                                                (entry: any, index: number) => {
+                                                                    const product =
+                                                                        entry.dataKey ===
+                                                                        "quantity_2"
+                                                                            ? summaries[1]?.product
+                                                                            : summaries[0]?.product;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={index}
+                                                                            className="flex items-center justify-between gap-4"
+                                                                        >
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2.5 h-2.5 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            entry.color,
+                                                                                    }}
+                                                                                />
+                                                                                <span className="text-sm font-medium text-slate-600 truncate max-w-[150px]">
+                                                                                    {product?.name ||
+                                                                                        entry.name}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span className="text-sm font-black text-slate-900">
+                                                                                {Number(
+                                                                                    entry.value,
+                                                                                ).toLocaleString(
+                                                                                    "id-ID",
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                },
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
                                         }}
                                     />
+
+                                    {/* BACKGROUND AREA GRADS */}
+                                    <Area
+                                        type="monotone"
+                                        dataKey={summaries.length > 1 ? "quantity_1" : "quantity"}
+                                        stroke="none"
+                                        fill="url(#colorP1)"
+                                        animationDuration={1500}
+                                    />
+                                    {summaries.length > 1 && (
+                                        <Area
+                                            type="monotone"
+                                            dataKey="quantity_2"
+                                            stroke="none"
+                                            fill="url(#colorP2)"
+                                            animationDuration={2000}
+                                        />
+                                    )}
+
+                                    {/* BARS FOR DISCRETE VALUES */}
                                     <Bar
                                         dataKey={summaries.length > 1 ? "quantity_1" : "quantity"}
                                         name={
                                             summaries.length > 1
                                                 ? summaries[0].product.name
-                                                : "Volume Terjual"
+                                                : "Sales Volume"
                                         }
                                         fill="#10b981"
                                         radius={[4, 4, 0, 0]}
-                                        maxBarSize={50}
-                                    >
-                                        {summaries.length === 1 && (
-                                            <LabelList
-                                                dataKey="quantity"
-                                                position="top"
-                                                fill="hsl(var(--foreground))"
-                                                fontSize={12}
-                                                fontWeight={600}
-                                                offset={10}
-                                            />
-                                        )}
-                                    </Bar>
-
+                                        maxBarSize={100}
+                                        opacity={0.15}
+                                    />
                                     {summaries.length > 1 && (
                                         <Bar
                                             dataKey="quantity_2"
                                             name={summaries[1].product.name}
                                             fill="#3b82f6"
                                             radius={[4, 4, 0, 0]}
-                                            maxBarSize={50}
+                                            maxBarSize={100}
+                                            opacity={0.15}
                                         />
+                                    )}
+
+                                    {/* MAIN TREND LINES */}
+                                    <Line
+                                        type="monotone"
+                                        dataKey={summaries.length > 1 ? "quantity_1" : "quantity"}
+                                        stroke="#10b981"
+                                        strokeWidth={4}
+                                        dot={{
+                                            r: 5,
+                                            fill: "#10b981",
+                                            stroke: "#fff",
+                                            strokeWidth: 3,
+                                        }}
+                                        activeDot={{ r: 8, strokeWidth: 0 }}
+                                        animationDuration={1500}
+                                    >
+                                        <LabelList
+                                            dataKey={
+                                                summaries.length > 1 ? "quantity_1" : "quantity"
+                                            }
+                                            position="top"
+                                            offset={15}
+                                            fontSize={10}
+                                            fontWeight={700}
+                                            fill="#047857"
+                                            formatter={(val: any) =>
+                                                Number(val).toLocaleString("id-ID")
+                                            }
+                                        />
+                                    </Line>
+                                    {summaries.length > 1 && (
+                                        <Line
+                                            type="monotone"
+                                            dataKey="quantity_2"
+                                            stroke="#3b82f6"
+                                            strokeWidth={4}
+                                            dot={{
+                                                r: 5,
+                                                fill: "#3b82f6",
+                                                stroke: "#fff",
+                                                strokeWidth: 3,
+                                            }}
+                                            activeDot={{ r: 8, strokeWidth: 0 }}
+                                            animationDuration={2000}
+                                        >
+                                            <LabelList
+                                                dataKey="quantity_2"
+                                                position="bottom"
+                                                offset={15}
+                                                fontSize={10}
+                                                fontWeight={700}
+                                                fill="#1d4ed8"
+                                                formatter={(val: any) =>
+                                                    Number(val).toLocaleString("id-ID")
+                                                }
+                                            />
+                                        </Line>
                                     )}
                                 </ComposedChart>
                             </ResponsiveContainer>

@@ -2,7 +2,7 @@ import z from "zod";
 
 export const RawMaterialInventoryImportRowSchema = z.object({
     "MATERIAL CODE": z.string().min(1, "Kode material wajib diisi"),
-    AMOUNT: z.coerce.number().default(0),
+    AMOUNT: z.coerce.number(),
 });
 
 export type RawMaterialInventoryImportRow = z.infer<typeof RawMaterialInventoryImportRowSchema>;

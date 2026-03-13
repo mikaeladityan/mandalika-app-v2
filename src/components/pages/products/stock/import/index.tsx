@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Upload, FileText, Database, RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+    Upload,
+    FileText,
+    Database,
+    RefreshCw,
+    AlertCircle,
+    ArrowLeft,
+    Container,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,6 +41,7 @@ import {
 import { ProductInventoryImportPreviewDTO } from "@/app/(application)/products/stocks/[id]/import/server/import.schema";
 import { useWarehouses } from "@/app/(application)/shared/use.shared";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 const MAX_ROWS = 5000;
 
@@ -138,6 +147,16 @@ export function ProductInventoryImportForm() {
 
                 {/* Controls */}
                 <div className="flex justify-end gap-2">
+                    <Link
+                        target="_blank"
+                        href={
+                            "https://docs.google.com/spreadsheets/d/14NuSAz7_yvtQC5CRs1rjgosyC6bXSfreZceiDmKZ4Rc/edit?usp=sharing"
+                        }
+                    >
+                        <Button variant="warning">
+                            <Container /> Template
+                        </Button>
+                    </Link>
                     <Button
                         variant="outline"
                         onClick={handlePreview}

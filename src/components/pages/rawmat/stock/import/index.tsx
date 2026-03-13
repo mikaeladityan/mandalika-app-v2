@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Upload, FileText, Database, RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+    Upload,
+    FileText,
+    Database,
+    RefreshCw,
+    AlertCircle,
+    ArrowLeft,
+    Container,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,6 +40,7 @@ import {
     useGetPreviewImportRawMaterialInventory,
     usePreviewImportRawMaterialInventory,
 } from "@/app/(application)/rawmat/stocks/[id]/import/server/use.import";
+import Link from "next/link";
 
 const MAX_ROWS = 5000;
 
@@ -139,6 +148,17 @@ export function RawMaterialInventoryImportForm() {
 
                 {/* Controls */}
                 <div className="flex justify-end gap-2">
+                    <Button asChild variant="warning">
+                        <Link
+                            href={
+                                "https://docs.google.com/spreadsheets/d/14NuSAz7_yvtQC5CRs1rjgosyC6bXSfreZceiDmKZ4Rc/edit?usp=sharing"
+                            }
+                            target="_blank"
+                        >
+                            <Container />
+                            Export
+                        </Link>
+                    </Button>
                     <Button
                         variant="outline"
                         onClick={handlePreview}

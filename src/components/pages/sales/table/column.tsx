@@ -94,20 +94,14 @@ export const SalesColumns = ({
             ),
             cell: ({ row }) => (
                 <div className="overflow-hidden min-w-[180px] py-1">
-                    <p className="text-[10px] 2xl:text-xs text-muted-foreground font-mono truncate">
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">
                         {row.original.product.code}
                     </p>
-                    <p className="font-extrabold text-xs 2xl:text-sm truncate leading-tight text-slate-800">
-                        {row.original.product.name}
+                    <p className="font-bold text-xs 2xl:text-sm truncate leading-tight text-primary">
+                        {row.original.product.name}{" "}
+                        {row.original.product.product_type?.name.toLocaleUpperCase()}{" "}
+                        {row.original.product.size.toLocaleUpperCase()}
                     </p>
-                    <div className="flex gap-1 mt-1">
-                        <span className="text-[9px] 2xl:text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded uppercase font-medium">
-                            {row.original.product.product_type?.name ?? "-"}
-                        </span>
-                        <span className="text-[9px] 2xl:text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold">
-                            {row.original.product.size}
-                        </span>
-                    </div>
                 </div>
             ),
         },

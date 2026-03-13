@@ -42,7 +42,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
             label: "Utama",
             items: [
                 { title: "Dashboard", url: "/", icon: Home },
-                { title: "Forecasting (PENDING)", url: "/forecasts", icon: BarChart2 },
+                { title: "Forecasting", url: "/forecasts", icon: BarChart2 },
                 { title: "Safety Stock (PENDING)", url: "/safety-stock", icon: Boxes },
             ],
         },
@@ -101,7 +101,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
             label: "Produksi",
             items: [
                 { title: "Resep", url: "/recipes", icon: FlaskConical },
-                // { title: "BOM", url: "/bom", icon: Flame },
+                { title: "BOM", url: "/bom", icon: Flame },
             ],
         },
 

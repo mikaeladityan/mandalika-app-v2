@@ -12,7 +12,7 @@ export const QueryForecastSchema = z.object({
     status: z.enum(["DRAFT", "FINALIZED", "ADJUSTED"]).optional(),
     page: z.coerce.number().int().positive().default(1).optional(),
     take: z.coerce.number().int().positive().max(1000).default(25).optional(),
-    horizon: z.coerce.number().int().min(12).max(24).default(12).optional(),
+    horizon: z.coerce.number().int().min(3).max(12).default(12).optional(),
 });
 
 export type RunForecastDTO = z.infer<typeof RunForecastSchema>;
@@ -38,6 +38,8 @@ export type ResponseForecastDTO = {
     z_value: number;
     distribution_percentage: number | null;
     safety_percentage: number | null;
+    current_stock: number;
+    need_produce: number;
     monthly_data: Array<{
         month: number;
         year: number;
@@ -53,6 +55,9 @@ export type ResponseForecastDTO = {
     safety_stock_summary: {
         safety_stock_quantity: number | null;
         safety_stock_ratio: number | null;
+        avg_forecast: number | null;
+        total_forecast: number | null;
+        total_demand: number | null;
         last_updated: Date | null;
     } | null;
 };
