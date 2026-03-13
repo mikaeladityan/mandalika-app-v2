@@ -47,6 +47,7 @@ export type RecomendationResponse = {
         product_code: string;
         fg_stock: number;
         recipe_qty: number;
+        recipe_version: number;
         size_multiplier: number;
         contribution: number;
     }[];
@@ -55,6 +56,7 @@ export type RecomendationResponse = {
         product_code: string;
         forecast_qty: number;
         recipe_qty: number;
+        recipe_version: number;
         size_multiplier: number;
         contribution: number;
     }[];

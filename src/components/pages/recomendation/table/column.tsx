@@ -144,27 +144,30 @@ export const RecomendationColumns = ({
                                     : `${invPeriod.month}/${invPeriod.year}`}
                             </span>
                         )}
-                        {/* {breakdown.length > 0 && (
-                            <div className="flex flex-col gap-0.5 mt-1 border-t border-slate-100 pt-1">
-                                {breakdown.map((b: any, i: number) => (
+                        {breakdown.length > 0 && (
+                            <div className="flex flex-col gap-1 mt-1.5 border-t border-slate-100 pt-1.5">
+                                {breakdown.slice(0, 3).map((b: any, i: number) => (
                                     <div
                                         key={i}
-                                        className="text-[9px] font-mono text-slate-500 leading-tight"
+                                        className="text-[9px] font-medium text-slate-500 leading-tight"
                                     >
-                                        <span className="font-semibold text-slate-600">
-                                            {b.product_code}
+                                        <span className="text-slate-700 bg-slate-100 px-1 rounded mr-1">
+                                            {b.product_code} [v.{b.recipe_version || 1}]
                                         </span>
-                                        : {formatNumber(Number(b.fg_stock))} ×{" "}
-                                        {Number(b.recipe_qty)}
-                                        {b.size_multiplier !== 1 ? ` × ${b.size_multiplier}` : ""}
+                                        {formatNumber(Number(b.fg_stock))} × {Number(b.recipe_qty)}
                                         {" = "}
                                         <span className="text-indigo-600 font-bold">
                                             {formatNumber(Math.round(Number(b.contribution)))}
                                         </span>
                                     </div>
                                 ))}
+                                {breakdown.length > 3 && (
+                                    <span className="text-[8px] text-slate-400 italic">
+                                        + {breakdown.length - 3} produk lainnya
+                                    </span>
+                                )}
                             </div>
-                        )} */}
+                        )}
                         {breakdown.length === 0 && (
                             <span className="text-[9px] text-slate-400 italic">
                                 Tidak ada FG stok terkait
@@ -269,32 +272,31 @@ export const RecomendationColumns = ({
                         <span className="font-bold text-rose-700">
                             {formatNumber(val)} {row.original.uom.toUpperCase()}
                         </span>
-                        {/* {breakdown.length > 0 && (
-                            <div className="flex flex-col gap-0.5 mt-1 border-t border-slate-100 pt-1">
-                                {breakdown.slice(0, 5).map((b: any, i: number) => (
+                        {breakdown.length > 0 && (
+                            <div className="flex flex-col gap-1 mt-1.5 border-t border-slate-100 pt-1.5">
+                                {breakdown.slice(0, 3).map((b: any, i: number) => (
                                     <div
                                         key={i}
-                                        className="text-[9px] font-mono text-slate-500 leading-tight"
+                                        className="text-[9px] font-medium text-slate-500 leading-tight"
                                     >
-                                        <span className="font-semibold text-slate-600">
-                                            {b.product_code}
+                                        <span className="text-slate-700 bg-slate-100 px-1 rounded mr-1">
+                                            {b.product_code} [v.{b.recipe_version || 1}]
                                         </span>
-                                        : {formatNumber(Math.round(Number(b.forecast_qty)))}
+                                        {formatNumber(Math.round(Number(b.forecast_qty)))}
                                         × {Number(b.recipe_qty)}
-                                        {b.size_multiplier !== 1 ? ` × ${b.size_multiplier}` : ""}
                                         {" = "}
                                         <span className="text-rose-600 font-bold">
                                             {formatNumber(Math.round(Number(b.contribution)))}
                                         </span>
                                     </div>
                                 ))}
-                                {breakdown.length > 5 && (
+                                {breakdown.length > 3 && (
                                     <span className="text-[8px] text-slate-400 italic">
-                                        ... {breakdown.length - 5} produk lainnya
+                                        + {breakdown.length - 3} produk lainnya
                                     </span>
                                 )}
                             </div>
-                        )} */}
+                        )}
                         {breakdown.length === 0 && (
                             <span className="text-[9px] text-slate-400 italic">
                                 Tidak ada forecast terkait

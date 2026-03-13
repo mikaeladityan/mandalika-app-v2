@@ -58,6 +58,12 @@ export const BOMColumns = ({
                         >
                             {row.original.product.size} {row.original.product.uom}
                         </Badge>
+                        <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 py-0 bg-purple-50 border-purple-100 text-purple-600 uppercase"
+                        >
+                            v.{row.original.recipe_version}
+                        </Badge>
                     </div>
                     <div className="text-xs font-bold text-gray-500 uppercase">
                         {row.original.product.type}

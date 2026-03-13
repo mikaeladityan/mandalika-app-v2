@@ -247,7 +247,18 @@ export default function DetailBOMRequirement() {
                                                 {item.product_code}
                                             </TableCell>
                                             <TableCell className="font-medium text-slate-800">
-                                                {item.product_name} {item.product_type}
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    {item.product_name}
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px] bg-purple-50 text-purple-600 border-purple-100 h-4 px-1 py-0 normal-case"
+                                                    >
+                                                        v.{item.recipe_version || 1}
+                                                    </Badge>
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 block italic leading-none">
+                                                    {item.product_type}
+                                                </span>
                                             </TableCell>
                                             {res.periods?.map((p: any) => {
                                                 const req = item.monthly_data?.[p.key] || 0;

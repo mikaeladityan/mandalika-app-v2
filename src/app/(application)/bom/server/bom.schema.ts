@@ -56,6 +56,7 @@ export type ResponseGroupedBOMDTO = {
         value: number;
     }>;
     safety_stock: number;
+    recipe_version: number;
     items: ResponseBOMDTO[];
 };
 
@@ -90,6 +91,7 @@ export type ResponseMaterialBOMDetailDTO = {
         product_code: string;
         product_name: string;
         product_type: string;
+        recipe_version: number;
         monthly_data: Record<string, number>;
         exploded_at: Date;
     }>;
