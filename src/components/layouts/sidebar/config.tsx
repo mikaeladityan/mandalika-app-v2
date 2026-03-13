@@ -127,9 +127,9 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     title: "Rekomendasi",
                     icon: Replace,
                     items: [
-                        { title: "FFO", url: "/ffo", icon: HeartPulse },
-                        { title: "FP LOKAL", url: "/fp-local", icon: PrinterCheck },
-                        { title: "FP INTER", url: "/fp-inter", icon: PrinterCheck },
+                        { title: "FFO", url: "/recomendation/ffo", icon: HeartPulse },
+                        { title: "FP LOKAL", url: "/recomendation/fp-local", icon: PrinterCheck },
+                        { title: "FP INTER", url: "/recomendation/fp-inter", icon: PrinterCheck },
                     ],
                 },
             ],

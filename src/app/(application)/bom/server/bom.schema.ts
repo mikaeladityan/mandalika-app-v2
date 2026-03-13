@@ -59,6 +59,42 @@ export type ResponseGroupedBOMDTO = {
     items: ResponseBOMDTO[];
 };
 
+export type ResponseMaterialBOMDetailDTO = {
+    material: {
+        id: number;
+        barcode: string;
+        name: string;
+        price: number;
+        category: string;
+        supplier: string;
+        supplier_country: string;
+        unit: string;
+    };
+    inventory: {
+        current_stock: number;
+        stock_gap: number;
+        min_stock: number;
+    };
+    summary: {
+        total_requirement: number;
+        is_stock_sufficient: boolean;
+        affected_products_count: number;
+    };
+    periods: Array<{
+        key: string;
+        month: number;
+        year: number;
+    }>;
+    details: Array<{
+        product_id: number;
+        product_code: string;
+        product_name: string;
+        product_type: string;
+        monthly_data: Record<string, number>;
+        exploded_at: Date;
+    }>;
+};
+
 export type ResponseBOMListDTO = {
     data: ResponseGroupedBOMDTO[];
     len: number;

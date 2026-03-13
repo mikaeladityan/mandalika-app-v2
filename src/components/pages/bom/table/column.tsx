@@ -233,7 +233,7 @@ export const BOMColumns = ({
                                     <TooltipTrigger asChild>
                                         <div className="flex justify-between items-center bg-indigo-50/50 px-1.5 py-0.5 rounded border border-indigo-100/50 cursor-help">
                                             <span className="text-[8px] font-bold text-indigo-400">
-                                                MAT
+                                                =
                                             </span>
                                             <span className="text-[10px] font-black text-indigo-700 tabular-nums">
                                                 {Math.round(item.safety_stock_x_bom).toLocaleString(
@@ -243,10 +243,10 @@ export const BOMColumns = ({
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="left">
-                                        <p className="text-[10px] font-bold">
+                                        <p className="text-[10px] font-bold text-emerald-800">
                                             {item.material.name}
                                         </p>
-                                        <p className="text-[9px]">
+                                        <p className="text-[9px] text-emerald-500">
                                             Proporsional Safety Stock (Qty x BOM)
                                         </p>
                                     </TooltipContent>

@@ -29,6 +29,7 @@ export type RecomendationResponse = {
     uom: string;
     current_stock: number;
     stock_fg_x_resep: number;
+    safety_stock_x_resep: number;
     open_po: number;
     pic_order_quantity: number;
     stock_plus_po: number;

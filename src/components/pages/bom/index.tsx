@@ -30,8 +30,8 @@ export default function BOMPage() {
         product: true,
         material: true,
         bom_qty: true,
-        sales_history: true,
-        forecast: true,
+        sales_history: false,
+        forecast: false,
         needs_to_buy: true,
         safety_stock: true,
     });

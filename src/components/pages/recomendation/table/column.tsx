@@ -144,7 +144,7 @@ export const RecomendationColumns = ({
                                     : `${invPeriod.month}/${invPeriod.year}`}
                             </span>
                         )}
-                        {breakdown.length > 0 && (
+                        {/* {breakdown.length > 0 && (
                             <div className="flex flex-col gap-0.5 mt-1 border-t border-slate-100 pt-1">
                                 {breakdown.map((b: any, i: number) => (
                                     <div
@@ -164,12 +164,29 @@ export const RecomendationColumns = ({
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        )} */}
                         {breakdown.length === 0 && (
                             <span className="text-[9px] text-slate-400 italic">
                                 Tidak ada FG stok terkait
                             </span>
                         )}
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: "safety_stock_x_resep",
+            header: "SAFETY STOCK x RESEP",
+            cell: ({ row }) => {
+                const val = row.original.safety_stock_x_resep || 0;
+                return (
+                    <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-indigo-700">
+                            {formatNumber(val)} {row.original.uom.toUpperCase()}
+                        </span>
+                        <span className="text-[9px] text-slate-400 uppercase font-medium">
+                            Buffer Stock
+                        </span>
                     </div>
                 );
             },
@@ -195,11 +212,11 @@ export const RecomendationColumns = ({
 
                 return (
                     <div className="flex flex-col">
-                        <span className="font-bold text-slate-800">
+                        <span className="font-semibold text-xs text-slate-800">
                             {formatNumber(stock)} {row.original.uom.toUpperCase()}
                         </span>
                         <span
-                            className={`text-[10px] font-bold mt-1 uppercase tracking-wider ${
+                            className={`text-[8px] mt-1 uppercase tracking-wider ${
                                 monthsLasted > 0 ? "text-emerald-600" : "text-red-500"
                             }`}
                         >
@@ -242,19 +259,19 @@ export const RecomendationColumns = ({
 
         {
             accessorKey: "forecast_target_month_needs",
-            header: "HASIL FORECAST FG x RESEP",
+            header: "JUMLAH FORECAST x RESEP",
             cell: ({ row }) => {
                 const val = row.original.forecast_target_month_needs || 0;
                 const breakdown = row.original.fg_forecast_breakdown || [];
 
                 return (
-                    <div className="flex flex-col gap-0.5 min-w-[160px]">
-                        <span className="font-bold text-slate-800">
+                    <div className="flex flex-col gap-0.5 min-w-[170px]">
+                        <span className="font-bold text-rose-700">
                             {formatNumber(val)} {row.original.uom.toUpperCase()}
                         </span>
-                        {breakdown.length > 0 && (
+                        {/* {breakdown.length > 0 && (
                             <div className="flex flex-col gap-0.5 mt-1 border-t border-slate-100 pt-1">
-                                {breakdown.map((b: any, i: number) => (
+                                {breakdown.slice(0, 5).map((b: any, i: number) => (
                                     <div
                                         key={i}
                                         className="text-[9px] font-mono text-slate-500 leading-tight"
@@ -262,17 +279,22 @@ export const RecomendationColumns = ({
                                         <span className="font-semibold text-slate-600">
                                             {b.product_code}
                                         </span>
-                                        : {formatNumber(Math.round(Number(b.forecast_qty)))} ×{" "}
-                                        {Number(b.recipe_qty)}
+                                        : {formatNumber(Math.round(Number(b.forecast_qty)))}
+                                        × {Number(b.recipe_qty)}
                                         {b.size_multiplier !== 1 ? ` × ${b.size_multiplier}` : ""}
                                         {" = "}
-                                        <span className="text-emerald-600 font-bold">
+                                        <span className="text-rose-600 font-bold">
                                             {formatNumber(Math.round(Number(b.contribution)))}
                                         </span>
                                     </div>
                                 ))}
+                                {breakdown.length > 5 && (
+                                    <span className="text-[8px] text-slate-400 italic">
+                                        ... {breakdown.length - 5} produk lainnya
+                                    </span>
+                                )}
                             </div>
-                        )}
+                        )} */}
                         {breakdown.length === 0 && (
                             <span className="text-[9px] text-slate-400 italic">
                                 Tidak ada forecast terkait
@@ -293,30 +315,47 @@ export const RecomendationColumns = ({
                 const fg = row.original.stock_fg_x_resep || 0;
                 const uom = row.original.uom.toUpperCase();
 
+                const ss = row.original.safety_stock_x_resep || 0;
+                const forecastOnly = need;
+
                 const components = (
                     <div className="flex flex-col gap-0.5 mt-1 text-[9px] font-mono text-slate-400 leading-tight">
-                        <span>
-                            Forecast:{" "}
-                            <span className="text-slate-600 font-bold">{formatNumber(need)}</span>
+                        <span className="flex justify-between">
+                            <span>Forecast:</span>
+                            <span className="text-slate-600 font-bold ml-2">
+                                {formatNumber(forecastOnly)}
+                            </span>
                         </span>
-                        <span>
-                            Stock RM:{" "}
-                            <span className="text-slate-600 font-bold">-{formatNumber(stock)}</span>
+                        <span className="flex justify-between">
+                            <span>Safety Stock:</span>
+                            <span className="text-indigo-600 font-bold ml-2">
+                                -{formatNumber(ss)}
+                            </span>
                         </span>
-                        <span>
-                            Open PO:{" "}
-                            <span className="text-slate-600 font-bold">-{formatNumber(po)}</span>
+                        <span className="flex justify-between">
+                            <span>Stock RM:</span>
+                            <span className="text-slate-600 font-bold ml-2">
+                                -{formatNumber(stock)}
+                            </span>
                         </span>
-                        <span>
-                            FG×Resep:{" "}
-                            <span className="text-slate-600 font-bold">-{formatNumber(fg)}</span>
+                        <span className="flex justify-between">
+                            <span>Open PO:</span>
+                            <span className="text-slate-600 font-bold ml-2">
+                                -{formatNumber(po)}
+                            </span>
                         </span>
-                        <span className="border-t border-slate-100 pt-0.5">
-                            =&nbsp;
+                        <span className="flex justify-between border-b border-slate-100 pb-0.5">
+                            <span>FG×Resep:</span>
+                            <span className="text-slate-600 font-bold ml-2">
+                                -{formatNumber(fg)}
+                            </span>
+                        </span>
+                        <span className="flex justify-between pt-0.5">
+                            <span>Kekurangan:</span>
                             <span
                                 className={`font-bold ${rec && rec > 0 ? "text-red-500" : "text-emerald-600"}`}
                             >
-                                {formatNumber(need - stock - po - fg)} {uom}
+                                {formatNumber(forecastOnly - ss - stock - po - fg)} {uom}
                             </span>
                         </span>
                     </div>
@@ -324,7 +363,7 @@ export const RecomendationColumns = ({
 
                 if (rec === null || rec <= 0) {
                     return (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 py-1.5">
                             <Badge
                                 variant="secondary"
                                 className="bg-emerald-50 text-emerald-600 font-bold border-emerald-100"
@@ -336,7 +375,7 @@ export const RecomendationColumns = ({
                     );
                 }
                 return (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 py-1.5">
                         <Badge
                             variant="destructive"
                             className="bg-red-50 text-red-700 shadow-none border-red-200 font-bold px-2 py-0.5 whitespace-nowrap w-fit"
