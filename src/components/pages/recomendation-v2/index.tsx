@@ -141,6 +141,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     total={list.data?.meta?.total ?? 0}
                                     onPageChange={tableState.setPage}
                                     onPageSizeChange={tableState.setTake}
+                                    enableMultiSelect={true}
                                 />
                             </div>
                         )}
