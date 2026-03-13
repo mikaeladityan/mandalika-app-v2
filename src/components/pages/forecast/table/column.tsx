@@ -86,7 +86,7 @@ export const ForecastColumns = ({
                     {p.percentage_value != null && (
                         <div className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1 rounded border border-emerald-100">
                             {Number(p.percentage_value) > 0 ? "+" : ""}
-                            {p.percentage_value}%
+                            {Math.round(Number(p.percentage_value) * 100)}%
                         </div>
                     )}
                 </div>
@@ -162,7 +162,7 @@ export const ForecastColumns = ({
                                         <span>Growth Factor:</span>
                                         <span>
                                             {Number(found.percentage_value) > 0 ? "+" : ""}
-                                            {found.percentage_value}%
+                                            {Math.round(Number(found.percentage_value) * 100)}%
                                         </span>
                                     </div>
                                 )}
@@ -247,9 +247,10 @@ export const ForecastColumns = ({
             cell: ({ row }) => {
                 const edar = row.original.distribution_percentage;
                 if (!edar || edar <= 0) return null;
+                const displayVal = Math.round(Number(edar));
                 return (
                     <div className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block border border-blue-100 min-w-12 text-center shadow-sm">
-                        {edar}%
+                        {displayVal}%
                     </div>
                 );
             },
@@ -269,12 +270,11 @@ export const ForecastColumns = ({
                 </div>
             ),
             cell: ({ row }) => {
-                const edar = row.original.distribution_percentage;
                 const val = row.original.safety_percentage;
-                if (!edar || edar <= 0 || !val || val <= 0) return null;
+                const displayVal = Math.round(Number(val || 0) * 100);
                 return (
                     <div className="text-xs font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded inline-block border border-amber-100 min-w-12 text-center shadow-sm">
-                        {val}%
+                        {displayVal}%
                     </div>
                 );
             },
@@ -295,7 +295,12 @@ export const ForecastColumns = ({
             cell: ({ row }) => {
                 const s = row.original;
                 const total = Math.round(Number(s.safety_stock_summary?.total_forecast || 0));
-                if (!s.safety_stock_summary || total <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                if (
+                    !s.safety_stock_summary ||
+                    total <= 0 ||
+                    !s.distribution_percentage ||
+                    s.distribution_percentage <= 0
+                )
                     return null;
 
                 return (
@@ -324,7 +329,12 @@ export const ForecastColumns = ({
             cell: ({ row }) => {
                 const s = row.original;
                 const val = Math.round(Number(s.safety_stock_summary?.safety_stock_quantity || 0));
-                if (!s.safety_stock_summary || val <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                if (
+                    !s.safety_stock_summary ||
+                    val <= 0 ||
+                    !s.distribution_percentage ||
+                    s.distribution_percentage <= 0
+                )
                     return null;
 
                 return (
@@ -355,7 +365,12 @@ export const ForecastColumns = ({
             cell: ({ row }) => {
                 const s = row.original;
                 const totalDemand = Math.round(Number(s.safety_stock_summary?.total_demand || 0));
-                if (!s.safety_stock_summary || totalDemand <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                if (
+                    !s.safety_stock_summary ||
+                    totalDemand <= 0 ||
+                    !s.distribution_percentage ||
+                    s.distribution_percentage <= 0
+                )
                     return null;
 
                 return (
