@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ForecastRunDialog } from "./forecasting.dialog";
 import { cn } from "@/lib/utils";
-import { Box, Factory } from "lucide-react";
+import { Box, Factory, Info } from "lucide-react";
 
 const formatMonthYear = (year: number, month: number) =>
     new Date(year, month - 1).toLocaleString("id-ID", {
@@ -17,10 +17,50 @@ const formatMonthYear = (year: number, month: number) =>
         year: "2-digit",
     });
 
+const FormulaHint = ({
+    title,
+    formula,
+    description,
+}: {
+    title: string;
+    formula: string;
+    description?: string;
+}) => (
+    <TooltipProvider>
+        <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+                <div className="cursor-help inline-flex items-center ml-1">
+                    <Info className="size-3 text-slate-300 hover:text-indigo-500 transition-colors" />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent
+                side="top"
+                className="w-80 p-3 bg-white text-slate-900 border-slate-200 shadow-xl z-100"
+            >
+                <div className="space-y-2">
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-indigo-600 border-b border-indigo-50 pb-1">
+                        {title}
+                    </p>
+                    <div className="bg-slate-50 p-2 rounded border border-slate-100 font-mono text-[10px] leading-relaxed wrap-break-word text-slate-700">
+                        {formula}
+                    </div>
+                    {description && (
+                        <p className="text-[10px] text-slate-500 leading-normal italic">
+                            {description}
+                        </p>
+                    )}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+);
+
 export const ForecastColumns = ({
     periods,
+    horizon,
 }: {
     periods: any[];
+    horizon?: number;
 }): ColumnDef<ResponseForecastDTO>[] => {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
@@ -31,12 +71,17 @@ export const ForecastColumns = ({
         header: () => {
             const isCurrent = p.year === currentYear && p.month === currentMonth;
             return (
-                <div className="flex flex-col items-start justify-center gap-0 px-2 whitespace-nowrap">
+                <div className="flex flex-col items-start justify-center gap-0 px-2 whitespace-nowrap group">
                     <div className="flex items-center gap-1 font-bold text-[11px] 2xl:text-xs uppercase tracking-tighter w-full whitespace-nowrap">
                         {formatMonthYear(p.year, p.month)}
                         {isCurrent && (
                             <Flag className="size-3 text-blue-600 fill-blue-600 shrink-0" />
                         )}
+                        <FormulaHint
+                            title={`Forecast ${formatMonthYear(p.year, p.month)}`}
+                            formula="Final = Input * (1 + % Growth)"
+                            description="Input adalah penjualan bulan sebelumnya (M-1) atau forecast bulan sebelumnya. Ada aturan pembagian (Split) khusus untuk Aroma Utama, Atomizer, dan varian 2ml."
+                        />
                     </div>
                     {p.percentage_value != null && (
                         <div className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1 rounded border border-emerald-100">
@@ -189,8 +234,13 @@ export const ForecastColumns = ({
         {
             id: "edar",
             header: () => (
-                <div className="font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
+                <div className="flex items-center font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
                     EDAR
+                    <FormulaHint
+                        title="Persentase Edar (Distribution)"
+                        formula="% EDAR = (Varian / Σ Penjualan Grup Aroma) %"
+                        description="Varian utama botol 100/110ml akan berbagi 'EDAR' dari total pool aroma tersebut."
+                    />
                 </div>
             ),
             cell: ({ row }) => (
@@ -205,8 +255,12 @@ export const ForecastColumns = ({
         {
             id: "safety_p",
             header: () => (
-                <div className="font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
+                <div className="flex items-center font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
                     % SAFETY
+                    <FormulaHint
+                        title="Safety Stock Ratio"
+                        formula="Target stok aman dalam persentase (%) terhadap rata-rata forecast bulanan."
+                    />
                 </div>
             ),
             cell: ({ row }) => (
@@ -219,7 +273,14 @@ export const ForecastColumns = ({
         {
             id: "total-forecast",
             header: () => (
-                <div className="font-bold text-xs uppercase whitespace-nowrap">Total Forecast</div>
+                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap">
+                    Total Forecast
+                    <FormulaHint
+                        title="Total Forecast"
+                        formula={`Σ Forecast bulan m s/d m+${Number(horizon) - 1} (${horizon} bulan)`}
+                        description="Akumulasi seluruh proyeksi penjualan selama periode horizon yang ditetapkan."
+                    />
+                </div>
             ),
             cell: ({ row }) => {
                 const s = row.original;
@@ -243,7 +304,14 @@ export const ForecastColumns = ({
         {
             id: "safety-stock",
             header: () => (
-                <div className="font-bold text-xs uppercase whitespace-nowrap">Safety Stock</div>
+                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap">
+                    Safety Stock
+                    <FormulaHint
+                        title="Safety Stock"
+                        formula={`SS = (Total Forecast / ${horizon}) * % Safety`}
+                        description="Stok cadangan minimal yang harus tersedia berdasarkan rata-rata kebutuhan horizon."
+                    />
+                </div>
             ),
             cell: ({ row }) => {
                 const s = row.original;
@@ -268,8 +336,13 @@ export const ForecastColumns = ({
         {
             id: "total-demand",
             header: () => (
-                <div className="font-bold text-xs uppercase whitespace-nowrap text-rose-600">
+                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap text-rose-600">
                     Jumlah Forecast
+                    <FormulaHint
+                        title="Total Demand"
+                        formula="Total Demand = Total Forecast + Safety Stock"
+                        description="Angka acuan final untuk kebutuhan pengadaan/produksi seluruh material resep."
+                    />
                 </div>
             ),
             cell: ({ row }) => {

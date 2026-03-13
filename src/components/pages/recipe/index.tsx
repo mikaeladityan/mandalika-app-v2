@@ -9,7 +9,6 @@ import Link from "next/link";
 import { DataTable } from "@/components/ui/table/data";
 import { RecipeColumns } from "./table/column";
 import { useMemo } from "react";
-import { LogData } from "@/components/log";
 
 export function Recipe() {
     const table = useRecipeTableState();
@@ -138,8 +137,6 @@ export function Recipe() {
                     )}
                 </CardContent>
             </Card>
-
-            <LogData data={data} />
         </section>
     );
 }

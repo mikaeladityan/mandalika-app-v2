@@ -77,7 +77,10 @@ export function Forecast() {
         }));
     }, [groupedData]);
 
-    const columns = useMemo(() => ForecastColumns({ periods }), [periods]);
+    const columns = useMemo(
+        () => ForecastColumns({ periods, horizon: table.horizon }),
+        [periods, table.horizon],
+    );
 
     return (
         <div className="flex flex-col gap-6 p-2 md:p-4">

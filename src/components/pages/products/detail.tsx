@@ -26,19 +26,16 @@ import {
     BarChart3,
     Clock4,
     RefreshCw,
-    FileText,
     AlertTriangle,
     Edit2,
     Shield,
     Beaker,
     Coins,
-    ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { LogData } from "@/components/log";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -459,10 +456,6 @@ export function DetailProduct() {
                     </div>
                 </div>
             </Tabs>
-
-            <div className="pt-6 border-t">
-                <LogData data={product} />
-            </div>
         </div>
     );
 }

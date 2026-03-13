@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useDetailBOM } from "@/app/(application)/bom/server/use.bom";
 import {
     ChevronLeft,
-    Box,
     Database,
     Info,
     CheckCircle2,
@@ -31,7 +30,6 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { LogData } from "@/components/log";
 
 export default function DetailBOMRequirement() {
     const { material_code } = useParams();
@@ -329,7 +327,6 @@ export default function DetailBOMRequirement() {
                     </div>
                 </div>
             </div>
-            <LogData data={res.details} />
         </div>
     );
 }
