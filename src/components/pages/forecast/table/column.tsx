@@ -116,6 +116,9 @@ export const ForecastColumns = ({
                       ? "text-rose-600"
                       : "text-muted-foreground";
 
+            const forecastValue = Math.round(Number(found.final_forecast ?? found.base_forecast));
+            if (forecastValue <= 0) return null;
+
             return (
                 <TooltipProvider>
                     <Tooltip delayDuration={300}>
@@ -132,9 +135,7 @@ export const ForecastColumns = ({
                                     <span
                                         className={`text-sm font-bold leading-none ${isAdjusted ? "text-emerald-700" : "text-foreground"}`}
                                     >
-                                        {Math.round(
-                                            Number(found.final_forecast ?? found.base_forecast),
-                                        )}
+                                        {forecastValue}
                                     </span>
                                     <TrendIcon className={`size-3 ${trendColor}`} />
                                     {found.is_actionable && (
@@ -243,11 +244,15 @@ export const ForecastColumns = ({
                     />
                 </div>
             ),
-            cell: ({ row }) => (
-                <div className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block border border-blue-100 min-w-12 text-center shadow-sm">
-                    {row.original.distribution_percentage}%
-                </div>
-            ),
+            cell: ({ row }) => {
+                const edar = row.original.distribution_percentage;
+                if (!edar || edar <= 0) return null;
+                return (
+                    <div className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block border border-blue-100 min-w-12 text-center shadow-sm">
+                        {edar}%
+                    </div>
+                );
+            },
             size: 80,
         },
 
@@ -263,11 +268,16 @@ export const ForecastColumns = ({
                     />
                 </div>
             ),
-            cell: ({ row }) => (
-                <div className="text-xs font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded inline-block border border-amber-100 min-w-12 text-center shadow-sm">
-                    {row.original.safety_percentage}%
-                </div>
-            ),
+            cell: ({ row }) => {
+                const edar = row.original.distribution_percentage;
+                const val = row.original.safety_percentage;
+                if (!edar || edar <= 0 || !val || val <= 0) return null;
+                return (
+                    <div className="text-xs font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded inline-block border border-amber-100 min-w-12 text-center shadow-sm">
+                        {val}%
+                    </div>
+                );
+            },
             size: 80,
         },
         {
@@ -284,18 +294,16 @@ export const ForecastColumns = ({
             ),
             cell: ({ row }) => {
                 const s = row.original;
-                if (!s.safety_stock_summary)
-                    return <div className="text-xs text-muted-foreground px-4">–</div>;
+                const total = Math.round(Number(s.safety_stock_summary?.total_forecast || 0));
+                if (!s.safety_stock_summary || total <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                    return null;
 
                 return (
                     <div className="flex flex-col">
                         <span className="font-black text-indigo-700 text-sm leading-tight">
-                            {Math.round(
-                                Number(s.safety_stock_summary.total_forecast || 0),
-                            ).toLocaleString("id-ID")}{" "}
+                            {total.toLocaleString("id-ID")}{" "}
                             <span className="text-[10px] font-medium text-indigo-500">ML</span>
                         </span>
-                        {/* <span className="text-[10px] text-slate-400 font-medium">{s.} Bulan</span> */}
                     </div>
                 );
             },
@@ -315,16 +323,15 @@ export const ForecastColumns = ({
             ),
             cell: ({ row }) => {
                 const s = row.original;
-                if (!s.safety_stock_summary)
-                    return <div className="text-xs text-muted-foreground px-4">–</div>;
+                const val = Math.round(Number(s.safety_stock_summary?.safety_stock_quantity || 0));
+                if (!s.safety_stock_summary || val <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                    return null;
 
                 return (
                     <div className="flex flex-col">
                         <div className="flex flex-col">
                             <span className="font-black text-emerald-700 text-sm leading-tight">
-                                {Math.round(
-                                    Number(s.safety_stock_summary.safety_stock_quantity || 0),
-                                ).toLocaleString("id-ID")}{" "}
+                                {val.toLocaleString("id-ID")}{" "}
                                 <span className="text-[10px] font-medium text-emerald-500">ML</span>
                             </span>
                         </div>
@@ -347,15 +354,14 @@ export const ForecastColumns = ({
             ),
             cell: ({ row }) => {
                 const s = row.original;
-                if (!s.safety_stock_summary)
-                    return <div className="text-xs text-muted-foreground px-4">–</div>;
+                const totalDemand = Math.round(Number(s.safety_stock_summary?.total_demand || 0));
+                if (!s.safety_stock_summary || totalDemand <= 0 || !s.distribution_percentage || s.distribution_percentage <= 0)
+                    return null;
 
                 return (
                     <div className="flex flex-co">
                         <span className="font-black text-rose-700 text-sm leading-tight">
-                            {Math.round(
-                                Number(s.safety_stock_summary.total_demand || 0),
-                            ).toLocaleString("id-ID")}{" "}
+                            {totalDemand.toLocaleString("id-ID")}{" "}
                             <span className="text-[10px] font-medium text-rose-500">ML</span>
                         </span>
                     </div>

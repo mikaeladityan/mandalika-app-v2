@@ -134,6 +134,29 @@ export function useSidebarData(): SidebarGroupConfig[] {
                 },
             ],
         },
+
+        {
+            label: "Rekomendasi (PPIC)",
+            items: [
+                {
+                    title: "Rekomendasi V2",
+                    icon: Replace,
+                    items: [
+                        { title: "FFO", url: "/recomendation-v2/ffo", icon: HeartPulse },
+                        {
+                            title: "FP LOKAL",
+                            url: "/recomendation-v2/fp-local",
+                            icon: PrinterCheck,
+                        },
+                        {
+                            title: "FP INTER",
+                            url: "/recomendation-v2/fp-inter",
+                            icon: PrinterCheck,
+                        },
+                    ],
+                },
+            ],
+        },
         {
             label: "Purchase",
             items: [

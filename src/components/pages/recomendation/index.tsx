@@ -71,6 +71,16 @@ export function Recomendation({ title, description, type }: RecomendationProps) 
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="relative w-full md:max-w-md group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Input
+                                placeholder="Cari material..."
+                                value={tableState.search}
+                                onChange={(e) => tableState.setSearch(e.target.value)}
+                                className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus-visible:ring-indigo-500/20 transition-all font-medium"
+                            />
+                        </div>
+
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <Select
@@ -139,7 +149,7 @@ export function Recomendation({ title, description, type }: RecomendationProps) 
                                     <DropdownMenuTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="ml-auto h-12 bg-slate-50/50 border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 transition-all border-dashed"
+                                            className="ml-auto h-9 bg-slate-50/50 border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 transition-all border-dashed"
                                         >
                                             <Settings2 className="mr-2 h-4 w-4" />
                                             Kolom <ChevronDown className="ml-2 h-4 w-4" />
@@ -178,16 +188,6 @@ export function Recomendation({ title, description, type }: RecomendationProps) 
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-                        </div>
-
-                        <div className="relative w-full md:max-w-md group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                            <Input
-                                placeholder="Cari material..."
-                                value={tableState.search}
-                                onChange={(e) => tableState.setSearch(e.target.value)}
-                                className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus-visible:ring-indigo-500/20 transition-all font-medium"
-                            />
                         </div>
                     </div>
                 </CardHeader>
