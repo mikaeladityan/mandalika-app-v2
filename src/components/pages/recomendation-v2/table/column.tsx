@@ -74,4 +74,82 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
             </Badge>
         ),
     },
+    {
+        accessorKey: "current_stock",
+        header: "Current Stock",
+        cell: ({ row }) => {
+            const stock = row.original.current_stock;
+            const openPo = row.original.open_po;
+            const available = stock + openPo;
+            const needed = row.original.forecast_needed;
+            const isSufficient = available >= needed;
+
+            return (
+                <div className="flex flex-col min-w-[120px]">
+                    <span className="text-xs font-black text-slate-800">
+                        {formatNumber(stock)} <span className="text-[10px] text-slate-400">{row.original.uom}</span>
+                    </span>
+                    <span
+                        className={`text-[9px] mt-1 font-bold uppercase tracking-wider ${
+                            isSufficient ? "text-emerald-600" : "text-red-500"
+                        }`}
+                    >
+                        {needed > 0 ? (isSufficient ? "✓ Cukup" : "⚠ Stok Defisit") : "–"}
+                    </span>
+                </div>
+            );
+        },
+        size: 130,
+    },
+    {
+        accessorKey: "open_po",
+        header: "Open PO",
+        cell: ({ row }) => {
+            const val = row.original.open_po;
+            return (
+                <div className="flex flex-col">
+                    <span className={`text-xs font-black ${val > 0 ? "text-indigo-600" : "text-slate-400"}`}>
+                        {val > 0 ? `+${formatNumber(val)}` : "0"}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "forecast_needed",
+        header: "Forecast x Resep",
+        cell: ({ row }) => (
+            <div className="flex flex-col">
+                <span className="text-sm font-black text-rose-600">
+                    {formatNumber(row.original.forecast_needed)}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+            </div>
+        ),
+    },
+    {
+        accessorKey: "stock_fg_x_resep",
+        header: "Stock FG x Resep",
+        cell: ({ row }) => (
+            <div className="flex flex-col">
+                <span className="text-xs font-black text-slate-700">
+                    {formatNumber(row.original.stock_fg_x_resep)}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+            </div>
+        ),
+    },
+    {
+        accessorKey: "safety_stock_x_resep",
+        header: "Safety Stock x Resep",
+        cell: ({ row }) => (
+            <div className="flex flex-col">
+                <span className="text-xs font-black text-indigo-700">
+                    {formatNumber(row.original.safety_stock_x_resep)}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+            </div>
+        ),
+    },
 ];
