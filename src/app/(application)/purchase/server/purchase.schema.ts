@@ -21,5 +21,22 @@ export type PurchaseResponse = {
     price: number;
     moq: number | null;
     pic_id: string | null;
+    status: string;
     created_at: Date | string;
+};
+
+export type PurchaseSummaryResponse = {
+    supplier_id: string;
+    supplier_name: string;
+    total_amount: number;
+    total_items: number;
+    items: Array<{
+        material_name: string;
+        barcode: string;
+        quantity: number;
+        price: number;
+        subtotal: number;
+        uom: string;
+        status: string;
+    }>;
 };

@@ -82,11 +82,18 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
         {
             id: "status",
             header: "STATUS",
-            cell: () => (
-                <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
-                    Draft
-                </Badge>
-            ),
+            cell: ({ row }) => {
+                const isAcc = row.original.status === "ACC";
+                return isAcc ? (
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200">
+                        Ordered
+                    </Badge>
+                ) : (
+                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
+                        Draft
+                    </Badge>
+                );
+            },
         },
         {
             accessorKey: "pic_id",
@@ -110,6 +117,9 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             cell: ({ row }) => {
                 const { mutate: approve, isPending: isApproving } = useApproveRecomendation();
                 const { mutate: del, isPending: isDeleting } = useDeleteRecomendation();
+                const isAcc = row.original.status === "ACC";
+
+                if (isAcc) return null;
 
                 return (
                     <div className="flex items-center gap-2">

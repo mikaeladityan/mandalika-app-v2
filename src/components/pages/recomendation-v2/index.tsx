@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { Search, TrendingUp, CalendarDays, Settings2, ChevronDown } from "lucide-react";
+import { Search, TrendingUp, CalendarDays, Settings2, ChevronDown, Zap } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -26,6 +26,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { VisibilityState } from "@tanstack/react-table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 interface RecomendationV2Props {
     title: string;
@@ -35,7 +43,25 @@ interface RecomendationV2Props {
 
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
     const tableState = useRecomendationV2TableState({ defaultType: type });
-    const { list } = useRecomendationV2(tableState.queryParams);
+    const { list, bulkSaveHorizon } = useRecomendationV2(tableState.queryParams);
+    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+
+    const handleBulkHorizon = () => {
+        setIsBulkDialogOpen(true);
+    };
+
+    const confirmBulkHorizon = () => {
+        bulkSaveHorizon.mutate({
+            month: tableState.month,
+            year: tableState.year,
+            horizon: 3,
+            type: type
+        }, {
+            onSuccess: () => {
+                setIsBulkDialogOpen(false);
+            }
+        });
+    };
     const periods = useMemo(() => {
         if (!(list.data as any)?.meta) {
             return {
@@ -57,7 +83,10 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
         // lead_time: false,
     });
 
-    const columns = useMemo(() => RecomendationV2Columns(periods), [periods]);
+    const columns = useMemo(
+        () => RecomendationV2Columns({ ...periods, month: tableState.month, year: tableState.year }),
+        [periods, tableState.month, tableState.year],
+    );
 
     const months = [
         "Januari",
@@ -94,6 +123,15 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <Button
+                                onClick={handleBulkHorizon}
+                                disabled={bulkSaveHorizon.isPending}
+                                className="h-14 bg-indigo-600 text-white rounded-3xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all px-8 border-none group"
+                            >
+                                <Zap className={`mr-2 h-5 w-5 ${bulkSaveHorizon.isPending ? 'animate-spin' : 'group-hover:scale-110 transition-transform'}`} />
+                                {bulkSaveHorizon.isPending ? "Memproses..." : "Bulk Horizon (3m)"}
+                            </Button>
+
                             <div className="flex items-center gap-3 bg-white p-2 rounded-3xl border border-indigo-100 shadow-sm">
                                 <CalendarDays className="size-4 text-indigo-400 ml-2" />
                                 <Select
@@ -303,6 +341,39 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                     </div>
                 </CardContent>
             </Card>
+
+            <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+                <DialogContent className="rounded-[2.5rem] p-8 lg:p-10 border-none shadow-2xl max-w-md bg-white overflow-hidden">
+                    <DialogHeader className="space-y-4">
+                        <div className="mx-auto w-20 h-20 bg-indigo-50 rounded-[2rem] flex items-center justify-center mb-2">
+                            <Zap className="h-10 w-10 text-indigo-600 animate-pulse" />
+                        </div>
+                        <DialogTitle className="text-2xl font-black text-slate-900 text-center tracking-tight">
+                            Eksekusi Bulk <span className="text-indigo-600">Horizon</span>
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-500 font-medium text-center text-base leading-relaxed">
+                            Apakah Anda yakin ingin memperbarui **seluruh** Horizon ke **3 bulan** untuk kategori <span className="text-indigo-600 font-bold">{title}</span>? 
+                            Aksi ini akan menimpa konfigurasi yang sudah ada.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-8 flex-col sm:flex-row gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsBulkDialogOpen(false)}
+                            className="flex-1 h-14 rounded-2xl font-bold text-slate-600 border-slate-200 hover:bg-slate-50 transition-all"
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={confirmBulkHorizon}
+                            disabled={bulkSaveHorizon.isPending}
+                            className="flex-1 h-14 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all border-none"
+                        >
+                            {bulkSaveHorizon.isPending ? "Memproses..." : "Ya, Eksekusi"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

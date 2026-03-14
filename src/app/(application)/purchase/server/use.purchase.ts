@@ -43,3 +43,12 @@ export const usePurchase = (query: QueryPurchaseDTO) => {
 
     return { list };
 };
+
+export const usePurchaseSummary = (query: QueryPurchaseDTO) => {
+    const summary = useQuery({
+        queryKey: ["purchase-summary", query],
+        queryFn: () => PurchaseService.getSummary(query),
+    });
+
+    return { summary };
+};

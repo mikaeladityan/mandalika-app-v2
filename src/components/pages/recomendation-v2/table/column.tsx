@@ -5,13 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/utils";
 import { RecomendationV2Response } from "@/app/(application)/recomendation-v2/server/recomendation-v2.schema";
 import Link from "next/link";
-import { Factory, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { LeadTimeEditDialog } from "./lead-time-dialog";
+import { WorkOrderDialog } from "./work-order-dialog";
+import { HorizonDialog } from "./horizon-dialog";
 
 interface PeriodProps {
     sales_periods: { month: number; year: number; period: Date | string; key: string }[];
     forecast_periods: { month: number; year: number; period: Date | string; key: string }[];
     po_periods: { month: number; year: number; period: Date | string; key: string }[];
+    month: number;
+    year: number;
 }
 
 const MONTHS_SHORT = [
@@ -186,7 +190,7 @@ export const RecomendationV2Columns = (
                         {formatNumber(available)}{" "}
                         <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
                     </span>
-                    <span
+                    {/* <span
                         className={`text-[9px] mt-1 font-semibold uppercase tracking-wider ${
                             isSufficient ? "text-emerald-600" : "text-red-500"
                         }`}
@@ -194,7 +198,7 @@ export const RecomendationV2Columns = (
                         {needed > 0
                             ? `${isSufficient ? "✓ Cukup" : "⚠ Defisit"} • ${coverage.toFixed(1)}m`
                             : "–"}
-                    </span>
+                    </span> */}
                 </div>
             );
         },
@@ -239,23 +243,20 @@ export const RecomendationV2Columns = (
         id: "total_needs",
         header: () => (
             <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest leading-none">
-                    Total Need
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest leading-none text-center">
+                    Total Need<br/>(Horizon)
                 </span>
-                <span className="text-[8px] text-slate-400 font-mono italic">Horizon View</span>
             </div>
         ),
         cell: ({ row }) => {
-            const needs = row.original.needs || [];
-            const total = needs.reduce((sum, n) => sum + (n.quantity || 0), 0);
+            const data = row.original;
             return (
-                <div className="flex flex-col min-w-[80px]">
-                    <span className="text-xs font-black text-slate-800 tabular-nums">
-                        {formatNumber(total)}
-                    </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">
-                        {row.original.uom}
-                    </span>
+                <div className="flex flex-col items-center justify-center min-w-[80px]">
+                    <HorizonDialog 
+                        data={data} 
+                        month={periods.month} 
+                        year={periods.year} 
+                    />
                 </div>
             );
         },
@@ -272,10 +273,18 @@ export const RecomendationV2Columns = (
             </div>
         ),
         cell: ({ row }) => {
-            const { current_stock, open_po, needs = [] } = row.original;
+            const data = row.original;
 
-            // Logika Defisit: (Physical + Open PO) - SUM(Needs)
-            const deficit = calculateDeficit(current_stock, open_po, needs);
+            if (!data.work_order_horizon) {
+                return <span className="text-[10px] font-bold text-slate-300">–</span>;
+            }
+
+            const deficit = calculateDeficit(
+                data.current_stock,
+                data.open_po,
+                data.needs,
+                data.work_order_horizon,
+            );
 
             if (deficit === null) {
                 return (
@@ -315,24 +324,26 @@ export const RecomendationV2Columns = (
         },
         size: 100,
     })),
-
-    // {
-    //     accessorKey: "forecast_needed",
-    //     header: "Forecast x Resep",
-    //     cell: ({ row }) => (
-    //         <div className="flex flex-col">
-    //             <span className="text-sm font-black text-rose-600">
-    //                 {formatNumber(row.original.forecast_needed)}
-    //             </span>
-    //             <span className="text-[9px] text-slate-400 font-bold uppercase">
-    //                 {row.original.uom}
-    //             </span>
-    //         </div>
-    //     ),
-    // },
-
-    // ─── KOLOM BARU: Total Needs & Recommendation ─────────────────────────────
-    // Implementasi rumus dari _temp: (Ready Stock) - (Total Needs)
+    {
+        id: "action",
+        header: () => (
+            <div className="flex flex-col items-center gap-0.5 py-1 min-w-[120px]">
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest leading-none">
+                    Action
+                </span>
+                <span className="text-[8px] text-slate-400 font-mono italic">Work Order</span>
+            </div>
+        ),
+        cell: ({ row }) => {
+            const data = row.original;
+            return (
+                <div className="flex items-center justify-center">
+                    <WorkOrderDialog data={data} month={periods.month} year={periods.year} />
+                </div>
+            );
+        },
+        size: 140,
+    },
 ];
 
 // ─── Export helper untuk digunakan di tempat lain ──────────────────────────────

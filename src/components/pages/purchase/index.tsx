@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import {
+    useState,
+    useMemo
+} from "react";
 import {
     usePurchase,
     usePurchaseTableState,
@@ -9,10 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { ShoppingCart, Search, Download, Calculator, Loader2 } from "lucide-react";
 import { PurchaseColumns } from "./table/column";
 import { Button } from "@/components/ui/button";
+import { SupplierSummaryGrid } from "./table/supplier-summary-grid";
 import { formatNumber } from "@/lib/utils";
+import { ShoppingCart, Search, Download, Calculator, Loader2, LayoutGrid, List } from "lucide-react";
 import * as XLSX from "xlsx";
 import dayjs from "dayjs";
 import {
@@ -31,6 +35,7 @@ interface PurchaseProps {
 export function Purchase({ title, description }: PurchaseProps) {
     const table = usePurchaseTableState();
     const { list } = usePurchase(table.queryParams);
+    const [view, setView] = useState<"table" | "supplier">("table");
 
     const columns = useMemo(() => PurchaseColumns(), []);
 
@@ -180,42 +185,55 @@ export function Purchase({ title, description }: PurchaseProps) {
                                 <Download className="w-4 h-4" />
                                 Export Excel
                             </Button>
+
+                            <Button
+                                onClick={() => setView(view === "table" ? "supplier" : "table")}
+                                variant="outline"
+                                className="h-11 rounded-xl border-indigo-200 text-indigo-600 font-bold gap-2 hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm"
+                            >
+                                {view === "table" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
+                                {view === "table" ? "Supplier View" : "Table View"}
+                            </Button>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <div className="px-6 lg:px-8 pb-8">
-                        {list.isLoading ? (
-                            <div className="p-8 border border-slate-100 rounded-2xl">
-                                <TableSkeleton />
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <DataTable
-                                    columns={columns}
-                                    data={list.data?.data ?? []}
-                                    page={table.page}
-                                    pageSize={table.take}
-                                    total={list.data?.meta?.total ?? 0}
-                                    onPageChange={table.setPage}
-                                    onPageSizeChange={table.setTake}
-                                />
-                                {list.data?.data && list.data.data.length > 0 && (
-                                    <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
-                                        <div className="flex items-center gap-3 text-amber-700">
-                                            <div className="p-2 bg-amber-100 rounded-xl">
-                                                <Calculator className="w-5 h-5" />
+                        {view === "table" ? (
+                            list.isLoading ? (
+                                <div className="p-8 border border-slate-100 rounded-2xl">
+                                    <TableSkeleton />
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <DataTable
+                                        columns={columns}
+                                        data={list.data?.data ?? []}
+                                        page={table.page}
+                                        pageSize={table.take}
+                                        total={list.data?.meta?.total ?? 0}
+                                        onPageChange={table.setPage}
+                                        onPageSizeChange={table.setTake}
+                                    />
+                                    {list.data?.data && list.data.data.length > 0 && (
+                                        <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
+                                            <div className="flex items-center gap-3 text-amber-700">
+                                                <div className="p-2 bg-amber-100 rounded-xl">
+                                                    <Calculator className="w-5 h-5" />
+                                                </div>
+                                                <span className="font-semibold text-sm">
+                                                    Estimasi Pembayaran (Semua halaman)
+                                                </span>
                                             </div>
-                                            <span className="font-semibold text-sm">
-                                                Estimasi Pembayaran (Semua halaman)
-                                            </span>
+                                            <div className="text-xl md:text-2xl font-black text-amber-600 tracking-tight mt-2 sm:mt-0">
+                                                Rp {formatNumber(grandTotal)}
+                                            </div>
                                         </div>
-                                        <div className="text-xl md:text-2xl font-black text-amber-600 tracking-tight mt-2 sm:mt-0">
-                                            Rp {formatNumber(grandTotal)}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            )
+                        ) : (
+                            <SupplierSummaryGrid queryParams={table.queryParams} />
                         )}
                     </div>
                 </CardContent>

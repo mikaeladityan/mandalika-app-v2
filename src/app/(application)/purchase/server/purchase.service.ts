@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { QueryPurchaseDTO, PurchaseResponse } from "./purchase.schema";
+import { QueryPurchaseDTO, PurchaseResponse, PurchaseSummaryResponse } from "./purchase.schema";
 
 const API = `${process.env.NEXT_PUBLIC_API}/api/app/purchases`;
 
@@ -14,5 +14,10 @@ export class PurchaseService {
                 take: number;
             };
         };
+    }
+
+    static async getSummary(query: QueryPurchaseDTO) {
+        const { data } = await api.get(`${API}/summary`, { params: query });
+        return data.data as PurchaseSummaryResponse[];
     }
 }

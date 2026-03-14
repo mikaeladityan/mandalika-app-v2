@@ -13,6 +13,41 @@ export const QueryRecomendationV2Schema = z.object({
 
 export type QueryRecomendationV2DTO = z.infer<typeof QueryRecomendationV2Schema>;
 
+export const RequestSaveWorkOrderSchema = z.object({
+    raw_mat_id: z.coerce.number(),
+    month: z.coerce.number().min(1).max(12),
+    year: z.coerce.number().min(2000),
+    quantity: z.coerce.number().min(0),
+    horizon: z.coerce.number().min(1).max(12).default(1),
+    total_needed: z.coerce.number().optional().default(0),
+    current_stock: z.coerce.number().optional().default(0),
+    stock_fg_x_resep: z.coerce.number().optional().default(0),
+    safety_stock_x_resep: z.coerce.number().optional().default(0),
+});
+
+export type RequestSaveWorkOrderDTO = z.infer<typeof RequestSaveWorkOrderSchema>;
+
+export const RequestBulkSaveHorizonSchema = z.object({
+    month: z.coerce.number().min(1).max(12),
+    year: z.coerce.number().min(2000),
+    horizon: z.coerce.number().min(1).max(12).default(3),
+    type: z.enum(["ffo", "lokal", "impor"]).optional(),
+});
+
+export type RequestBulkSaveHorizonDTO = z.infer<typeof RequestBulkSaveHorizonSchema>;
+
+
+export const RequestApproveWorkOrderSchema = z.object({
+    id: z.coerce.number(),
+});
+
+export type RequestApproveWorkOrderDTO = z.infer<typeof RequestApproveWorkOrderSchema>;
+
+export const WORK_ORDER_STATUS = {
+    DRAFT: "DRAFT",
+    ACC: "ACC",
+} as const;
+
 export interface RecomendationV2Response {
     ranking: number;
     material_id: number;
@@ -28,6 +63,13 @@ export interface RecomendationV2Response {
     stock_fg_x_resep: number;
     safety_stock_x_resep: number;
     forecast_needed: number;
+
+    // Work Order Info
+    work_order_id?: number;
+    work_order_status?: string;
+    work_order_pic_id?: string | null;
+    work_order_quantity?: number;
+    work_order_horizon?: number;
 
     sales: { month: number; year: number; key: string; quantity: number }[];
     needs: { month: number; year: number; key: string; quantity: number }[];
