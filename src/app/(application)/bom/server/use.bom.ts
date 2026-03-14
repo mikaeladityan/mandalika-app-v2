@@ -10,7 +10,10 @@ export const useBOM = (query: QueryBOMDTO) => {
     });
 };
 
-export const useBOMDetail = (id: number | string, params?: { month?: number; year?: number }) => {
+export const useBOMDetail = (
+    id: number | string,
+    params?: { month?: number; year?: number; forecast_months?: number },
+) => {
     return useQuery({
         queryKey: ["bom", "detail", id, params],
         queryFn: () => bomService.detail(id, params),

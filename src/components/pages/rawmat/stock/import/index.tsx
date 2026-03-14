@@ -156,7 +156,7 @@ export function RawMaterialInventoryImportForm() {
                             target="_blank"
                         >
                             <Container />
-                            Export
+                            Template
                         </Link>
                     </Button>
                     <Button

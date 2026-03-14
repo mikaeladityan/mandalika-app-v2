@@ -21,6 +21,8 @@ export function useRecomendationV2TableState(initial?: { defaultType?: "ffo" | "
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [type, setType] = useState<"ffo" | "lokal" | "impor" | undefined>(initial?.defaultType);
+    const [salesMonths, setSalesMonths] = useState(3);
+    const [forecastMonths, setForecastMonths] = useState(3);
 
     const queryParams: QueryRecomendationV2DTO = {
         page,
@@ -29,6 +31,8 @@ export function useRecomendationV2TableState(initial?: { defaultType?: "ffo" | "
         month,
         year,
         type,
+        sales_months: salesMonths,
+        forecast_months: forecastMonths,
     };
 
     const reset = () => {
@@ -36,6 +40,8 @@ export function useRecomendationV2TableState(initial?: { defaultType?: "ffo" | "
         setSearch("");
         setMonth(new Date().getMonth() + 1);
         setYear(new Date().getFullYear());
+        setSalesMonths(3);
+        setForecastMonths(3);
     };
 
     return {
@@ -51,6 +57,10 @@ export function useRecomendationV2TableState(initial?: { defaultType?: "ffo" | "
         setYear,
         type,
         setType,
+        salesMonths,
+        setSalesMonths,
+        forecastMonths,
+        setForecastMonths,
         queryParams,
         reset,
     };

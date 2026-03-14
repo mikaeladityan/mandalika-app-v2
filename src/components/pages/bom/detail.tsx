@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDetailBOM } from "@/app/(application)/bom/server/use.bom";
 import {
     ChevronLeft,
@@ -29,12 +29,18 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export default function DetailBOMRequirement() {
+    const router = useRouter();
     const { material_code } = useParams();
-    // Mengasumsikan params kedua adalah objek query untuk month/year jika diperlukan
-    const { data, isLoading } = useDetailBOM(String(material_code), undefined);
+    const [forecastMonths, setForecastMonths] = useState(3);
+
+    const { data, isLoading } = useDetailBOM(String(material_code), {
+        forecast_months: forecastMonths,
+    });
 
     if (isLoading) return <DetailSkeleton />;
     if (!data) return <div className="p-10 text-center">Data tidak ditemukan.</div>;
@@ -50,11 +56,15 @@ export default function DetailBOMRequirement() {
             {/* Header & Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/bom">
-                        <Button variant="outline" size="icon" className="rounded-full">
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                    <Button
+                        variant="outline"
+                        onClick={() => router.back()}
+                        size="icon"
+                        className="rounded-full"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
                     <div>
                         <div className="flex items-center gap-2">
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -85,13 +95,41 @@ export default function DetailBOMRequirement() {
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg border">
-                    <Calendar className="h-4 w-4 text-slate-500" />
-                    <span className="text-sm font-medium">
-                        Periode: {res.periods?.[0]?.month}/{res.periods?.[0]?.year} -{" "}
-                        {res.periods?.[res.periods.length - 1]?.month}/
-                        {res.periods?.[res.periods.length - 1]?.year}
-                    </span>
+                <div className="flex items-center gap-3">
+                    <Tabs
+                        value={String(forecastMonths)}
+                        onValueChange={(v) => setForecastMonths(Number(v))}
+                        className="w-fit"
+                    >
+                        <TabsList className="h-9 bg-slate-100 border p-1">
+                            <TabsTrigger value="1" className="text-[10px] uppercase font-bold h-7">
+                                M
+                            </TabsTrigger>
+                            <TabsTrigger value="3" className="text-[10px] uppercase font-bold h-7">
+                                M+2M
+                            </TabsTrigger>
+                            <TabsTrigger value="6" className="text-[10px] uppercase font-bold h-7">
+                                6 BLN
+                            </TabsTrigger>
+                            <TabsTrigger value="12" className="text-[10px] uppercase font-bold h-7">
+                                1 THN
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
+                    <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg border h-9">
+                        <Calendar className="h-4 w-4 text-slate-500" />
+                        <span className="text-xs font-semibold text-slate-700">
+                            {res.periods?.[0]?.month}/{res.periods?.[0]?.year}
+                            {res.periods && res.periods.length > 1 && (
+                                <>
+                                    {" "}
+                                    - {res.periods?.[res.periods.length - 1]?.month}/
+                                    {res.periods?.[res.periods.length - 1]?.year}
+                                </>
+                            )}
+                        </span>
+                    </div>
                 </div>
             </div>
 

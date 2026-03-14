@@ -6,6 +6,7 @@ export const QueryBOMSchema = z.object({
     search: z.string().optional(),
     sortBy: z.enum(["product_name", "material_name", "quantity"]).default("product_name").optional(),
     sortOrder: z.enum(["asc", "desc"]).default("asc").optional(),
+    forecast_months: z.coerce.number().int().min(1).max(12).default(3).optional(),
 });
 
 export type QueryBOMDTO = z.infer<typeof QueryBOMSchema>;

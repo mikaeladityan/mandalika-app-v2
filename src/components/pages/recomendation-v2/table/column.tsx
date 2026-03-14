@@ -5,16 +5,68 @@ import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/utils";
 import { RecomendationV2Response } from "@/app/(application)/recomendation-v2/server/recomendation-v2.schema";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Factory, Trophy } from "lucide-react";
+import { LeadTimeEditDialog } from "./lead-time-dialog";
 
-export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] => [
+interface PeriodProps {
+    sales_periods: { month: number; year: number; period: Date | string; key: string }[];
+    forecast_periods: { month: number; year: number; period: Date | string; key: string }[];
+    po_periods: { month: number; year: number; period: Date | string; key: string }[];
+}
+
+const MONTHS_SHORT = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Ags",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+];
+
+/**
+ * Menghitung defisit stok menggunakan logika:
+ * =IF(current_stock_po - SUM(need_mar + need_apr) >= 0, "", (current_stock_po - SUM(need_mar + need_apr)))
+ *
+ * - Jika (current_stock + open_po) - (need_mar + need_apr) >= 0 → stok cukup → return null
+ * - Jika hasilnya < 0 → stok kurang → return nilai negatif (defisit)
+ */
+function calculateDeficit(
+    currentStock: number,
+    openPo: number,
+    needs: { month: number; quantity: number }[],
+    monthsToCheck?: number,
+): number | null {
+    const readyStock = currentStock + openPo;
+
+    // Jika monthsToCheck tidak ada, gunakan semua data needs yang tersedia
+    const relevantNeeds = monthsToCheck ? needs.slice(0, monthsToCheck) : needs;
+    const totalNeeded = relevantNeeds.reduce((sum, n) => sum + (n.quantity || 0), 0);
+
+    const result = readyStock - totalNeeded;
+
+    // Jika >= 0 → cukup → tampilkan null (kosong seperti "" di Excel)
+    if (result >= 0) return null;
+
+    // Jika < 0 → defisit → return nilai negatif
+    return result;
+}
+
+export const RecomendationV2Columns = (
+    periods: PeriodProps,
+): ColumnDef<RecomendationV2Response>[] => [
     {
         accessorKey: "ranking",
         header: "Rank",
         cell: ({ row }) => {
             const rank = row.original.ranking;
             return (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-100 font-black text-xs text-slate-600 shadow-sm">
+                <div className="flex items-center justify-center gap-x-1 font-black text-xs text-slate-600">
                     {rank === 1 && <Trophy className="size-3 text-amber-500 mr-0.5" />}
                     {rank}
                 </div>
@@ -29,11 +81,8 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
             const mat = row.original;
             return (
                 <div className="flex flex-col min-w-[200px]">
-                    <Link
-                        href={`/bom/${mat.barcode}/`}
-                        className="flex flex-col group"
-                    >
-                        <span className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                    <Link href={`/bom/${mat.barcode}/`} className="flex flex-col group">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
                             {mat.material_name}
                         </span>
                         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">
@@ -45,7 +94,7 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
         },
     },
     {
-        accessorKey: "supplier_name",
+        accessorKey: "supplier",
         header: "Supplier",
         cell: ({ row }) => (
             <span className="text-xs font-semibold text-slate-600">
@@ -61,30 +110,37 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
                 <span className="text-xs font-black text-slate-700">
                     {formatNumber(row.original.moq)}
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">
+                    {row.original.uom}
+                </span>
             </div>
         ),
     },
     {
-        accessorKey: "lead_time",
-        header: "Lead Time",
+        accessorKey: "safety_stock_x_resep",
+        header: "Safety Stock",
         cell: ({ row }) => (
-            <Badge variant="outline" className="font-mono bg-slate-50 text-slate-500 text-[10px] border-slate-200">
-                {row.original.lead_time || 0} Hari
-            </Badge>
+            <div className="flex flex-col">
+                <span className="text-xs font-black text-indigo-700">
+                    {formatNumber(row.original.safety_stock_x_resep)}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">
+                    {row.original.uom}
+                </span>
+            </div>
         ),
     },
     {
         accessorKey: "current_stock",
-        header: "Pure Stock",
+        header: "Current Stock",
         cell: ({ row }) => {
             const stock = row.original.current_stock;
             return (
                 <div className="flex flex-col">
-                    <span className="text-xs font-black text-slate-800">
-                        {formatNumber(stock)}
+                    <span className="text-xs font-black text-slate-800">{formatNumber(stock)}</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">
+                        {row.original.uom}
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
                 </div>
             );
         },
@@ -99,73 +155,185 @@ export const RecomendationV2Columns = (): ColumnDef<RecomendationV2Response>[] =
             const available = stock + openPo;
             const needed = row.original.forecast_needed;
             const isSufficient = available >= needed;
+            const needs = row.original.needs || [];
+
+            const coverage = (() => {
+                if (available <= 0) return 0;
+                if (needs.length === 0) return 0;
+
+                let cov = 0;
+                let rem = available;
+                for (const n of needs) {
+                    if (n.quantity <= 0) {
+                        cov += 1;
+                        continue;
+                    }
+                    if (rem >= n.quantity) {
+                        cov += 1;
+                        rem -= n.quantity;
+                    } else {
+                        cov += rem / n.quantity;
+                        rem = 0;
+                        break;
+                    }
+                }
+                return cov;
+            })();
 
             return (
-                <div className="flex flex-col min-w-[120px]">
+                <div className="flex flex-col min-w-[120px] py-2">
                     <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 w-fit">
-                        {formatNumber(available)} <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
+                        {formatNumber(available)}{" "}
+                        <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
                     </span>
                     <span
-                        className={`text-[9px] mt-1 font-black uppercase tracking-wider ${
+                        className={`text-[9px] mt-1 font-semibold uppercase tracking-wider ${
                             isSufficient ? "text-emerald-600" : "text-red-500"
                         }`}
                     >
-                        {needed > 0 ? (isSufficient ? "✓ Cukup" : "⚠ Stok Defisit") : "–"}
+                        {needed > 0
+                            ? `${isSufficient ? "✓ Cukup" : "⚠ Defisit"} • ${coverage.toFixed(1)}m`
+                            : "–"}
                     </span>
                 </div>
             );
         },
         size: 140,
     },
+
+    // ─── Kolom Sales Historis ──────────────────────────────────────────────────
+    ...periods.sales_periods.map((p) => ({
+        id: `sales_${p.key}`,
+        header: `SALES ${MONTHS_SHORT[p.month - 1]}`,
+        cell: ({ row }: any) => {
+            const q = row.original.sales?.find((s: any) => s.key === p.key)?.quantity ?? 0;
+            return <span className="font-bold text-xs text-slate-500">{formatNumber(q)}</span>;
+        },
+        size: 100,
+    })),
+
     {
-        accessorKey: "open_po",
-        header: "Open PO",
+        accessorKey: "lead_time",
+        header: "Lead Time",
         cell: ({ row }) => {
-            const val = row.original.open_po;
+            const mat = row.original;
             return (
-                <div className="flex flex-col">
-                    <span className={`text-xs font-black ${val > 0 ? "text-indigo-600" : "text-slate-400"}`}>
-                        {val > 0 ? `+${formatNumber(val)}` : "0"}
-                    </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
-                </div>
+                <LeadTimeEditDialog
+                    id={mat.material_id}
+                    materialName={mat.material_name}
+                    currentLeadTime={mat.lead_time || 0}
+                />
             );
         },
     },
+    ...periods.forecast_periods.map((p) => ({
+        id: `need_${p.key}`,
+        header: `NEED ${MONTHS_SHORT[p.month - 1]}`,
+        cell: ({ row }: any) => {
+            const q = row.original.needs?.find((s: any) => s.key === p.key)?.quantity ?? 0;
+            return <span className="font-bold text-xs text-gray-600">{formatNumber(q)}</span>;
+        },
+        size: 100,
+    })),
     {
-        accessorKey: "forecast_needed",
-        header: "Forecast x Resep",
-        cell: ({ row }) => (
-            <div className="flex flex-col">
-                <span className="text-sm font-black text-rose-600">
-                    {formatNumber(row.original.forecast_needed)}
+        id: "total_needs",
+        header: () => (
+            <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest leading-none">
+                    Total Need
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                <span className="text-[8px] text-slate-400 font-mono italic">Horizon View</span>
             </div>
         ),
+        cell: ({ row }) => {
+            const needs = row.original.needs || [];
+            const total = needs.reduce((sum, n) => sum + (n.quantity || 0), 0);
+            return (
+                <div className="flex flex-col min-w-[80px]">
+                    <span className="text-xs font-black text-slate-800 tabular-nums">
+                        {formatNumber(total)}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">
+                        {row.original.uom}
+                    </span>
+                </div>
+            );
+        },
+        size: 110,
     },
     {
-        accessorKey: "stock_fg_x_resep",
-        header: "Stock FG x Resep",
-        cell: ({ row }) => (
-            <div className="flex flex-col">
-                <span className="text-xs font-black text-slate-700">
-                    {formatNumber(row.original.stock_fg_x_resep)}
+        id: "recommendation",
+        header: () => (
+            <div className="flex flex-col items-center gap-0.5 py-1 min-w-[140px]">
+                <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest leading-none">
+                    Rekomendasi
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                <span className="text-[8px] text-indigo-400 font-mono italic">(S+P) - Needs</span>
             </div>
         ),
+        cell: ({ row }) => {
+            const { current_stock, open_po, needs = [] } = row.original;
+
+            // Logika Defisit: (Physical + Open PO) - SUM(Needs)
+            const deficit = calculateDeficit(current_stock, open_po, needs);
+
+            if (deficit === null) {
+                return (
+                    <Badge
+                        variant="secondary"
+                        className="bg-emerald-50 text-emerald-600 font-bold border-emerald-100 shadow-none text-[10px] py-0.5 px-2"
+                    >
+                        ✓ Cukup
+                    </Badge>
+                );
+            }
+
+            return (
+                <Badge
+                    variant="destructive"
+                    className="bg-red-50 text-red-700 shadow-none border-red-200 font-black px-2 py-0.5 whitespace-nowrap text-[10px]"
+                >
+                    Beli {formatNumber(Math.abs(deficit))}
+                </Badge>
+            );
+        },
+        size: 150,
     },
-    {
-        accessorKey: "safety_stock_x_resep",
-        header: "Safety Stock x Resep",
-        cell: ({ row }) => (
-            <div className="flex flex-col">
-                <span className="text-xs font-black text-indigo-700">
-                    {formatNumber(row.original.safety_stock_x_resep)}
+    ...periods.po_periods.map((p) => ({
+        id: `po_${p.key}`,
+        header: () => (
+            <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
+                <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest leading-none">
+                    PO {MONTHS_SHORT[p.month - 1]}
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.original.uom}</span>
+                <span className="text-[8px] text-emerald-400 font-mono italic">{p.year}</span>
             </div>
         ),
-    },
+        cell: ({ row }: any) => {
+            const q = row.original.open_pos?.find((s: any) => s.key === p.key)?.quantity ?? 0;
+            return <span className="font-bold text-xs text-emerald-600">{formatNumber(q)}</span>;
+        },
+        size: 100,
+    })),
+
+    // {
+    //     accessorKey: "forecast_needed",
+    //     header: "Forecast x Resep",
+    //     cell: ({ row }) => (
+    //         <div className="flex flex-col">
+    //             <span className="text-sm font-black text-rose-600">
+    //                 {formatNumber(row.original.forecast_needed)}
+    //             </span>
+    //             <span className="text-[9px] text-slate-400 font-bold uppercase">
+    //                 {row.original.uom}
+    //             </span>
+    //         </div>
+    //     ),
+    // },
+
+    // ─── KOLOM BARU: Total Needs & Recommendation ─────────────────────────────
+    // Implementasi rumus dari _temp: (Ready Stock) - (Total Needs)
 ];
+
+// ─── Export helper untuk digunakan di tempat lain ──────────────────────────────
+export { calculateDeficit };

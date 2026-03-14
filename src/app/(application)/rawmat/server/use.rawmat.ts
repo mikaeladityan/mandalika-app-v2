@@ -83,7 +83,25 @@ export function useFormRawMat(id?: number) {
         onError: (err) => FetchError(err, setErr),
     });
 
-    return { create, update };
+    const patch = useMutation<
+        unknown,
+        ResponseError,
+        { id: number; body: Partial<RequestRawMaterialDTO> }
+    >({
+        mutationKey: ["rawmat", "patch"],
+        mutationFn: ({ id, body }) => RawMatService.partialUpdate(id, body),
+        onSuccess: () => {
+            setNotif({
+                title: "Update Data",
+                message: "Data berhasil diperbarui",
+            });
+            queryClient.invalidateQueries({ queryKey: ["rawmat"], type: "all" });
+            queryClient.invalidateQueries({ queryKey: ["recomendation-v2"], type: "all" });
+        },
+        onError: (err) => FetchError(err, setErr),
+    });
+
+    return { create, update, patch };
 }
 
 export function useActionRawMat() {

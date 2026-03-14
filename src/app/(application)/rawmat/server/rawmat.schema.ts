@@ -16,6 +16,8 @@ export const RequestRawMaterialSchema = z.object({
 
     raw_mat_category: z.string().optional(),
     unit: z.string(),
+    lead_time: z.coerce.number().optional(),
+    type: z.enum(["FO", "PCKG"]).optional().nullable(),
 });
 
 export const ResponseRawMaterialSchema = RequestRawMaterialSchema.omit({
@@ -24,6 +26,8 @@ export const ResponseRawMaterialSchema = RequestRawMaterialSchema.omit({
     raw_mat_category: true,
 }).extend({
     id: z.number(),
+    lead_time: z.number().nullable(),
+    type: z.string().nullable(),
     current_stock: z.number().optional(),
     supplier: z
         .object({

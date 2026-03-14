@@ -36,9 +36,28 @@ interface RecomendationV2Props {
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
     const tableState = useRecomendationV2TableState({ defaultType: type });
     const { list } = useRecomendationV2(tableState.queryParams);
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const periods = useMemo(() => {
+        if (!(list.data as any)?.meta) {
+            return {
+                sales_periods: [],
+                forecast_periods: [],
+                po_periods: [],
+            };
+        }
+        return {
+            sales_periods: (list.data as any).meta.sales_periods || [],
+            forecast_periods: (list.data as any).meta.forecast_periods || [],
+            po_periods: (list.data as any).meta.po_periods || [],
+        };
+    }, [list.data]);
 
-    const columns = useMemo(() => RecomendationV2Columns(), []);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+        supplier: false,
+        moq: false,
+        // lead_time: false,
+    });
+
+    const columns = useMemo(() => RecomendationV2Columns(periods), [periods]);
 
     const months = [
         "Januari",
@@ -141,11 +160,89 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                         Konfigurasi Kolom
                                     </div>
                                     <div className="space-y-1 mt-2">
+                                        {/* Sales Group Toggle */}
+                                        {periods.sales_periods.length > 0 && (
+                                            <DropdownMenuCheckboxItem
+                                                className="rounded-xl capitalize font-bold text-indigo-600 py-3 bg-indigo-50/50 cursor-pointer"
+                                                checked={periods.sales_periods.every(
+                                                    (p: any) =>
+                                                        columnVisibility[`sales_${p.key}`] !==
+                                                        false,
+                                                )}
+                                                onCheckedChange={(value) => {
+                                                    const updates: VisibilityState = {};
+                                                    periods.sales_periods.forEach((p: any) => {
+                                                        updates[`sales_${p.key}`] = !!value;
+                                                    });
+                                                    setColumnVisibility((prev) => ({
+                                                        ...prev,
+                                                        ...updates,
+                                                    }));
+                                                }}
+                                            >
+                                                Sales History ({periods.sales_periods.length})
+                                            </DropdownMenuCheckboxItem>
+                                        )}
+
+                                        {/* Needs Group Toggle */}
+                                        {periods.forecast_periods.length > 0 && (
+                                            <DropdownMenuCheckboxItem
+                                                className="rounded-xl capitalize font-bold text-orange-600 py-3 bg-orange-50/50 cursor-pointer"
+                                                checked={periods.forecast_periods.every(
+                                                    (p: any) =>
+                                                        columnVisibility[`need_${p.key}`] !== false,
+                                                )}
+                                                onCheckedChange={(value) => {
+                                                    const updates: VisibilityState = {};
+                                                    periods.forecast_periods.forEach((p: any) => {
+                                                        updates[`need_${p.key}`] = !!value;
+                                                    });
+                                                    setColumnVisibility((prev) => ({
+                                                        ...prev,
+                                                        ...updates,
+                                                    }));
+                                                }}
+                                            >
+                                                Needs Buy ({periods.forecast_periods.length})
+                                            </DropdownMenuCheckboxItem>
+                                        )}
+
+                                        {/* PO Group Toggle */}
+                                        {periods.po_periods?.length > 0 && (
+                                            <DropdownMenuCheckboxItem
+                                                className="rounded-xl capitalize font-bold text-emerald-600 py-3 bg-emerald-50/50 cursor-pointer"
+                                                checked={periods.po_periods.every(
+                                                    (p: any) =>
+                                                        columnVisibility[`po_${p.key}`] !== false,
+                                                )}
+                                                onCheckedChange={(value) => {
+                                                    const updates: VisibilityState = {};
+                                                    periods.po_periods.forEach((p: any) => {
+                                                        updates[`po_${p.key}`] = !!value;
+                                                    });
+                                                    setColumnVisibility((prev) => ({
+                                                        ...prev,
+                                                        ...updates,
+                                                    }));
+                                                }}
+                                            >
+                                                Open PO ({periods.po_periods.length})
+                                            </DropdownMenuCheckboxItem>
+                                        )}
+
                                         {columns.map((column: any) => {
                                             const columnId = column.accessorKey || column.id;
                                             const header = column.header;
 
                                             if (!columnId || typeof header !== "string")
+                                                return null;
+
+                                            // Skip individual dynamic columns to keep selector clean
+                                            if (
+                                                columnId.startsWith("sales_") ||
+                                                columnId.startsWith("need_") ||
+                                                columnId.startsWith("po_")
+                                            )
                                                 return null;
 
                                             return (
@@ -188,7 +285,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 <TableSkeleton />
                             </div>
                         ) : (
-                            <div className="bg-white rounded-[2rem] border border-slate-100/80 shadow-sm overflow-hidden">
+                            <div>
                                 <DataTable
                                     columns={columns}
                                     data={list.data?.data ?? []}

@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Upload, FileText, Database, RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+    Upload,
+    FileText,
+    Database,
+    RefreshCw,
+    AlertCircle,
+    ArrowLeft,
+    Container,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,6 +25,7 @@ import {
     usePreviewImportRecipe,
 } from "@/app/(application)/recipes/import/server/use.import";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const MAX_ROWS = 5000;
 
@@ -57,9 +66,10 @@ export function RecipeImportForm() {
         await executeMutation.mutateAsync(importId);
 
         toast.success("Import completed", {
-            description: stats.invalid > 0
-                ? `${stats.valid} rows imported, ${stats.invalid} invalid rows were skipped`
-                : `${stats.valid} rows imported successfully`,
+            description:
+                stats.invalid > 0
+                    ? `${stats.valid} rows imported, ${stats.invalid} invalid rows were skipped`
+                    : `${stats.valid} rows imported successfully`,
         });
 
         setImportId(null);
@@ -102,6 +112,16 @@ export function RecipeImportForm() {
 
                 {/* Controls */}
                 <div className="flex justify-end gap-2">
+                    <Link
+                        target="_blank"
+                        href={
+                            "https://docs.google.com/spreadsheets/d/1SDet-Bl7q7RBjntKMfHtPXbvUG5D3vfmIRyU_u3bNI0/edit?usp=sharing"
+                        }
+                    >
+                        <Button variant="warning">
+                            <Container /> Template
+                        </Button>
+                    </Link>
                     <Button
                         variant="outline"
                         onClick={handlePreview}
@@ -125,11 +145,15 @@ export function RecipeImportForm() {
                 </div>
 
                 {stats.invalid > 0 && (
-                    <Alert variant="default" className="border-yellow-500 text-yellow-700 [&>svg]:text-yellow-500">
+                    <Alert
+                        variant="default"
+                        className="border-yellow-500 text-yellow-700 [&>svg]:text-yellow-500"
+                    >
                         <AlertCircle />
                         <AlertDescription>
-                            <strong>{stats.invalid} baris tidak valid</strong> dan akan dilewati saat import.{" "}
-                            Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses.
+                            <strong>{stats.invalid} baris tidak valid</strong> dan akan dilewati
+                            saat import. Hanya <strong>{stats.valid} baris valid</strong> yang akan
+                            diproses.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -146,7 +170,9 @@ export function RecipeImportForm() {
 
                     <TabsContent value="errors">
                         {rows.filter((r) => r.errors.length).length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-4 text-center">No errors found.</p>
+                            <p className="text-sm text-muted-foreground py-4 text-center">
+                                No errors found.
+                            </p>
                         ) : (
                             <PreviewTable rows={rows.filter((r) => r.errors.length)} />
                         )}

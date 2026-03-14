@@ -35,6 +35,20 @@ export class RawMatService {
         }
     }
 
+    static async partialUpdate(id: number, body: Partial<RequestRawMaterialDTO>) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.patch<ApiSuccessResponse<ResponseRawMaterialDTO>>(
+                `${API}/${id}`,
+                body,
+            );
+
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async delete(id: number) {
         try {
             await setupCSRFToken();

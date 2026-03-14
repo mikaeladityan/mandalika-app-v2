@@ -150,7 +150,7 @@ export function ProductInventoryImportForm() {
                     <Link
                         target="_blank"
                         href={
-                            "https://docs.google.com/spreadsheets/d/14NuSAz7_yvtQC5CRs1rjgosyC6bXSfreZceiDmKZ4Rc/edit?usp=sharing"
+                            "https://docs.google.com/spreadsheets/d/1vKyhf2p-oIEJdPRNSPgkwH1y42RmRre2W5wF5DtOZLc/edit?usp=sharing"
                         }
                     >
                         <Button variant="warning">

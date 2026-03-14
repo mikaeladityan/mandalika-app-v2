@@ -16,7 +16,10 @@ class BOMService {
         }
     }
 
-    async detail(id: number | string, params?: { month?: number; year?: number }) {
+    async detail(
+        id: number | string,
+        params?: { month?: number; year?: number; forecast_months?: number },
+    ) {
         try {
             const { data } = await api.get<ApiSuccessResponse<any>>(`${API}/${id}`, {
                 params,
