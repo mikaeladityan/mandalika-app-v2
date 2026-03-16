@@ -5,6 +5,9 @@ export const QueryOpenPoSchema = z.object({
     take: z.number().min(1).optional().default(20),
     search: z.string().optional(),
     status: z.string().optional().default("OPEN"),
+    month: z.number().optional(),
+    year: z.number().optional(),
+    supplier_id: z.number().optional(),
 });
 
 export type QueryOpenPoDTO = z.infer<typeof QueryOpenPoSchema>;
@@ -22,8 +25,11 @@ export type OpenPoResponse = {
     raw_material_id: number;
     barcode: string | null;
     material_name: string;
+    supplier_name: string;
     po_number: string | null;
     quantity: number;
+    price: number;
+    subtotal: number;
     order_date: string | Date;
     expected_arrival: string | Date | null;
     status: string;

@@ -1,13 +1,11 @@
 "use client";
 
-import {
-    useState,
-    useMemo
-} from "react";
+import { useState, useMemo } from "react";
 import {
     usePurchase,
     usePurchaseTableState,
 } from "@/app/(application)/purchase/server/use.purchase";
+import { PurchaseService } from "@/app/(application)/purchase/server/purchase.service";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
@@ -16,9 +14,17 @@ import { PurchaseColumns } from "./table/column";
 import { Button } from "@/components/ui/button";
 import { SupplierSummaryGrid } from "./table/supplier-summary-grid";
 import { formatNumber } from "@/lib/utils";
-import { ShoppingCart, Search, Download, Calculator, Loader2, LayoutGrid, List } from "lucide-react";
-import * as XLSX from "xlsx";
+import {
+    ShoppingCart,
+    Search,
+    Download,
+    Calculator,
+    Loader2,
+    LayoutGrid,
+    List,
+} from "lucide-react";
 import dayjs from "dayjs";
+import { setupCSRFToken } from "@/lib/api";
 import {
     Select,
     SelectContent,
@@ -47,50 +53,30 @@ export function Purchase({ title, description }: PurchaseProps) {
         );
     }, [list.data?.data]);
 
-    const exportToExcel = () => {
-        if (!list.data?.data) return;
-
-        const exportData: any[] = list.data.data.map((item, index) => ({
-            No: index + 1,
-            Barcode: item.barcode || "-",
-            "Nama Material": item.material_name,
-            Supplier: item.supplier_name || "-",
-            Quantity: item.quantity,
-            MOQ: item.moq || 0,
-            UOM: item.uom?.toUpperCase(),
-            "Harga Satuan": item.price || 0,
-            "Total Harga": (item.price || 0) * (item.quantity || 0),
-            Status: "DRAFT",
-            "Tanggal Pengajuan": dayjs(item.created_at).format("DD MMM YYYY HH:mm"),
-            PIC: item.pic_id || "System",
-        }));
-
-        // Add Grand Total row
-        exportData.push({
-            No: "",
-            Barcode: "",
-            "Nama Material": "GRAND TOTAL",
-            Supplier: "",
-            Quantity: "",
-            MOQ: "",
-            UOM: "",
-            "Harga Satuan": "",
-            "Total Harga": grandTotal,
-            Status: "",
-            "Tanggal Pengajuan": "",
-            PIC: "",
-        });
-
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Pengajuan Purchase");
-        XLSX.writeFile(wb, `Data_Pengajuan_Purchase_${dayjs().format("YYYY-MM-DD")}.xlsx`);
+    const exportToExcel = async () => {
+        try {
+            await setupCSRFToken();
+            const blob = await PurchaseService.export(table.queryParams);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute(
+                "download",
+                `Data_Pengajuan_Purchase_${dayjs().format("YYYY-MM-DD")}.xlsx`,
+            );
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("Gagal melakukan export excel.");
+        }
     };
 
     return (
         <div className="flex flex-col gap-6 p-2 md:p-4">
             <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
-                <CardHeader className="space-y-6 p-6 lg:p-8 flex-col sm:flex-row sm:items-start justify-between">
+                <CardHeader className="space-y-6 p-6 lg:p-8">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl w-fit">
                             <ShoppingCart className="h-6 w-6" />
@@ -105,9 +91,18 @@ export function Purchase({ title, description }: PurchaseProps) {
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full">
+                    <div className="flex flex-col md:flex-row flex-wrap md:justify-between items-center gap-3 w-full">
                         {/* Grup Kiri: Filter Bulan & Tahun */}
                         <div className="flex items-center gap-2 w-full md:w-auto">
+                            <div className="relative w-full sm:w-64 lg:w-72 group">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                                <Input
+                                    placeholder="Cari by material..."
+                                    value={table.search}
+                                    onChange={(e) => table.setSearch(e.target.value)}
+                                    className="pl-11 h-11 w-full bg-slate-50/50 border-slate-200 rounded-xl focus-visible:ring-amber-500/20 transition-all font-medium"
+                                />
+                            </div>
                             <Select
                                 value={
                                     table.month
@@ -140,7 +135,6 @@ export function Purchase({ title, description }: PurchaseProps) {
                                     ))}
                                 </SelectContent>
                             </Select>
-
                             <Select
                                 value={
                                     table.year
@@ -165,18 +159,8 @@ export function Purchase({ title, description }: PurchaseProps) {
                             </Select>
                         </div>
 
-                        {/* Grup Kanan: Search & Export (Terdorong ke kanan di Desktop) */}
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto md:ml-auto">
-                            <div className="relative w-full sm:w-64 lg:w-72 group">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
-                                <Input
-                                    placeholder="Cari by material..."
-                                    value={table.search}
-                                    onChange={(e) => table.setSearch(e.target.value)}
-                                    className="pl-11 h-11 w-full bg-slate-50/50 border-slate-200 rounded-xl focus-visible:ring-amber-500/20 transition-all font-medium"
-                                />
-                            </div>
-
+                        {/* Grup Kanan: Export & View Toggle */}
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                             <Button
                                 onClick={exportToExcel}
                                 disabled={list.isLoading || !list.data?.data?.length}
@@ -186,14 +170,33 @@ export function Purchase({ title, description }: PurchaseProps) {
                                 Export Excel
                             </Button>
 
-                            <Button
-                                onClick={() => setView(view === "table" ? "supplier" : "table")}
-                                variant="outline"
-                                className="h-11 rounded-xl border-indigo-200 text-indigo-600 font-bold gap-2 hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm"
-                            >
-                                {view === "table" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
-                                {view === "table" ? "Supplier View" : "Table View"}
-                            </Button>
+                            {/* Two persistent view toggle buttons */}
+                            <div className="flex items-center rounded-xl border border-amber-200 overflow-hidden shadow-sm">
+                                <Button
+                                    onClick={() => setView("table")}
+                                    variant="ghost"
+                                    className={`h-11 px-4 rounded-none font-bold gap-2 transition-all border-r border-amber-200 ${
+                                        view === "table"
+                                            ? "bg-amber-600 text-white hover:bg-amber-700"
+                                            : "text-amber-600 hover:bg-amber-50"
+                                    }`}
+                                >
+                                    <List className="w-4 h-4" />
+                                    List Purchase
+                                </Button>
+                                <Button
+                                    onClick={() => setView("supplier")}
+                                    variant="ghost"
+                                    className={`h-11 px-4 rounded-none font-bold gap-2 transition-all ${
+                                        view === "supplier"
+                                            ? "bg-amber-600 text-white hover:bg-amber-700"
+                                            : "text-amber-600 hover:bg-amber-50"
+                                    }`}
+                                >
+                                    <LayoutGrid className="w-4 h-4" />
+                                    Supplier View
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -207,6 +210,7 @@ export function Purchase({ title, description }: PurchaseProps) {
                             ) : (
                                 <div className="space-y-4">
                                     <DataTable
+                                        tableId="purchase-main-table"
                                         columns={columns}
                                         data={list.data?.data ?? []}
                                         page={table.page}

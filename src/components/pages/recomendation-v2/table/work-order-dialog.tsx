@@ -59,15 +59,15 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
     const calculatedRecommendation = useMemo(() => {
         if (!hasHorizon) return 0;
         const readyStock = data.current_stock + data.open_po;
-        const deficit = totalNeeded + data.safety_stock_x_resep - readyStock - data.stock_fg_x_resep;
+        const deficit =
+            totalNeeded + data.safety_stock_x_resep - readyStock - data.stock_fg_x_resep;
         return deficit > 0 ? deficit : 0;
     }, [data, totalNeeded, hasHorizon]);
 
     useEffect(() => {
         if (open) {
             const defaultQty =
-                data.work_order_quantity ||
-                (hasHorizon ? Math.round(calculatedRecommendation) : 0);
+                data.work_order_quantity || (hasHorizon ? Math.round(calculatedRecommendation) : 0);
             setQuantity(String(defaultQty));
         }
     }, [open, data, calculatedRecommendation, hasHorizon]);
@@ -136,7 +136,7 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                 </div>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-[0_32px_64px_-15px_rgba(79,70,229,0.2)] bg-white">
+            <DialogContent className="sm:max-w-[550px] z-102 rounded-[2.5rem] p-0 overflow-hidden border-none shadow-[0_32px_64px_-15px_rgba(79,70,229,0.2)] bg-white">
                 <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-linear-to-br from-white to-indigo-50/30">
                     <div className="absolute -top-10 -right-10 opacity-5 text-indigo-600">
                         <ShoppingCart className="size-64" />
@@ -146,9 +146,14 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                             <ShoppingCart className="size-6" />
                         </div>
                         <div>
-                            <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">Work <span className="text-indigo-600">Order</span></DialogTitle>
+                            <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                                Work <span className="text-indigo-600">Order</span>
+                            </DialogTitle>
                             <DialogDescription className="text-slate-500 font-medium">
-                                Purchase request untuk <span className="text-indigo-600 font-bold">{data.material_name}</span>
+                                Purchase request untuk{" "}
+                                <span className="text-indigo-600 font-bold">
+                                    {data.material_name}
+                                </span>
                             </DialogDescription>
                         </div>
                     </div>
@@ -163,7 +168,9 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                             </span>
                             <span className="text-xl font-black text-slate-900">
                                 {formatNumber(data.current_stock + data.open_po)}
-                                <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">{data.uom}</span>
+                                <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">
+                                    {data.uom}
+                                </span>
                             </span>
                         </div>
                         <div className="p-5 rounded-[1.5rem] bg-linear-to-br from-slate-50 to-white border border-slate-100 shadow-xs flex flex-col gap-2 transition-all hover:shadow-md hover:border-violet-100 group">
@@ -172,7 +179,9 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                             </span>
                             <span className="text-xl font-black text-slate-900">
                                 {formatNumber(data.stock_fg_x_resep)}
-                                <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">{data.uom}</span>
+                                <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">
+                                    {data.uom}
+                                </span>
                             </span>
                         </div>
                     </div>
@@ -205,21 +214,39 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                     {hasHorizon && (
                         <div className="p-6 rounded-[1.75rem] bg-linear-to-br from-indigo-50/50 to-white border border-indigo-100/50 space-y-4 shadow-xs">
                             <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide">
-                                <span className="text-slate-400">Total Need ({currentHorizon} bln):</span>
-                                <span className="text-slate-900 font-black">{formatNumber(totalNeeded)}</span>
+                                <span className="text-slate-400">
+                                    Total Need ({currentHorizon} bln):
+                                </span>
+                                <span className="text-slate-900 font-black">
+                                    {formatNumber(totalNeeded)}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide">
                                 <span className="text-slate-400">Safety Stock Buffer:</span>
-                                <span className="text-indigo-600 font-black">+{formatNumber(data.safety_stock_x_resep)}</span>
+                                <span className="text-indigo-600 font-black">
+                                    +{formatNumber(data.safety_stock_x_resep)}
+                                </span>
                             </div>
+
                             <div className="h-px bg-indigo-100/50 w-full" />
+                            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide">
+                                <span className="text-slate-400">MOQ:</span>
+                                <span className="text-rose-600 font-black">
+                                    {formatNumber(data.moq)}
+                                </span>
+                            </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Recommendation:</span>
+                                <span className="text-xs font-black text-slate-900 uppercase tracking-widest">
+                                    Recommendation:
+                                </span>
+
                                 <div className="flex flex-col items-end">
                                     <span className="text-2xl font-black text-indigo-600 leading-none">
                                         {formatNumber(calculatedRecommendation)}
                                     </span>
-                                    <span className="text-[9px] font-black text-indigo-300 uppercase mt-1 tracking-[0.2em]">Estimated Pure Need</span>
+                                    <span className="text-[9px] font-black text-indigo-300 uppercase mt-1 tracking-[0.2em]">
+                                        Estimated Pure Need
+                                    </span>
                                 </div>
                             </div>
                         </div>

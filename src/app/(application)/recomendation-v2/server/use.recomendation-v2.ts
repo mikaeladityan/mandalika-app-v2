@@ -5,16 +5,13 @@ import {
     QueryRecomendationV2DTO,
     RequestApproveWorkOrderDTO,
     RequestSaveWorkOrderDTO,
-    RequestBulkSaveHorizonDTO
+    RequestBulkSaveHorizonDTO,
 } from "./recomendation-v2.schema";
 import { RecomendationV2Service } from "./recomendation-v2.service";
 import { toast } from "sonner";
 
 /** Hitung total kebutuhan berdasarkan horizon bulan. */
-export function calculateTotalNeeded(
-    needs: Array<{ quantity?: number }>,
-    horizon: number,
-): number {
+export function calculateTotalNeeded(needs: Array<{ quantity?: number }>, horizon: number): number {
     if (horizon <= 0) return 0;
     return needs.slice(0, horizon).reduce((sum, n) => sum + (n.quantity || 0), 0);
 }
@@ -35,18 +32,19 @@ export function useRecomendationV2(params: QueryRecomendationV2DTO) {
         },
         onError: (err: any) => {
             toast.error(err.message || "Gagal menyimpan Work Order");
-        }
+        },
     });
 
     const approveOrder = useMutation({
-        mutationFn: (body: RequestApproveWorkOrderDTO) => RecomendationV2Service.approveWorkOrder(body),
+        mutationFn: (body: RequestApproveWorkOrderDTO) =>
+            RecomendationV2Service.approveWorkOrder(body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
             toast.success("Work Order berhasil di-approve (PO Terbit)");
         },
         onError: (err: any) => {
             toast.error(err.message || "Gagal meng-approve Work Order");
-        }
+        },
     });
 
     const deleteOrder = useMutation({
@@ -57,21 +55,42 @@ export function useRecomendationV2(params: QueryRecomendationV2DTO) {
         },
         onError: (err: any) => {
             toast.error(err.message || "Gagal menghapus Work Order");
-        }
+        },
     });
 
     const bulkSaveHorizon = useMutation({
-        mutationFn: (body: RequestBulkSaveHorizonDTO) => RecomendationV2Service.bulkSaveHorizon(body),
+        mutationFn: (body: RequestBulkSaveHorizonDTO) =>
+            RecomendationV2Service.bulkSaveHorizon(body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
             toast.success("Bulk Horizon berhasil dijalankan");
         },
         onError: (err: any) => {
             toast.error(err.message || "Gagal menjalankan Bulk Horizon");
-        }
+        },
     });
 
-    return { list, saveOrder, approveOrder, deleteOrder, bulkSaveHorizon };
+    const exportData = useMutation({
+        mutationFn: (params: QueryRecomendationV2DTO) => RecomendationV2Service.export(params),
+        onSuccess: (blob) => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute(
+                "download",
+                `Rekomendasi_V2_${params.type?.toUpperCase()}_${params.month}_${params.year}.xlsx`,
+            );
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            toast.success("Data berhasil diekspor");
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Gagal mengekspor data");
+        },
+    });
+
+    return { list, saveOrder, approveOrder, deleteOrder, bulkSaveHorizon, exportData };
 }
 
 /**
@@ -93,7 +112,8 @@ export function useRecomendationV2Mutations() {
     });
 
     const approveOrder = useMutation({
-        mutationFn: (body: RequestApproveWorkOrderDTO) => RecomendationV2Service.approveWorkOrder(body),
+        mutationFn: (body: RequestApproveWorkOrderDTO) =>
+            RecomendationV2Service.approveWorkOrder(body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
             toast.success("Work Order berhasil di-approve (PO Terbit)");
@@ -117,9 +137,11 @@ export function useRecomendationV2Mutations() {
     return { saveOrder, approveOrder, deleteOrder };
 }
 
-export function useRecomendationV2TableState(initial?: { defaultType?: "ffo" | "lokal" | "impor" }) {
+export function useRecomendationV2TableState(initial?: {
+    defaultType?: "ffo" | "lokal" | "impor";
+}) {
     const [page, setPage] = useState(1);
-    const [take, setTake] = useState(25);
+    const [take, setTake] = useState(50);
     const [search, setSearch] = useState("");
     const [debouncedSearch] = useDebounce(search, 500);
     const [month, setMonth] = useState(new Date().getMonth() + 1);

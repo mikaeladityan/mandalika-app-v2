@@ -120,20 +120,20 @@ export function useSidebarData(): SidebarGroupConfig[] {
         // {
         //     items: [{ title: "Gudang", url: "/warehouses", icon: Warehouse }],
         // },
-        {
-            label: "Rekomendasi",
-            items: [
-                {
-                    title: "Rekomendasi",
-                    icon: Replace,
-                    items: [
-                        { title: "FFO", url: "/recomendation/ffo", icon: HeartPulse },
-                        { title: "FP LOKAL", url: "/recomendation/fp-local", icon: PrinterCheck },
-                        { title: "FP INTER", url: "/recomendation/fp-inter", icon: PrinterCheck },
-                    ],
-                },
-            ],
-        },
+        // {
+        //     label: "Rekomendasi",
+        //     items: [
+        //         {
+        //             title: "Rekomendasi",
+        //             icon: Replace,
+        //             items: [
+        //                 { title: "FFO", url: "/recomendation/ffo", icon: HeartPulse },
+        //                 { title: "FP LOKAL", url: "/recomendation/fp-local", icon: PrinterCheck },
+        //                 { title: "FP INTER", url: "/recomendation/fp-inter", icon: PrinterCheck },
+        //             ],
+        //         },
+        //     ],
+        // },
 
         {
             label: "Rekomendasi (PPIC)",

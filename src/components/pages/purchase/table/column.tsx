@@ -13,6 +13,7 @@ import {
     useDeleteRecomendation,
 } from "@/app/(application)/recomendation/server/use.recomendation";
 import { Button } from "@/components/ui/button";
+import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 
 export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
     return [
@@ -138,20 +139,22 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                         >
                             <Check className="h-4 w-4" />
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => {
-                                if (confirm("Hapus draft pengajuan ini?")) {
-                                    del(row.original.recommendation_id as number);
-                                }
+
+                        <DialogAlert
+                            label={<Trash2 className="h-4 w-4" />}
+                            title="Hapus Draft Pengajuan"
+                            onClick={async () => {
+                                del(row.original.recommendation_id as number);
                             }}
-                            disabled={isApproving || isDeleting}
-                            title="Hapus Draft"
                         >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                            <p className="text-sm text-slate-600 mt-1">
+                                Apakah Anda yakin ingin menghapus draft pengajuan{" "}
+                                <span className="font-bold text-slate-900">
+                                    {row.original.material_name}
+                                </span>
+                                ? Tindakan ini tidak dapat dibatalkan.
+                            </p>
+                        </DialogAlert>
                     </div>
                 );
             },

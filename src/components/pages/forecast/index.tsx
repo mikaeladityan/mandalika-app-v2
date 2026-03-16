@@ -196,6 +196,7 @@ export function Forecast() {
                     ) : (
                         <div className="border-t border-slate-50">
                             <DataTable
+                                tableId="forecast-main-table"
                                 columns={columns}
                                 data={groupedData}
                                 page={table.page}

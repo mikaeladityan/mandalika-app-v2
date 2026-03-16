@@ -58,6 +58,22 @@ export class RecomendationV2Service {
         }
     }
 
+    static async export(params: QueryRecomendationV2DTO) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.get(
+                `${process.env.NEXT_PUBLIC_API}/api/app/recomendations-v2/export`,
+                {
+                    params,
+                    responseType: "blob",
+                },
+            );
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async bulkSaveHorizon(body: RequestBulkSaveHorizonDTO) {
         try {
             await setupCSRFToken();

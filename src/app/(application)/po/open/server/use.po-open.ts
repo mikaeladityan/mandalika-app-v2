@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { OpenPoService } from "./po-open.service";
 import { QueryOpenPoDTO, RequestUpdateOpenPoDTO } from "./po-open.schema";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const useOpenPoTableState = () => {
-    const [page, setPage] = useState(1);
-    const [take, setTake] = useState(20);
-    const [search, setSearch] = useState("");
-    const [status, setStatus] = useState("OPEN");
+    const [page, setPage] = useLocalStorage("po-open-page", 1);
+    const [take, setTake] = useLocalStorage("po-open-take", 20);
+    const [search, setSearch] = useLocalStorage("po-open-search", "");
+    const [status, setStatus] = useLocalStorage("po-open-status", "OPEN");
 
-    const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
-    const [year, setYear] = useState<number>(new Date().getFullYear());
+    const [month, setMonth] = useLocalStorage<number>("po-open-month", new Date().getMonth() + 1);
+    const [year, setYear] = useLocalStorage<number>("po-open-year", new Date().getFullYear());
 
     const queryParams: QueryOpenPoDTO = {
         page,
@@ -47,6 +47,15 @@ export const useOpenPo = (query: QueryOpenPoDTO) => {
     return { list };
 };
 
+export const useOpenPoSummary = (query: QueryOpenPoDTO) => {
+    const summary = useQuery({
+        queryKey: ["open-po-summary", query],
+        queryFn: () => OpenPoService.getSummary(query),
+    });
+
+    return { summary };
+};
+
 export const useActionUpdateOpenPo = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -55,6 +64,7 @@ export const useActionUpdateOpenPo = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["open-po"] });
+            queryClient.invalidateQueries({ queryKey: ["open-po-summary"] });
             queryClient.invalidateQueries({ queryKey: ["recomendation"] });
         },
     });

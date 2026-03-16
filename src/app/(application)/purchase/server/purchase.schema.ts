@@ -6,6 +6,7 @@ export const QueryPurchaseSchema = z.object({
     search: z.string().optional(),
     month: z.number().optional(),
     year: z.number().optional(),
+    supplier_id: z.number().optional(),
 });
 
 export type QueryPurchaseDTO = z.infer<typeof QueryPurchaseSchema>;
@@ -26,7 +27,7 @@ export type PurchaseResponse = {
 };
 
 export type PurchaseSummaryResponse = {
-    supplier_id: string;
+    supplier_id: number;
     supplier_name: string;
     total_amount: number;
     total_items: number;

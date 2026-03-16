@@ -96,6 +96,7 @@ export const RecomendationV2Columns = (
                 </div>
             );
         },
+        enableHiding: false,
     },
     {
         accessorKey: "supplier",
@@ -230,7 +231,7 @@ export const RecomendationV2Columns = (
             );
         },
     },
-    ...periods.forecast_periods.map((p) => ({
+    ...periods.forecast_periods.map((p, index) => ({
         id: `need_${p.key}`,
         header: `NEED ${MONTHS_SHORT[p.month - 1]}`,
         cell: ({ row }: any) => {
@@ -238,13 +239,24 @@ export const RecomendationV2Columns = (
             return <span className="font-bold text-xs text-gray-600">{formatNumber(q)}</span>;
         },
         size: 100,
+        meta: {
+            getCellClassName: (row: RecomendationV2Response) => {
+                const horizon = row.work_order_horizon || 0;
+                if (index < horizon) {
+                    return "bg-amber-50/90 text-amber-600";
+                }
+                return "";
+            },
+        },
     })),
     {
         id: "total_needs",
         header: () => (
             <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
                 <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest leading-none text-center">
-                    Total Need<br/>(Horizon)
+                    Total Need
+                    <br />
+                    (Horizon)
                 </span>
             </div>
         ),
@@ -252,15 +264,20 @@ export const RecomendationV2Columns = (
             const data = row.original;
             return (
                 <div className="flex flex-col items-center justify-center min-w-[80px]">
-                    <HorizonDialog 
-                        data={data} 
-                        month={periods.month} 
-                        year={periods.year} 
-                    />
+                    <HorizonDialog data={data} month={periods.month} year={periods.year} />
                 </div>
             );
         },
         size: 110,
+        enableHiding: false,
+        meta: {
+            getCellClassName: (row: RecomendationV2Response) => {
+                if (row.work_order_horizon) {
+                    return "bg-blue-50/80";
+                }
+                return "";
+            },
+        },
     },
     {
         id: "recommendation",
@@ -308,6 +325,7 @@ export const RecomendationV2Columns = (
         },
         size: 150,
     },
+
     ...periods.po_periods.map((p) => ({
         id: `po_${p.key}`,
         header: () => (
@@ -324,6 +342,43 @@ export const RecomendationV2Columns = (
         },
         size: 100,
     })),
+    {
+        id: "total_open_po",
+        header: () => {
+            const startStr =
+                periods.po_periods.length > 0 ? MONTHS_SHORT[periods.po_periods[0].month - 1] : "";
+            const endStr =
+                periods.po_periods.length > 1
+                    ? MONTHS_SHORT[periods.po_periods[periods.po_periods.length - 1].month - 1]
+                    : "";
+            const rangeText =
+                startStr && endStr
+                    ? ` (${startStr} - ${endStr})`
+                    : startStr
+                      ? ` (${startStr})`
+                      : "";
+
+            return (
+                <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
+                    <span className="text-[10px] font-black uppercase text-emerald-700 tracking-widest leading-none text-center">
+                        Total Open PO
+                        <br />
+                        <span className="text-[8px] font-mono italic opacity-70">{rangeText}</span>
+                    </span>
+                </div>
+            );
+        },
+        cell: ({ row }) => {
+            const total =
+                row.original.open_pos?.reduce((sum, po) => sum + (po.quantity || 0), 0) ?? 0;
+            return (
+                <span className="font-extrabold text-xs text-emerald-700">
+                    {formatNumber(total)}
+                </span>
+            );
+        },
+        size: 110,
+    },
     {
         id: "action",
         header: () => (
@@ -343,6 +398,7 @@ export const RecomendationV2Columns = (
             );
         },
         size: 140,
+        enableHiding: false,
     },
 ];
 

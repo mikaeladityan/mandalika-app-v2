@@ -36,6 +36,15 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
             },
         },
         {
+            accessorKey: "supplier_name",
+            header: "SUPPLIER",
+            cell: ({ row }) => (
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                    {row.original.supplier_name}
+                </span>
+            ),
+        },
+        {
             accessorKey: "po_number",
             header: "PO NUMBER",
             cell: ({ row }) => {
@@ -52,11 +61,29 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
                                 updatePo({ id: item.id, body: { po_number: val } });
                             }
                         }}
-                        className="w-fit h-8 text-xs font-bold"
+                        className="w-fit h-8 text-xs font-bold border-blue-100 focus:border-blue-500"
                         placeholder="PO-XXXXX"
                     />
                 );
             },
+        },
+        {
+            accessorKey: "price",
+            header: "PRICE",
+            cell: ({ row }) => (
+                <span className="text-sm font-medium text-slate-600">
+                    Rp {formatNumber((row.original as any).price)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "subtotal",
+            header: "SUBTOTAL",
+            cell: ({ row }) => (
+                <span className="text-sm font-black text-blue-600 tracking-tight">
+                    Rp {formatNumber((row.original as any).subtotal)}
+                </span>
+            ),
         },
         {
             accessorKey: "quantity",

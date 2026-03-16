@@ -126,6 +126,7 @@ export function Recipe() {
                         </div>
                     ) : (
                         <DataTable
+                            tableId="recipe-table"
                             columns={columns}
                             data={groupedData || []}
                             page={table.queryParams.page ?? 1}

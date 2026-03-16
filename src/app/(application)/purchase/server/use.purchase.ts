@@ -1,16 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { PurchaseService } from "./purchase.service";
 import { QueryPurchaseDTO } from "./purchase.schema";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const usePurchaseTableState = () => {
-    const [page, setPage] = useState(1);
-    const [take, setTake] = useState(25);
-    const [search, setSearch] = useState("");
+    const [page, setPage] = useLocalStorage("purchase-page", 1);
+    const [take, setTake] = useLocalStorage("purchase-take", 25);
+    const [search, setSearch] = useLocalStorage("purchase-search", "");
 
     // For manual dates
-    const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
-    const [year, setYear] = useState<number>(new Date().getFullYear());
+    const [month, setMonth] = useLocalStorage<number>(
+        "purchase-month",
+        new Date().getMonth() + 1,
+    );
+    const [year, setYear] = useLocalStorage<number>(
+        "purchase-year",
+        new Date().getFullYear(),
+    );
 
     const queryParams: QueryPurchaseDTO = {
         page,

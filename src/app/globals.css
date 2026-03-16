@@ -123,3 +123,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Ensure table prints better */
+  .print-only {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card {
+     border: none !important;
+     box-shadow: none !important;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
     useRecomendationV2,
     useRecomendationV2TableState,
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { Search, TrendingUp, CalendarDays, Settings2, ChevronDown, Zap } from "lucide-react";
+import { Search, TrendingUp, CalendarDays, Zap, Download } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -18,14 +18,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { VisibilityState } from "@tanstack/react-table";
+import { OnChangeFn, VisibilityState } from "@tanstack/react-table";
 import {
     Dialog,
     DialogContent,
@@ -43,7 +37,7 @@ interface RecomendationV2Props {
 
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
     const tableState = useRecomendationV2TableState({ defaultType: type });
-    const { list, bulkSaveHorizon } = useRecomendationV2(tableState.queryParams);
+    const { list, bulkSaveHorizon, exportData } = useRecomendationV2(tableState.queryParams);
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
 
     const handleBulkHorizon = () => {
@@ -51,16 +45,19 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     };
 
     const confirmBulkHorizon = () => {
-        bulkSaveHorizon.mutate({
-            month: tableState.month,
-            year: tableState.year,
-            horizon: 3,
-            type: type
-        }, {
-            onSuccess: () => {
-                setIsBulkDialogOpen(false);
-            }
-        });
+        bulkSaveHorizon.mutate(
+            {
+                month: tableState.month,
+                year: tableState.year,
+                horizon: 3,
+                type: type,
+            },
+            {
+                onSuccess: () => {
+                    setIsBulkDialogOpen(false);
+                },
+            },
+        );
     };
     const periods = useMemo(() => {
         if (!(list.data as any)?.meta) {
@@ -80,11 +77,63 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
         supplier: false,
         moq: false,
+        total_open_po: true,
         // lead_time: false,
     });
 
+    // Auto-hide monthly PO columns by default once data is loaded
+    useEffect(() => {
+        if (periods.po_periods.length > 0) {
+            setColumnVisibility((prev) => {
+                const updates: VisibilityState = {};
+                let changed = false;
+
+                // Ensure XOR logic on initial load
+                // If total_open_po is true (default), hide all monthly columns
+                const shouldHideMonthly = prev.total_open_po !== false;
+
+                periods.po_periods.forEach((p: any) => {
+                    const key = `po_${p.key}`;
+                    const targetVisibility = !shouldHideMonthly;
+                    if (prev[key] !== targetVisibility) {
+                        updates[key] = targetVisibility;
+                        changed = true;
+                    }
+                });
+
+                return changed ? { ...prev, ...updates } : prev;
+            });
+        }
+    }, [periods.po_periods]);
+
+    const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = (updater: any) => {
+        setColumnVisibility((prev) => {
+            const next = typeof updater === "function" ? updater(prev) : updater;
+            const final = { ...next };
+
+            // Find what changed
+            const changedKeys = Object.keys(next).filter((k) => next[k] !== prev[k]);
+            if (changedKeys.length === 0) return final;
+
+            for (const key of changedKeys) {
+                const isVisible = next[key];
+                if (key === "total_open_po" && isVisible) {
+                    // Disable all po_*
+                    periods.po_periods.forEach((p: any) => {
+                        final[`po_${p.key}`] = false;
+                    });
+                } else if (key.startsWith("po_") && isVisible) {
+                    // Disable total_open_po
+                    final["total_open_po"] = false;
+                }
+            }
+            return final;
+        });
+    };
+
     const columns = useMemo(
-        () => RecomendationV2Columns({ ...periods, month: tableState.month, year: tableState.year }),
+        () =>
+            RecomendationV2Columns({ ...periods, month: tableState.month, year: tableState.year }),
         [periods, tableState.month, tableState.year],
     );
 
@@ -128,8 +177,22 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 disabled={bulkSaveHorizon.isPending}
                                 className="h-14 bg-indigo-600 text-white rounded-3xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all px-8 border-none group"
                             >
-                                <Zap className={`mr-2 h-5 w-5 ${bulkSaveHorizon.isPending ? 'animate-spin' : 'group-hover:scale-110 transition-transform'}`} />
+                                <Zap
+                                    className={`mr-2 h-5 w-5 ${bulkSaveHorizon.isPending ? "animate-spin" : "group-hover:scale-110 transition-transform"}`}
+                                />
                                 {bulkSaveHorizon.isPending ? "Memproses..." : "Bulk Horizon (3m)"}
+                            </Button>
+
+                            <Button
+                                onClick={() => exportData.mutate(tableState.queryParams)}
+                                disabled={exportData.isPending || list.isLoading}
+                                variant="outline"
+                                className="h-14 bg-emerald-50 text-emerald-700 border-emerald-100 rounded-3xl font-black shadow-sm hover:bg-emerald-100 transition-all px-8 flex items-center gap-2 group"
+                            >
+                                <Download
+                                    className={`size-5 ${exportData.isPending ? "animate-bounce" : "group-hover:translate-y-0.5 transition-transform"}`}
+                                />
+                                {exportData.isPending ? "Exporting..." : "Excel"}
                             </Button>
 
                             <div className="flex items-center gap-3 bg-white p-2 rounded-3xl border border-indigo-100 shadow-sm">
@@ -179,129 +242,6 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     </SelectContent>
                                 </Select>
                             </div>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="h-14 bg-white border-indigo-100 rounded-3xl font-black text-slate-600 hover:bg-slate-50 transition-all border-dashed shadow-sm px-6"
-                                    >
-                                        <Settings2 className="mr-2 h-5 w-5 text-indigo-500" />
-                                        Kolom <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-indigo-50"
-                                >
-                                    <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        Konfigurasi Kolom
-                                    </div>
-                                    <div className="space-y-1 mt-2">
-                                        {/* Sales Group Toggle */}
-                                        {periods.sales_periods.length > 0 && (
-                                            <DropdownMenuCheckboxItem
-                                                className="rounded-xl capitalize font-bold text-indigo-600 py-3 bg-indigo-50/50 cursor-pointer"
-                                                checked={periods.sales_periods.every(
-                                                    (p: any) =>
-                                                        columnVisibility[`sales_${p.key}`] !==
-                                                        false,
-                                                )}
-                                                onCheckedChange={(value) => {
-                                                    const updates: VisibilityState = {};
-                                                    periods.sales_periods.forEach((p: any) => {
-                                                        updates[`sales_${p.key}`] = !!value;
-                                                    });
-                                                    setColumnVisibility((prev) => ({
-                                                        ...prev,
-                                                        ...updates,
-                                                    }));
-                                                }}
-                                            >
-                                                Sales History ({periods.sales_periods.length})
-                                            </DropdownMenuCheckboxItem>
-                                        )}
-
-                                        {/* Needs Group Toggle */}
-                                        {periods.forecast_periods.length > 0 && (
-                                            <DropdownMenuCheckboxItem
-                                                className="rounded-xl capitalize font-bold text-orange-600 py-3 bg-orange-50/50 cursor-pointer"
-                                                checked={periods.forecast_periods.every(
-                                                    (p: any) =>
-                                                        columnVisibility[`need_${p.key}`] !== false,
-                                                )}
-                                                onCheckedChange={(value) => {
-                                                    const updates: VisibilityState = {};
-                                                    periods.forecast_periods.forEach((p: any) => {
-                                                        updates[`need_${p.key}`] = !!value;
-                                                    });
-                                                    setColumnVisibility((prev) => ({
-                                                        ...prev,
-                                                        ...updates,
-                                                    }));
-                                                }}
-                                            >
-                                                Needs Buy ({periods.forecast_periods.length})
-                                            </DropdownMenuCheckboxItem>
-                                        )}
-
-                                        {/* PO Group Toggle */}
-                                        {periods.po_periods?.length > 0 && (
-                                            <DropdownMenuCheckboxItem
-                                                className="rounded-xl capitalize font-bold text-emerald-600 py-3 bg-emerald-50/50 cursor-pointer"
-                                                checked={periods.po_periods.every(
-                                                    (p: any) =>
-                                                        columnVisibility[`po_${p.key}`] !== false,
-                                                )}
-                                                onCheckedChange={(value) => {
-                                                    const updates: VisibilityState = {};
-                                                    periods.po_periods.forEach((p: any) => {
-                                                        updates[`po_${p.key}`] = !!value;
-                                                    });
-                                                    setColumnVisibility((prev) => ({
-                                                        ...prev,
-                                                        ...updates,
-                                                    }));
-                                                }}
-                                            >
-                                                Open PO ({periods.po_periods.length})
-                                            </DropdownMenuCheckboxItem>
-                                        )}
-
-                                        {columns.map((column: any) => {
-                                            const columnId = column.accessorKey || column.id;
-                                            const header = column.header;
-
-                                            if (!columnId || typeof header !== "string")
-                                                return null;
-
-                                            // Skip individual dynamic columns to keep selector clean
-                                            if (
-                                                columnId.startsWith("sales_") ||
-                                                columnId.startsWith("need_") ||
-                                                columnId.startsWith("po_")
-                                            )
-                                                return null;
-
-                                            return (
-                                                <DropdownMenuCheckboxItem
-                                                    key={columnId}
-                                                    className="rounded-xl capitalize font-bold text-slate-600 py-3 data-[state=checked]:bg-indigo-50 data-[state=checked]:text-indigo-600 cursor-pointer"
-                                                    checked={columnVisibility[columnId] !== false}
-                                                    onCheckedChange={(value) => {
-                                                        setColumnVisibility((prev) => ({
-                                                            ...prev,
-                                                            [columnId]: !!value,
-                                                        }));
-                                                    }}
-                                                >
-                                                    {header.toLowerCase()}
-                                                </DropdownMenuCheckboxItem>
-                                            );
-                                        })}
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                     </div>
 
@@ -325,6 +265,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                         ) : (
                             <div>
                                 <DataTable
+                                    tableId="recommendation-v2-main-table"
                                     columns={columns}
                                     data={list.data?.data ?? []}
                                     page={tableState.page}
@@ -333,8 +274,8 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     onPageChange={tableState.setPage}
                                     onPageSizeChange={tableState.setTake}
                                     state={{ columnVisibility }}
-                                    onColumnVisibilityChange={setColumnVisibility}
-                                    enableMultiSelect={true}
+                                    onColumnVisibilityChange={handleColumnVisibilityChange}
+                                    // enableMultiSelect={false}
                                 />
                             </div>
                         )}
@@ -352,8 +293,10 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                             Eksekusi Bulk <span className="text-indigo-600">Horizon</span>
                         </DialogTitle>
                         <DialogDescription className="text-slate-500 font-medium text-center text-base leading-relaxed">
-                            Apakah Anda yakin ingin memperbarui **seluruh** Horizon ke **3 bulan** untuk kategori <span className="text-indigo-600 font-bold">{title}</span>? 
-                            Aksi ini akan menimpa konfigurasi yang sudah ada.
+                            Apakah Anda yakin ingin memperbarui **seluruh** Horizon ke **3 bulan**
+                            untuk kategori{" "}
+                            <span className="text-indigo-600 font-bold">{title}</span>? Aksi ini
+                            akan menimpa konfigurasi yang sudah ada.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="mt-8 flex-col sm:flex-row gap-3">
@@ -377,3 +320,132 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
         </div>
     );
 }
+//  <DropdownMenu>
+//      <DropdownMenuTrigger asChild>
+//          <Button
+//              variant="outline"
+//              className="h-14 bg-white border-indigo-100 rounded-3xl font-black text-slate-600 hover:bg-slate-50 transition-all border-dashed shadow-sm px-6"
+//          >
+//              <Settings2 className="mr-2 h-5 w-5 text-indigo-500" />
+//              Kolom <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+//          </Button>
+//      </DropdownMenuTrigger>
+//      <DropdownMenuContent
+//          align="end"
+//          className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-indigo-50"
+//      >
+//          <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+//              Konfigurasi Kolom
+//          </div>
+//          <div className="space-y-1 mt-2">
+//              {/* Sales Group Toggle */}
+//              {periods.sales_periods.length > 0 && (
+//                  <DropdownMenuCheckboxItem
+//                      className="rounded-xl capitalize font-bold text-indigo-600 py-3 bg-indigo-50/50 cursor-pointer"
+//                      checked={periods.sales_periods.every(
+//                          (p: any) => columnVisibility[`sales_${p.key}`] !== false,
+//                      )}
+//                      onCheckedChange={(value) => {
+//                          handleColumnVisibilityChange((prev: any) => {
+//                              const updates: VisibilityState = {};
+//                              periods.sales_periods.forEach((p: any) => {
+//                                  updates[`sales_${p.key}`] = !!value;
+//                              });
+//                              return { ...prev, ...updates };
+//                          });
+//                      }}
+//                  >
+//                      Sales History ({periods.sales_periods.length})
+//                  </DropdownMenuCheckboxItem>
+//              )}
+
+//              {/* Needs Group Toggle */}
+//              {periods.forecast_periods.length > 0 && (
+//                  <DropdownMenuCheckboxItem
+//                      className="rounded-xl capitalize font-bold text-orange-600 py-3 bg-orange-50/50 cursor-pointer"
+//                      checked={periods.forecast_periods.every(
+//                          (p: any) => columnVisibility[`need_${p.key}`] !== false,
+//                      )}
+//                      onCheckedChange={(value) => {
+//                          handleColumnVisibilityChange((prev: any) => {
+//                              const updates: VisibilityState = {};
+//                              periods.forecast_periods.forEach((p: any) => {
+//                                  updates[`need_${p.key}`] = !!value;
+//                              });
+//                              return { ...prev, ...updates };
+//                          });
+//                      }}
+//                  >
+//                      Needs Buy ({periods.forecast_periods.length})
+//                  </DropdownMenuCheckboxItem>
+//              )}
+
+//              {/* PO Group Toggle */}
+//              {periods.po_periods?.length > 0 && (
+//                  <DropdownMenuCheckboxItem
+//                      className="rounded-xl capitalize font-bold text-emerald-600 py-3 bg-emerald-50/50 cursor-pointer"
+//                      checked={periods.po_periods.every(
+//                          (p: any) => columnVisibility[`po_${p.key}`] !== false,
+//                      )}
+//                      onCheckedChange={(value) => {
+//                          handleColumnVisibilityChange((prev: any) => {
+//                              const updates: VisibilityState = {};
+//                              periods.po_periods.forEach((p: any) => {
+//                                  updates[`po_${p.key}`] = !!value;
+//                              });
+//                              return { ...prev, ...updates };
+//                          });
+//                      }}
+//                  >
+//                      Open PO Partial ({periods.po_periods.length})
+//                  </DropdownMenuCheckboxItem>
+//              )}
+
+//              {/* Total Open PO XOR Toggle */}
+//              <DropdownMenuCheckboxItem
+//                  className="rounded-xl capitalize font-bold text-emerald-700 py-3 border border-emerald-100 bg-emerald-50/30 cursor-pointer"
+//                  checked={columnVisibility["total_open_po"] !== false}
+//                  onCheckedChange={(value) => {
+//                      handleColumnVisibilityChange((prev: any) => ({
+//                          ...prev,
+//                          total_open_po: !!value,
+//                      }));
+//                  }}
+//              >
+//                  Ringkasan Total PO
+//              </DropdownMenuCheckboxItem>
+
+//              {columns.map((column: any) => {
+//                  const columnId = column.accessorKey || column.id;
+//                  const header = column.header;
+
+//                  if (!columnId || typeof header !== "string") return null;
+
+//                  // Skip individual dynamic columns to keep selector clean
+//                  if (
+//                      columnId.startsWith("sales_") ||
+//                      columnId.startsWith("need_") ||
+//                      columnId.startsWith("po_") ||
+//                      columnId === "total_open_po"
+//                  )
+//                      return null;
+
+//                  return (
+//                      <DropdownMenuCheckboxItem
+//                          key={columnId}
+//                          className="rounded-xl capitalize font-bold text-slate-600 py-3 data-[state=checked]:bg-indigo-50 data-[state=checked]:text-indigo-600 cursor-pointer"
+//                          checked={columnVisibility[columnId] !== false}
+//                          onCheckedChange={(value) => {
+//                              setColumnVisibility((prev) => ({
+//                                  ...prev,
+//                                  [columnId]: !!value,
+//                              }));
+//                          }}
+//                      >
+//                          {header.toLowerCase()}
+//                      </DropdownMenuCheckboxItem>
+//                  );
+//              })}
+//          </div>
+//      </DropdownMenuContent>
+//  </DropdownMenu>;

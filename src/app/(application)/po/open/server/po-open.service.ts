@@ -20,4 +20,17 @@ export class OpenPoService {
         const { data } = await api.patch(`${API}/${id}`, body);
         return data;
     }
+
+    static async getSummary(query: QueryOpenPoDTO) {
+        const { data } = await api.get(`${API}/summary`, { params: query });
+        return data.data as any[]; // Will be typed correctly in the hook
+    }
+
+    static async export(query: QueryOpenPoDTO) {
+        const { data } = await api.get(`${API}/export`, {
+            params: query,
+            responseType: "blob",
+        });
+        return data;
+    }
 }

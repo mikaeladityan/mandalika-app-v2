@@ -102,6 +102,7 @@ export const useApproveRecomendation = () => {
                 message: "Berhasil menyetujui rekomendasi dan push ke PO Open",
             });
             queryClient.invalidateQueries({ queryKey: ["recomendation"] });
+            queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
             queryClient.invalidateQueries({ queryKey: ["open-po"] });
         },
         onError: (err: any) => {
@@ -127,6 +128,7 @@ export const useDeleteRecomendation = () => {
             });
             queryClient.invalidateQueries({ queryKey: ["purchase"] });
             queryClient.invalidateQueries({ queryKey: ["recomendation"] });
+            queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
         },
         onError: (err: any) => {
             FetchError(err, setErr);
