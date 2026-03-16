@@ -58,9 +58,9 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
 
     const calculatedRecommendation = useMemo(() => {
         if (!hasHorizon) return 0;
-        const readyStock = data.current_stock + data.open_po;
-        const deficit =
-            totalNeeded + data.safety_stock_x_resep - readyStock - data.stock_fg_x_resep;
+        const usableStock = data.current_stock - data.safety_stock_x_resep;
+        const readyStock = usableStock + data.open_po;
+        const deficit = totalNeeded - readyStock - data.stock_fg_x_resep;
         return deficit > 0 ? deficit : 0;
     }, [data, totalNeeded, hasHorizon]);
 
@@ -167,7 +167,7 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                                 Ready Stock (S+P)
                             </span>
                             <span className="text-xl font-black text-slate-900">
-                                {formatNumber(data.current_stock + data.open_po)}
+                                {formatNumber(data.current_stock - data.safety_stock_x_resep + data.open_po)}
                                 <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">
                                     {data.uom}
                                 </span>

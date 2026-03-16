@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { RecomendationV2Response } from "@/app/(application)/recomendation-v2/server/recomendation-v2.schema";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
@@ -139,10 +139,17 @@ export const RecomendationV2Columns = (
         accessorKey: "current_stock",
         header: "Current Stock",
         cell: ({ row }) => {
-            const stock = row.original.current_stock;
+            const stock = row.original.current_stock - row.original.safety_stock_x_resep;
             return (
                 <div className="flex flex-col">
-                    <span className="text-xs font-black text-slate-800">{formatNumber(stock)}</span>
+                    <span
+                        className={cn(
+                            "text-xs font-black",
+                            stock < 0 ? "text-red-500" : "text-slate-800",
+                        )}
+                    >
+                        {formatNumber(stock)}
+                    </span>
                     <span className="text-[9px] text-slate-400 font-bold uppercase">
                         {row.original.uom}
                     </span>
@@ -155,7 +162,7 @@ export const RecomendationV2Columns = (
         id: "available_stock",
         header: "Ready Stock (S+P)",
         cell: ({ row }) => {
-            const stock = row.original.current_stock;
+            const stock = row.original.current_stock - row.original.safety_stock_x_resep;
             const openPo = row.original.open_po;
             const available = stock + openPo;
             const needed = row.original.forecast_needed;
@@ -297,7 +304,7 @@ export const RecomendationV2Columns = (
             }
 
             const deficit = calculateDeficit(
-                data.current_stock,
+                data.current_stock - data.safety_stock_x_resep,
                 data.open_po,
                 data.needs,
                 data.work_order_horizon,
