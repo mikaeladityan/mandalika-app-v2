@@ -22,9 +22,15 @@ import Link from "next/link";
 import { useSizes } from "@/app/(application)/products/(component)/size/server/use.size";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { VisibilityState } from "@tanstack/react-table";
+
 export function Sales() {
     const table = useSaleTableState();
-    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+    const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
+        "sales-main-table-visibility",
+        {},
+    );
 
     const {
         data: salesList,
@@ -61,184 +67,197 @@ export function Sales() {
     const isTableLoading = isLoading || isFetching || isRefetching;
 
     return (
-        <section className="space-y-6">
-            <header className="space-y-1 mb-5">
-                <h2 className="text-xl font-semibold tracking-tight">Manajemen Penjualan</h2>
-                <p className="text-sm text-muted-foreground">
-                    Monitoring tren penjualan produk aktual
-                </p>
-            </header>
-
-            <Card className="border-none shadow-sm rounded-xl overflow-hidden">
-                <CardHeader className="space-y-4">
-                    {/* ===== Search ===== */}
-                    <InputGroup className="w-full md:max-w-sm">
-                        <InputGroupInput
-                            placeholder="Cari kode atau nama produk..."
-                            value={table.search}
-                            onChange={(e) => table.setSearch(e.target.value)}
-                        />
-                        <InputGroupAddon>
-                            <Search className="h-4 w-4" />
-                        </InputGroupAddon>
-                        <InputGroupAddon align="inline-end">
-                            {isFetching ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <span className="text-xs text-muted-foreground">
-                                    {total} result
-                                </span>
-                            )}
-                        </InputGroupAddon>
-                    </InputGroup>
-
-                    {/* ===== Filters ===== */}
-                    <div className="flex flex-wrap gap-2">
-                        {/* Gender */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant={table.gender ? "default" : "outline"}
-                                    className="w-full md:w-auto justify-between"
-                                >
-                                    {table.gender === "WOMEN"
-                                        ? "Wanita"
-                                        : table.gender === "MEN"
-                                          ? "Pria"
-                                          : table.gender === "UNISEX"
-                                            ? "Unisex"
-                                            : "Gender"}
-                                    <ChevronDown className="ml-1 h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                                <DropdownMenuItem onClick={() => table.setGender("WOMEN")}>
-                                    Wanita
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => table.setGender("MEN")}>
-                                    Pria
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => table.setGender("UNISEX")}>
-                                    Unisex
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => table.setGender(undefined)}
-                                    className="text-muted-foreground"
-                                >
-                                    Reset
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Tipe Produk */}
-                        <SelectFilter
-                            placeholder="Tipe Produk"
-                            value={table.variant ?? null}
-                            options={
-                                typeList?.map((t) => ({
-                                    value: t.slug,
-                                    label: t.name.toUpperCase(),
-                                })) ?? []
-                            }
-                            onChange={(val) => table.setVariant(String(val))}
-                            onReset={() => table.setVariant(undefined)}
-                            isLoading={typesLoading || typesRefetching}
-                            canSearching={true}
-                            className="w-full md:w-auto min-w-50"
-                        />
-
-                        {/* Ukuran */}
-                        <SelectFilter
-                            placeholder="Ukuran"
-                            value={table.size ?? null}
-                            options={
-                                sizeList?.map((s) => ({
-                                    value: s.size,
-                                    label: String(s.size) + "ML",
-                                })) ?? []
-                            }
-                            onChange={(val) => table.setSize(Number(val))}
-                            onReset={() => table.setSize(undefined)}
-                            isLoading={sizesLoading || sizesRefetching}
-                            canSearching={true}
-                            className="w-full md:w-auto min-w-28"
-                        />
-
-                        {/* Horizon */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant={table.horizon ? "default" : "outline"}
-                                    className="w-full md:w-auto justify-between"
-                                >
-                                    <span className="truncate">
-                                        {table.horizon ? `${table.horizon} Bulan` : "Horizon"}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 ml-2" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
-                                {[2, 4, 6, 8, 10, 12, 16, 20, 24].map((h) => (
-                                    <DropdownMenuItem key={h} onClick={() => table.setHorizon(h)}>
-                                        {h} Bulan
-                                    </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuItem
-                                    onClick={() => table.setHorizon(undefined)}
-                                    className="text-muted-foreground"
-                                >
-                                    Reset
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Reset All Filters */}
-                        {(table.gender ||
-                            table.variant ||
-                            table.size ||
-                            table.horizon ||
-                            table.search) && (
-                            <Button
-                                variant="ghost"
-                                onClick={table.resetFilters}
-                                className="h-9 px-2 text-muted-foreground hover:text-foreground"
-                            >
-                                Reset <X className="ml-1 h-3.5 w-3.5" />
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* ===== Action Buttons ===== */}
-                    <div className="flex flex-col md:flex-row justify-between gap-2">
-                        <div className="flex gap-2">
+        <section>
+            <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
+                <CardHeader className="space-y-4 p-4 lg:p-5 border-b border-slate-50">
+                    {/* ROW 1: TITLE & ACTIONS */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-lg font-black tracking-tight text-slate-800">
+                                Manajemen Penjualan
+                            </h2>
+                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                                Monitoring tren penjualan produk aktual
+                            </p>
+                        </div>
+                        <div className="flex gap-1.5">
                             <Link href={"/sales/create"}>
                                 <Button
                                     variant="teal"
-                                    className="w-full cursor-pointer font-bold shadow-sm shadow-teal-50"
+                                    className="h-8 px-3 cursor-pointer font-bold shadow-sm shadow-teal-50 text-[11px]"
                                 >
-                                    <PlusCircle className="mr-2 h-4 w-4" />
-                                    Input Penjualan
+                                    <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+                                    Input
                                 </Button>
                             </Link>
-                        </div>
-
-                        <div className="flex gap-2">
                             <Link href="/sales/import">
-                                <Button variant="outline" className="w-full">
-                                    <Import className="mr-2 h-4 w-4" />
+                                <Button
+                                    variant="outline"
+                                    className="h-8 px-3 text-[11px] font-bold"
+                                >
+                                    <Import className="mr-1.5 h-3.5 w-3.5" />
                                     Import
                                 </Button>
                             </Link>
-
-                            <Button variant="success" className="cursor-pointer">
-                                <Download className="h-4 w-4" />
+                            <Button
+                                variant="success"
+                                className="h-8 px-3 cursor-pointer text-[11px] font-bold"
+                            >
+                                <Download className="mr-1.5 h-3.5 w-3.5" />
                                 Export
                             </Button>
                         </div>
                     </div>
+
+                    {/* ROW 2: SEARCH & FILTERS */}
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-3 pt-1">
+                        {/* ===== Search ===== */}
+                        <InputGroup className="w-full lg:max-w-sm">
+                            <InputGroupInput
+                                placeholder="Cari..."
+                                value={table.search}
+                                onChange={(e) => table.setSearch(e.target.value)}
+                                className="h-9 text-sm"
+                            />
+                            <InputGroupAddon>
+                                <Search className="h-3.5 w-3.5" />
+                            </InputGroupAddon>
+                            <InputGroupAddon align="inline-end">
+                                {isFetching ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <span className="text-[10px] text-muted-foreground font-bold">
+                                        {total}
+                                    </span>
+                                )}
+                            </InputGroupAddon>
+                        </InputGroup>
+
+                        {/* ===== Filters ===== */}
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                            {/* Gender */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant={table.gender ? "default" : "outline"}
+                                        className="h-9 px-3 text-xs font-bold justify-between"
+                                    >
+                                        {table.gender === "WOMEN"
+                                            ? "Wanita"
+                                            : table.gender === "MEN"
+                                              ? "Pria"
+                                              : table.gender === "UNISEX"
+                                                ? "Unisex"
+                                                : "Gender"}
+                                        <ChevronDown className="ml-1.5 h-3 w-3" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                    <DropdownMenuItem onClick={() => table.setGender("WOMEN")}>
+                                        Wanita
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => table.setGender("MEN")}>
+                                        Pria
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => table.setGender("UNISEX")}>
+                                        Unisex
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => table.setGender(undefined)}
+                                        className="text-muted-foreground"
+                                    >
+                                        Reset
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Tipe Produk */}
+                            <SelectFilter
+                                placeholder="Tipe"
+                                value={table.variant ?? null}
+                                options={
+                                    typeList?.map((t) => ({
+                                        value: t.slug,
+                                        label: t.name.toUpperCase(),
+                                    })) ?? []
+                                }
+                                onChange={(val) => table.setVariant(String(val))}
+                                onReset={() => table.setVariant(undefined)}
+                                isLoading={typesLoading || typesRefetching}
+                                canSearching={true}
+                                className="w-full md:w-auto min-w-32 h-9"
+                            />
+
+                            {/* Ukuran */}
+                            <SelectFilter
+                                placeholder="Ukuran"
+                                value={table.size ?? null}
+                                options={
+                                    sizeList?.map((s) => ({
+                                        value: s.size,
+                                        label: String(s.size) + "ML",
+                                    })) ?? []
+                                }
+                                onChange={(val) => table.setSize(Number(val))}
+                                onReset={() => table.setSize(undefined)}
+                                isLoading={sizesLoading || sizesRefetching}
+                                canSearching={true}
+                                className="w-full md:w-auto min-w-24 h-9"
+                            />
+
+                            {/* Horizon */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant={table.horizon ? "default" : "outline"}
+                                        className="h-9 px-3 text-xs font-bold justify-between"
+                                    >
+                                        <span className="truncate">
+                                            {table.horizon ? `${table.horizon} Bulan` : "Horizon"}
+                                        </span>
+                                        <ChevronDown className="h-3 w-3 ml-1.5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="max-h-60 overflow-y-auto"
+                                >
+                                    {[2, 4, 6, 8, 10, 12, 16, 20, 24].map((h) => (
+                                        <DropdownMenuItem
+                                            key={h}
+                                            onClick={() => table.setHorizon(h)}
+                                        >
+                                            {h} Bulan
+                                        </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuItem
+                                        onClick={() => table.setHorizon(undefined)}
+                                        className="text-muted-foreground"
+                                    >
+                                        Reset
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Reset All Filters */}
+                            {(table.gender ||
+                                table.variant ||
+                                table.size ||
+                                table.horizon ||
+                                table.search) && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={table.resetFilters}
+                                    className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+                                >
+                                    Reset <X className="ml-1 h-3 w-3" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
                 </CardHeader>
 
-                <CardContent className="pt-6 relative">
+                <CardContent className="relative">
                     {/* Overlay fetching state for smoother UX during pagination/filter */}
                     {isFetching && !isLoading && (
                         <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
@@ -250,6 +269,7 @@ export function Sales() {
                         <TableSkeleton />
                     ) : (
                         <DataTable
+                            tableId="sales-main-table"
                             columns={columns}
                             data={salesList || []}
                             page={table.queryParams.page ?? 1}

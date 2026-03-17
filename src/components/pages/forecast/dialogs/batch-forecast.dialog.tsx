@@ -22,6 +22,7 @@ type BatchForecastDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess: () => void;
+    is_display?: boolean;
 };
 
 const HORIZON_OPTIONS = Array.from({ length: 12 }).map((_, i) => ({
@@ -63,7 +64,12 @@ const YEAR_OPTIONS = Array.from({ length: 5 }).map((_, i) => {
     };
 });
 
-export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchForecastDialogProps) {
+export function BatchForecastDialog({
+    open,
+    onOpenChange,
+    onSuccess,
+    is_display,
+}: BatchForecastDialogProps) {
     const { run, isPending } = useFormForecast();
 
     const form = useForm<RunForecastDTO>({
@@ -81,6 +87,7 @@ export function BatchForecastDialog({ open, onOpenChange, onSuccess }: BatchFore
                 horizon: Number(values.horizon),
                 start_month: Number(values.start_month),
                 start_year: Number(values.start_year),
+                is_display,
             };
             await run(payload);
             onSuccess();

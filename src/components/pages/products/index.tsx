@@ -95,13 +95,14 @@ export function Products() {
 
     return (
         <>
-            <header className="space-y-1 mb-5">
-                <h2 className="text-xl font-semibold tracking-tight">Manajemen Produk</h2>
-                <p className="text-sm text-muted-foreground">Kelola seluruh produk yang tersedia</p>
-            </header>
-
             <Card>
                 <CardHeader className="space-y-4">
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">Manajemen Produk</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Kelola seluruh produk yang tersedia
+                        </p>
+                    </div>
                     {/* ===== Search ===== */}
                     <InputGroup className="w-full md:max-w-sm">
                         <InputGroupInput

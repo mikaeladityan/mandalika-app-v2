@@ -4,6 +4,7 @@ import {
     QueryForecastDTO,
     ResponseForecastDTO,
     RunForecastDTO,
+    UpdateManualForecastDTO,
 } from "./forecast.schema";
 
 const API = `${process.env.NEXT_PUBLIC_API}/api/app/forecasts`;
@@ -40,6 +41,16 @@ class ForecastService {
             const { data } = await api.post(API, body, {
                 timeout: 100000,
             });
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateManual(body: UpdateManualForecastDTO) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.patch(`${API}/manual-update`, body);
             return data.data;
         } catch (error) {
             throw error;

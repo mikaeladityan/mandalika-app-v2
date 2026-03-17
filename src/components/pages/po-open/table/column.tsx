@@ -25,10 +25,10 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
                 const item = row.original;
                 return (
                     <div className="flex flex-col min-w-[200px]">
-                        <span className="text-sm font-semibold text-slate-700">
+                        <span className="text-xs font-bold text-slate-700">
                             {item.material_name}
                         </span>
-                        <span className="text-xs font-mono text-slate-400 uppercase">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase">
                             {item.barcode || "-"}
                         </span>
                     </div>
@@ -39,7 +39,7 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
             accessorKey: "supplier_name",
             header: "SUPPLIER",
             cell: ({ row }) => (
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
                     {row.original.supplier_name}
                 </span>
             ),
@@ -71,7 +71,7 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
             accessorKey: "price",
             header: "PRICE",
             cell: ({ row }) => (
-                <span className="text-sm font-medium text-slate-600">
+                <span className="text-xs font-bold text-slate-600">
                     Rp {formatNumber((row.original as any).price)}
                 </span>
             ),
@@ -80,7 +80,7 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
             accessorKey: "subtotal",
             header: "SUBTOTAL",
             cell: ({ row }) => (
-                <span className="text-sm font-black text-blue-600 tracking-tight">
+                <span className="text-xs font-bold text-blue-600 tracking-tight">
                     Rp {formatNumber((row.original as any).subtotal)}
                 </span>
             ),
@@ -89,7 +89,7 @@ export const OpenPoColumns = (): ColumnDef<OpenPoResponse>[] => {
             accessorKey: "quantity",
             header: "QTY OPEN",
             cell: ({ row }) => (
-                <span className="font-bold text-slate-800">
+                <span className="font-bold text-xs text-slate-800">
                     {formatNumber(row.original.quantity)}
                 </span>
             ),

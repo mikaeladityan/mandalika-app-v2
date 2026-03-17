@@ -2,6 +2,7 @@
 
 import { useBOM } from "@/app/(application)/bom/server/use.bom";
 import { useState } from "react";
+import { OnChangeFn, VisibilityState } from "@tanstack/react-table";
 import { DataTable } from "../../ui/table/data";
 import { BOMColumns } from "./table/column";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,17 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { FORECAST_HORIZON_KEY } from "@/app/(application)/forecasts/server/use.forecast";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { CalendarRange } from "lucide-react";
 
 export default function BOMPage() {
     const [query, setQuery] = useState<any>({
@@ -26,18 +38,14 @@ export default function BOMPage() {
         sortOrder: "asc",
     });
 
-    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-        product: true,
-        material: true,
-        bom_qty: true,
-        sales_history: false,
-        forecast: false,
-        needs_to_buy: true,
-        safety_stock: true,
-    });
+    const [horizon, setHorizon] = useLocalStorage<number>(FORECAST_HORIZON_KEY, 3);
 
     const debouncedSearch = useDebounce(query.search, 500);
-    const { data, isLoading, isFetching } = useBOM({ ...query, search: debouncedSearch });
+    const { data, isLoading, isFetching } = useBOM({
+        ...query,
+        search: debouncedSearch,
+        forecast_months: horizon,
+    });
 
     const onSort = (key: any) => {
         setQuery((prev: any) => ({
@@ -59,10 +67,24 @@ export default function BOMPage() {
                         Manajemen kebutuhan bahan baku berdasarkan forecast dan riwayat penjualan.
                     </p>
                 </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none h-10">
+                        <CalendarRange className="h-4 w-4 text-slate-400" />
+                        <div className="flex flex-col">
+                            <Label className="text-[10px] font-black uppercase text-slate-400 tracking-tighter leading-tight">
+                                Horizon SS (Avg)
+                            </Label>
+                            <span className="text-xs font-bold text-slate-700 leading-tight">
+                                {horizon} Bulan
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <Card className="border-slate-200/60 shadow-md shadow-slate-200/20 overflow-hidden bg-white/50 backdrop-blur-sm rounded-xl">
-                <CardHeader className="pb-4">
+                <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                         <div className="relative w-full sm:max-w-md">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
@@ -74,44 +96,6 @@ export default function BOMPage() {
                                     setQuery({ ...query, search: e.target.value, page: 1 })
                                 }
                             />
-                        </div>
-
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="gap-2 border-slate-300 rounded-lg font-bold"
-                                    >
-                                        Kolom <ChevronDown size={14} />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {Object.entries(columnVisibility).map(([key, value]) => (
-                                        <DropdownMenuCheckboxItem
-                                            key={key}
-                                            checked={value}
-                                            onCheckedChange={(checked) =>
-                                                setColumnVisibility((prev) => ({
-                                                    ...prev,
-                                                    [key]: Boolean(checked),
-                                                }))
-                                            }
-                                        >
-                                            {key.replace("_", " ").toUpperCase()}
-                                        </DropdownMenuCheckboxItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            {/* 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-2 border-dashed border-slate-300 rounded-lg font-bold"
-                            >
-                                <Filter size={14} /> Filter
-                            </Button> */}
                         </div>
                     </div>
                 </CardHeader>
@@ -129,21 +113,21 @@ export default function BOMPage() {
                         </div>
                     ) : (
                         <DataTable
+                            tableId="bom-main-table"
+                            data={data?.data ?? []}
                             columns={BOMColumns({
                                 sortBy: query.sortBy,
                                 sortOrder: query.sortOrder,
                                 onSort,
+                                horizon,
                             })}
-                            data={data?.data || []}
-                            page={query.page || 1}
-                            pageSize={query.take || 25}
-                            total={data?.len || 0}
+                            page={query.page}
+                            pageSize={query.take}
+                            total={data?.len ?? 0}
                             onPageChange={(page: number) => setQuery({ ...query, page })}
                             onPageSizeChange={(size: number) =>
                                 setQuery({ ...query, take: size, page: 1 })
                             }
-                            state={{ columnVisibility }}
-                            onColumnVisibilityChange={setColumnVisibility}
                         />
                     )}
                 </CardContent>

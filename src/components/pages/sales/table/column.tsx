@@ -66,7 +66,7 @@ export const SalesColumns = ({
                     href={`/sales/${row.original.product_id}?month=${found.month}&year=${found.year}`}
                     className="cursor-pointer group w-full rounded-md px-2 py-1.5 flex items-center justify-start gap-1 hover:bg-muted/60 transition-colors"
                 >
-                    <span className="text-sm font-semibold leading-none">
+                    <span className="text-[13px] font-bold leading-none">
                         {Math.round(Number(found.quantity)).toLocaleString("id-ID")}
                     </span>
 
@@ -97,7 +97,7 @@ export const SalesColumns = ({
                     <p className="text-[10px] text-muted-foreground font-mono truncate">
                         {row.original.product.code}
                     </p>
-                    <p className="font-bold text-xs 2xl:text-sm truncate leading-tight text-primary">
+                    <p className="font-bold text-[11px] truncate leading-tight text-primary">
                         {row.original.product.name}{" "}
                         {row.original.product.product_type?.name.toLocaleUpperCase()}{" "}
                         {row.original.product.size.toLocaleUpperCase()}

@@ -2,15 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutationState } from "@tanstack/react-query";
-import {
-    Loader2,
-    Search,
-    Zap,
-    Factory,
-    CalendarRange,
-    LayoutDashboard,
-    Percent,
-} from "lucide-react";
+import { Loader2, Search, Zap, CalendarRange, LayoutDashboard, Percent } from "lucide-react";
 import Link from "next/link";
 
 // Shadcn UI Components
@@ -34,21 +26,23 @@ import { Separator } from "@/components/ui/separator";
 import {
     useForecast,
     useForecastTableState,
-    useFormForecast,
 } from "@/app/(application)/forecasts/server/use.forecast";
 
 import { ForecastColumns } from "./table/column";
 import { useBulkProduction } from "@/app/(application)/production/server/use.production";
 import { BatchForecastDialog } from "./dialogs/batch-forecast.dialog";
 import { SyncProductionDialog } from "./dialogs/sync-production.dialog";
+import { ManualForecastDialog } from "./dialogs/manual-forecast.dialog";
 
-export function Forecast() {
+export function Forecast({ is_display }: { is_display?: boolean }) {
     // UI States
     const [openForecastDialog, setOpenForecastDialog] = useState(false);
     const [openProductionDialog, setOpenProductionDialog] = useState(false);
+    const [manualEditData, setManualEditData] = useState<any>(null);
+    const handleEditManual = useMemo(() => (data: any) => setManualEditData(data), []);
 
     // Business Logic Hooks
-    const table = useForecastTableState();
+    const table = useForecastTableState(is_display);
     const { list } = useForecast(table.queryParams);
     const mutationStates = useMutationState({
         filters: { mutationKey: ["forecasting", "run"], status: "pending" },
@@ -68,119 +62,110 @@ export function Forecast() {
     }, [list.data]);
 
     const periods = useMemo(() => {
-        if (!groupedData.length) return [];
-        return groupedData[0].monthly_data.map((m: any) => ({
-            year: m.year,
-            month: m.month,
-            period: m.period,
-            percentage_value: m.percentage_value,
-        }));
-    }, [groupedData]);
+        const now = new Date();
+        const startMonth = now.getMonth() + 1;
+        const startYear = now.getFullYear();
+        return Array.from({ length: table.horizon }).map((_, i) => {
+            const d = new Date(startYear, startMonth - 1 + i, 1);
+            return {
+                month: d.getMonth() + 1,
+                year: d.getFullYear(),
+            };
+        });
+    }, [table.horizon]);
 
     const columns = useMemo(
-        () => ForecastColumns({ periods, horizon: table.horizon }),
-        [periods, table.horizon],
+        () =>
+            ForecastColumns({
+                periods,
+                horizon: table.horizon,
+                onEditManual: handleEditManual,
+            }),
+        [periods, table.horizon, handleEditManual],
     );
 
     return (
-        <div className="flex flex-col gap-6 p-2 md:p-4">
+        <div className="flex flex-col gap-4">
             {/* MAIN CONTENT CARD */}
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
-                <CardHeader className="space-y-6 p-6 lg:p-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <div className="p-2 bg-indigo-600 rounded-lg">
-                                    <LayoutDashboard className="h-5 w-5 text-white" />
-                                </div>
-                                <CardTitle className="text-2xl font-black tracking-tight text-slate-900">
-                                    Forecast Engine
-                                </CardTitle>
+            <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
+                <CardHeader className="space-y-3 border-b border-slate-50">
+                    {/* ROW 1: TITLE & PRIMARY ACTIONS */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-600 rounded-lg shrink-0">
+                                <LayoutDashboard className="h-3.5 w-3.5 text-white" />
                             </div>
-                            <CardDescription className="text-slate-500 font-medium ml-11">
-                                Kelola proyeksi kebutuhan stok dan sinkronisasi jalur produksi.
-                            </CardDescription>
+                            <div>
+                                <h2 className="text-lg font-black tracking-tight text-slate-900 leading-none">
+                                    Forecast Engine
+                                </h2>
+                                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                                    Kelola proyeksi stok dan sinkronisasi produksi.
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-2 self-end md:self-auto">
+                        <div className="flex items-center gap-1.5">
                             <Link href="/forecasts/percentages">
                                 <Button
                                     variant="outline"
-                                    className="rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-700 h-11"
+                                    className="rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-700 h-8 px-3 text-[11px]"
                                 >
-                                    <Percent className="mr-2 h-4 w-4 text-emerald-500" />
-                                    Forecast Percentages
+                                    <Percent className="mr-1.5 h-3 w-3 text-emerald-500" />
+                                    Percentages
                                 </Button>
                             </Link>
 
-                            {/* <Button
-                                onClick={() => setOpenProductionDialog(true)}
-                                disabled={isSyncingProduction || isProcessingForecast}
-                                variant="outline"
-                                className="rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-700 h-11"
-                            >
-                                {isSyncingProduction ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Factory className="mr-2 h-4 w-4 text-indigo-500" />
-                                )}
-                                Sync Production
-                            </Button> */}
                             <Button
                                 onClick={() => setOpenForecastDialog(true)}
                                 disabled={isProcessingForecast}
-                                className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white h-11 shadow-md px-6 transition-all active:scale-95"
+                                className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white h-8 shadow-sm px-4 text-[11px] transition-all"
                             >
                                 {isProcessingForecast ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-amber-400" />
+                                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin text-amber-400" />
                                 ) : (
-                                    <Zap className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" />
+                                    <Zap className="mr-1.5 h-3 w-3 fill-amber-400 text-amber-400" />
                                 )}
-                                {isProcessingForecast ? "Inisialisasi..." : "Run Analytics"}
+                                {isProcessingForecast ? "Proses..." : "Run Analytics"}
                             </Button>
                         </div>
                     </div>
 
-                    <Separator className="bg-slate-100" />
-
-                    {/* TOOLBAR */}
-                    <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                    {/* ROW 2: SEARCH & FILTERS */}
+                    <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1">
                         <div className="relative w-full lg:max-w-md group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                             <Input
-                                placeholder="Cari nama produk, SKU, atau kategori..."
+                                placeholder="Cari..."
                                 value={table.search}
                                 onChange={(e) => table.setSearch(e.target.value)}
-                                className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all font-medium"
+                                className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-indigo-500/20 text-sm"
                             />
                         </div>
 
-                        <div className="flex items-center gap-4 w-full lg:w-auto">
-                            <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 flex-1 lg:flex-none">
-                                <CalendarRange className="h-4 w-4 text-slate-400 shrink-0" />
-                                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-tighter hidden sm:block">
-                                    Horizon
+                        <div className="flex items-center gap-3 w-full lg:w-auto">
+                            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-xl border border-slate-100 flex-1 lg:flex-none">
+                                <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
+                                <Label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">
+                                    Horizon SS (Avg)
                                 </Label>
                                 <Select
                                     value={String(table.horizon)}
                                     onValueChange={(val) => table.setHorizon(Number(val))}
                                 >
-                                    <SelectTrigger className="w-full sm:w-32.5 border-none bg-transparent h-8 focus:ring-0 font-bold text-slate-700 p-0">
+                                    <SelectTrigger className="w-24 border-none bg-transparent h-6 focus:ring-0 font-bold text-slate-700 p-0 text-xs">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-                                        <SelectItem value="3" className="font-bold">
-                                            3 Bulan
-                                        </SelectItem>
-                                        <SelectItem value="4" className="font-bold">
-                                            4 Bulan
-                                        </SelectItem>
-                                        <SelectItem value="6" className="font-bold">
-                                            6 Bulan
-                                        </SelectItem>
-                                        <SelectItem value="12" className="font-bold">
-                                            12 Bulan
-                                        </SelectItem>
+                                    <SelectContent className="rounded-xl border-slate-200">
+                                        {[3, 4, 6, 12].map((h) => (
+                                            <SelectItem
+                                                key={h}
+                                                value={String(h)}
+                                                className="font-bold text-xs"
+                                            >
+                                                {h} Bulan
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -194,7 +179,7 @@ export function Forecast() {
                             <TableSkeleton />
                         </div>
                     ) : (
-                        <div className="border-t border-slate-50">
+                        <div className="p-0">
                             <DataTable
                                 tableId="forecast-main-table"
                                 columns={columns}
@@ -215,11 +200,19 @@ export function Forecast() {
                 open={openForecastDialog}
                 onOpenChange={setOpenForecastDialog}
                 onSuccess={() => setOpenForecastDialog(false)}
+                is_display={is_display}
             />
 
             <SyncProductionDialog
                 open={openProductionDialog}
                 onOpenChange={setOpenProductionDialog}
+            />
+
+            <ManualForecastDialog
+                open={!!manualEditData}
+                onOpenChange={(open) => !open && setManualEditData(null)}
+                data={manualEditData}
+                onSuccess={() => setManualEditData(null)}
             />
         </div>
     );

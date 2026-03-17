@@ -6,18 +6,60 @@ import { SortableHeader } from "@/components/ui/table/sortable";
 import { QueryBOMDTO, ResponseGroupedBOMDTO } from "@/app/(application)/bom/server/bom.schema";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Factory, TrendingUp, History, ShieldCheck } from "lucide-react";
+import { Factory, TrendingUp, History, ShieldCheck, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const FormulaHint = ({
+    title,
+    formula,
+    description,
+}: {
+    title: string;
+    formula: string;
+    description?: string;
+}) => (
+    <TooltipProvider>
+        <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+                <div className="cursor-help inline-flex items-center ml-1">
+                    <Info className="size-3 text-slate-300 hover:text-indigo-500 transition-colors" />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent
+                side="top"
+                className="w-80 p-3 bg-white text-slate-900 border-slate-200 shadow-xl z-50 pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="space-y-2 text-left">
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-indigo-600 border-b border-indigo-50 pb-1">
+                        {title}
+                    </p>
+                    <div className="bg-slate-50 p-2 rounded border border-slate-100 font-mono text-[10px] leading-relaxed wrap-break-word text-slate-700">
+                        {formula}
+                    </div>
+                    {description && (
+                        <p className="text-[10px] text-slate-500 leading-normal italic">
+                            {description}
+                        </p>
+                    )}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+);
 
 type Props = {
     sortBy?: QueryBOMDTO["sortBy"];
     sortOrder?: QueryBOMDTO["sortOrder"];
     onSort: (key: string) => void;
+    horizon?: number;
 };
 
 export const BOMColumns = ({
     sortBy,
     sortOrder,
     onSort,
+    horizon = 3,
 }: Props): ColumnDef<ResponseGroupedBOMDTO>[] => {
     return [
         {
@@ -104,8 +146,13 @@ export const BOMColumns = ({
         {
             id: "bom_qty",
             header: () => (
-                <div className="text-center py-2 text-[10px] uppercase font-black text-slate-500">
+                <div className="flex items-center justify-center py-2 text-[10px] uppercase font-black text-slate-500">
                     Qty
+                    <FormulaHint
+                        title="BOM Quantity"
+                        formula="Kuantitas Material per 1 Unit Produk"
+                        description="Jumlah bahan baku yang dibutuhkan untuk menghasilkan satu satuan produk jadi sesuai resep."
+                    />
                 </div>
             ),
             cell: ({ row }) => (
@@ -116,7 +163,7 @@ export const BOMColumns = ({
                             className={`flex items-center justify-center py-3 h-[60px] ${idx !== row.original.items.length - 1 ? "border-b border-slate-100" : ""}`}
                         >
                             <span className="text-xs font-black text-indigo-600 tabular-nums">
-                                {Number(item.material.quantity).toLocaleString("id-ID")}
+                                {Number(item.material.quantity).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                             </span>
                         </div>
                     ))}
@@ -142,7 +189,7 @@ export const BOMColumns = ({
                                 {s.period.split("/")[0]}
                             </span>
                             <span className="text-[10px] font-bold text-slate-600 tabular-nums bg-white border border-slate-100 px-1 rounded shadow-sm">
-                                {Math.round(s.value).toLocaleString("id-ID")}
+                                {Number(s.value).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                             </span>
                         </div>
                     ))}
@@ -154,10 +201,15 @@ export const BOMColumns = ({
             id: "forecast",
             header: () => (
                 <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[220px]">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-emerald-600 tracking-widest">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-emerald-600 tracking-widest leading-none">
                         <TrendingUp size={12} /> Forecast
+                        <FormulaHint
+                            title="Product Forecast"
+                            formula="Final Forecast = Base + Trend Adjustment"
+                            description="Target penjualan produk jadi yang telah disesuaikan dengan tren dan faktor promo."
+                        />
                     </div>
-                    <span className="text-[8px] text-emerald-500 font-mono">Next 6 Mo</span>
+                    <span className="text-[8px] text-emerald-500 font-mono">Next {horizon} Mo</span>
                 </div>
             ),
             cell: ({ row }) => (
@@ -168,7 +220,7 @@ export const BOMColumns = ({
                                 {f.period.split("/")[0]}
                             </span>
                             <span className="text-[10px] font-black text-emerald-700 tabular-nums bg-white border border-emerald-100 px-1 rounded shadow-sm">
-                                {Math.round(f.value).toLocaleString("id-ID")}
+                                {Number(f.value).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                             </span>
                         </div>
                     ))}
@@ -182,8 +234,13 @@ export const BOMColumns = ({
                 <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[220px]">
                     <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-orange-600 tracking-widest leading-none">
                         <Factory size={12} /> Needs Buy
+                        <FormulaHint
+                            title="Material Requirement"
+                            formula="Needs = Forecast Produk x BOM Qty"
+                            description="Estimasi kebutuhan material setiap bulan berdasarkan angka target forecast produk tersebut."
+                        />
                     </div>
-                    <span className="text-[8px] text-orange-500 font-mono">Mat Req</span>
+                    <span className="text-[8px] text-orange-500 font-mono">Next {horizon} Mo</span>
                 </div>
             ),
             cell: ({ row }) => (
@@ -199,7 +256,7 @@ export const BOMColumns = ({
                                         {n.period.split("/")[0]}
                                     </span>
                                     <span className="text-[10px] font-black text-orange-700 tabular-nums bg-white border border-orange-100 px-1 rounded shadow-sm">
-                                        {Math.round(n.value).toLocaleString("id-ID")}
+                                        {Number(n.value).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                     </span>
                                 </div>
                             ))}
@@ -215,8 +272,13 @@ export const BOMColumns = ({
                 <div className="flex flex-col items-center gap-1 py-1 px-2 min-w-[120px]">
                     <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 tracking-widest leading-none">
                         <ShieldCheck size={12} /> Safety Target
+                        <FormulaHint
+                            title="Safety Stock Assignment"
+                            formula="Mat SS = Safety Stock FG x BOM Qty"
+                            description={`Alokasi stok aman material yang dihitung secara proporsional dari target safety stock produk jadi (Rata-rata ${horizon} bulan).`}
+                        />
                     </div>
-                    <span className="text-[8px] text-blue-500 font-mono">Current Month</span>
+                    <span className="text-[8px] text-blue-500 font-mono">{horizon} Mo Avg</span>
                 </div>
             ),
             cell: ({ row }) => (
@@ -230,7 +292,7 @@ export const BOMColumns = ({
                             <div className="flex justify-between items-center bg-blue-50/50 px-1.5 py-0.5 rounded border border-blue-100/50">
                                 <span className="text-[8px] font-bold text-blue-400">SAFETY</span>
                                 <span className="text-[10px] font-bold text-blue-700 tabular-nums">
-                                    {Math.round(row.original.safety_stock).toLocaleString("id-ID")}
+                                    {Number(row.original.safety_stock).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                 </span>
                             </div>
                             {/* Material Prop */}
@@ -242,9 +304,7 @@ export const BOMColumns = ({
                                                 =
                                             </span>
                                             <span className="text-[10px] font-black text-indigo-700 tabular-nums">
-                                                {Math.round(item.safety_stock_x_bom).toLocaleString(
-                                                    "id-ID",
-                                                )}
+                                                {Number(item.safety_stock_x_bom).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                             </span>
                                         </div>
                                     </TooltipTrigger>

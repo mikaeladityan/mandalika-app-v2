@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useDebounce } from "@/shared/hooks";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { FORECAST_HORIZON_KEY } from "@/app/(application)/forecasts/server/use.forecast";
 import {
     QueryRecomendationV2DTO,
     RequestApproveWorkOrderDTO,
@@ -148,7 +150,7 @@ export function useRecomendationV2TableState(initial?: {
     const [year, setYear] = useState(new Date().getFullYear());
     const [type, setType] = useState<"ffo" | "lokal" | "impor" | undefined>(initial?.defaultType);
     const [salesMonths, setSalesMonths] = useState(3);
-    const [forecastMonths, setForecastMonths] = useState(3);
+    const [forecastMonths, setForecastMonths] = useLocalStorage<number>(FORECAST_HORIZON_KEY, 4);
 
     const queryParams: QueryRecomendationV2DTO = {
         page,
@@ -167,7 +169,6 @@ export function useRecomendationV2TableState(initial?: {
         setMonth(new Date().getMonth() + 1);
         setYear(new Date().getFullYear());
         setSalesMonths(3);
-        setForecastMonths(3);
     };
 
     return {

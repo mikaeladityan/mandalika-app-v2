@@ -32,11 +32,52 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { FORECAST_HORIZON_KEY } from "@/app/(application)/forecasts/server/use.forecast";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+const FormulaHint = ({
+    title,
+    formula,
+    description,
+}: {
+    title: string;
+    formula: string;
+    description?: string;
+}) => (
+    <TooltipProvider>
+        <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+                <div className="cursor-help inline-flex items-center ml-1">
+                    <Info className="size-3 text-slate-300 hover:text-indigo-500 transition-colors" />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent
+                side="top"
+                className="w-80 p-3 bg-white text-slate-900 border-slate-200 shadow-xl z-50"
+            >
+                <div className="space-y-2 text-left">
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-indigo-600 border-b border-indigo-50 pb-1">
+                        {title}
+                    </p>
+                    <div className="bg-slate-50 p-2 rounded border border-slate-100 font-mono text-[10px] leading-relaxed wrap-break-word text-slate-700">
+                        {formula}
+                    </div>
+                    {description && (
+                        <p className="text-[10px] text-slate-500 leading-normal italic">
+                            {description}
+                        </p>
+                    )}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+);
 
 export default function DetailBOMRequirement() {
     const router = useRouter();
     const { material_code } = useParams();
-    const [forecastMonths, setForecastMonths] = useState(3);
+    const [forecastMonths] = useLocalStorage<number>(FORECAST_HORIZON_KEY, 3);
 
     const { data, isLoading } = useDetailBOM(String(material_code), {
         forecast_months: forecastMonths,
@@ -96,27 +137,9 @@ export default function DetailBOMRequirement() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Tabs
-                        value={String(forecastMonths)}
-                        onValueChange={(v) => setForecastMonths(Number(v))}
-                        className="w-fit"
-                    >
-                        <TabsList className="h-9 bg-slate-100 border p-1">
-                            <TabsTrigger value="1" className="text-[10px] uppercase font-bold h-7">
-                                M
-                            </TabsTrigger>
-                            <TabsTrigger value="3" className="text-[10px] uppercase font-bold h-7">
-                                M+2M
-                            </TabsTrigger>
-                            <TabsTrigger value="6" className="text-[10px] uppercase font-bold h-7">
-                                6 BLN
-                            </TabsTrigger>
-                            <TabsTrigger value="12" className="text-[10px] uppercase font-bold h-7">
-                                1 THN
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-
+                    <Badge variant="outline" className="h-9 px-3 rounded-lg border-slate-200 bg-white text-slate-500 font-bold text-[10px] uppercase shadow-none whitespace-nowrap">
+                        Horizon: {forecastMonths} Bulan
+                    </Badge>
                     <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg border h-9">
                         <Calendar className="h-4 w-4 text-slate-500" />
                         <span className="text-xs font-semibold text-slate-700">
@@ -156,7 +179,7 @@ export default function DetailBOMRequirement() {
                                                 : "text-teal-700",
                                         )}
                                     >
-                                        {Math.round(res.inventory.current_stock).toLocaleString()}{" "}
+                                        {Number(res.inventory.current_stock).toLocaleString("id-ID", { maximumFractionDigits: 10 })}{" "}
                                         {res.material.unit === "null" && "PCS"}
                                     </span>
                                 </div>
@@ -165,21 +188,31 @@ export default function DetailBOMRequirement() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-3 bg-white rounded-md border border-slate-100">
-                                    <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider">
+                                    <span className="text-sm text-muted-foreground">
                                         Total Kebutuhan
-                                    </p>
+                                        <FormulaHint
+                                            title="Total Kebutuhan"
+                                            formula="Σ (Forecast Produk x Kuantitas Resep)"
+                                            description="Akumulasi seluruh kebutuhan material ini untuk mendukung rencana produksi semua produk terkait."
+                                        />
+                                    </span>
                                     <p className="text-lg font-bold text-slate-700">
-                                        {Math.round(res.summary.total_requirement).toLocaleString()}
+                                        {Number(res.summary.total_requirement).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                     </p>
                                 </div>
                                 <div className="p-3 bg-white rounded-md border border-slate-100">
-                                    <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider">
+                                    <span className="text-sm text-muted-foreground">
                                         Stock Gap
-                                    </p>
+                                        <FormulaHint
+                                            title="Stock Gap"
+                                            formula="Stok Tersedia - Total Kebutuhan"
+                                            description="Selisih antara stok saat ini dengan total kebutuhan produksi. Jika minus, maka stok tidak mencukupi."
+                                        />
+                                    </span>
                                     <p
                                         className={`text-lg font-bold ${res.inventory.stock_gap >= 0 ? "text-teal-600" : "text-destructive"}`}
                                     >
-                                        {Math.round(res.inventory.stock_gap).toLocaleString()}
+                                        {Number(res.inventory.stock_gap).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                     </p>
                                 </div>
                             </div>
@@ -268,7 +301,14 @@ export default function DetailBOMRequirement() {
                                                 key={p.key}
                                                 className="text-right text-slate-600"
                                             >
-                                                {p.month}/{p.year}
+                                                <div className="flex items-center justify-end">
+                                                    {p.month}/{p.year}
+                                                    <FormulaHint
+                                                        title="Kebutuhan Bulanan"
+                                                        formula="Forecast (M) x Qty per Unit"
+                                                        description="Jumlah material yang dibutuhkan untuk memproduksi produk ini pada bulan spesifik."
+                                                    />
+                                                </div>
                                             </TableHead>
                                         ))}
                                     </TableRow>
@@ -306,7 +346,7 @@ export default function DetailBOMRequirement() {
                                                             </span>
                                                         ) : (
                                                             <span className="font-medium text-slate-700">
-                                                                {Math.round(req).toLocaleString()}
+                                                                {Number(req).toLocaleString("id-ID", { maximumFractionDigits: 10 })}
                                                             </span>
                                                         )}
                                                     </TableCell>
@@ -340,9 +380,7 @@ export default function DetailBOMRequirement() {
                                                                 -
                                                             </span>
                                                         ) : (
-                                                            Math.round(
-                                                                totalPerMonth,
-                                                            ).toLocaleString()
+                                                            Number(totalPerMonth).toLocaleString("id-ID", { maximumFractionDigits: 10 })
                                                         )}
                                                     </TableCell>
                                                 );

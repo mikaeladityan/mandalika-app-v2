@@ -48,3 +48,14 @@ export function formatNumber(value?: number | null) {
         maximumFractionDigits: 0,
     }).format(value);
 }
+
+export function formatQuantity(value?: number | null, decimals = 2) {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+        return "—";
+    }
+
+    return new Intl.NumberFormat("id-ID", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals,
+    }).format(value);
+}

@@ -25,10 +25,10 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                 return (
                     <div className="flex flex-col min-w-[200px]">
                         <Link href={`/bom/${mat.barcode}/`} className="flex flex-col pr-4 group">
-                            <span className="text-sm font-semibold text-slate-700 group-hover:text-emerald-600 truncate">
+                            <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-600 truncate">
                                 {mat.material_name}
                             </span>
-                            <span className="text-xs font-mono text-slate-400 uppercase">
+                            <span className="text-[10px] font-mono text-slate-400 uppercase">
                                 {mat.barcode || "-"}
                             </span>
                         </Link>
@@ -40,7 +40,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             accessorKey: "supplier_name",
             header: "SUPPLIER",
             cell: ({ row }) => (
-                <span className="font-semibold text-slate-500">
+                <span className="font-bold text-xs text-slate-500">
                     {row.original.supplier_name || "-"}
                 </span>
             ),
@@ -49,7 +49,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             accessorKey: "quantity",
             header: "ORDER QTY",
             cell: ({ row }) => (
-                <span className="font-bold text-slate-800">
+                <span className="font-bold text-xs text-slate-800">
                     {formatNumber(row.original.quantity)} {row.original.uom?.toUpperCase()}
                 </span>
             ),
@@ -58,7 +58,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             accessorKey: "moq",
             header: "MOQ",
             cell: ({ row }) => (
-                <span className="font-semibold text-slate-500">
+                <span className="text-xs text-slate-500">
                     {formatNumber(row.original.moq || 0)} {row.original.uom?.toUpperCase()}
                 </span>
             ),
@@ -67,7 +67,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             accessorKey: "price",
             header: "HARGA SATUAN",
             cell: ({ row }) => (
-                <span className="font-semibold text-slate-600">
+                <span className="font-bold text-xs text-slate-600">
                     Rp {formatNumber(row.original.price || 0)}
                 </span>
             ),
@@ -77,7 +77,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             header: "TOTAL HARGA",
             cell: ({ row }) => {
                 const total = (row.original.price || 0) * (row.original.quantity || 0);
-                return <span className="font-bold text-amber-600">Rp {formatNumber(total)}</span>;
+                return <span className="font-bold text-xs text-amber-600">Rp {formatNumber(total)}</span>;
             },
         },
         {
@@ -100,14 +100,14 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             accessorKey: "pic_id",
             header: "PIC",
             cell: ({ row }) => (
-                <span className="text-sm text-slate-500">{row.original.pic_id || "System"}</span>
+                <span className="text-xs text-slate-500">{row.original.pic_id || "System"}</span>
             ),
         },
         {
             accessorKey: "created_at",
             header: "TANGGAL PENGAJUAN",
             cell: ({ row }) => (
-                <span className="text-sm text-slate-500">
+                <span className="text-[10px] text-slate-500">
                     {dayjs(row.original.created_at).format("DD MMM YYYY, HH:mm")}
                 </span>
             ),

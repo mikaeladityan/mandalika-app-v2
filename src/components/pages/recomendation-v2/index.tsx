@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
     useRecomendationV2,
     useRecomendationV2TableState,
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { Search, TrendingUp, CalendarDays, Zap, Download } from "lucide-react";
+import { Search, TrendingUp, CalendarDays, Zap, Download, CalendarRange } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -29,10 +29,12 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 
+import { useLocalStorage } from "@/hooks/use-local-storage";
+
 interface RecomendationV2Props {
     title: string;
     description: string;
-    type?: "ffo" | "lokal" | "impor";
+    type: "ffo" | "lokal" | "impor";
 }
 
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
@@ -40,25 +42,20 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     const { list, bulkSaveHorizon, exportData } = useRecomendationV2(tableState.queryParams);
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
 
-    const handleBulkHorizon = () => {
-        setIsBulkDialogOpen(true);
-    };
+    // Persistence key for column visibility based on type
+    const tableId = `rec-v2-main-table-${type}`;
+    const visibilityKey = `${tableId}-visibility`;
 
-    const confirmBulkHorizon = () => {
-        bulkSaveHorizon.mutate(
-            {
-                month: tableState.month,
-                year: tableState.year,
-                horizon: 3,
-                type: type,
-            },
-            {
-                onSuccess: () => {
-                    setIsBulkDialogOpen(false);
-                },
-            },
-        );
-    };
+    const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
+        visibilityKey,
+        {
+            supplier: false,
+            moq: false,
+            total_open_po: true,
+        },
+    );
+
+
     const periods = useMemo(() => {
         if (!(list.data as any)?.meta) {
             return {
@@ -74,67 +71,20 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
         };
     }, [list.data]);
 
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-        supplier: false,
-        moq: false,
-        total_open_po: true,
-        // lead_time: false,
-    });
-
-    // Auto-hide monthly PO columns by default once data is loaded
-    useEffect(() => {
-        if (periods.po_periods.length > 0) {
-            setColumnVisibility((prev) => {
-                const updates: VisibilityState = {};
-                let changed = false;
-
-                // Ensure XOR logic on initial load
-                // If total_open_po is true (default), hide all monthly columns
-                const shouldHideMonthly = prev.total_open_po !== false;
-
-                periods.po_periods.forEach((p: any) => {
-                    const key = `po_${p.key}`;
-                    const targetVisibility = !shouldHideMonthly;
-                    if (prev[key] !== targetVisibility) {
-                        updates[key] = targetVisibility;
-                        changed = true;
-                    }
-                });
-
-                return changed ? { ...prev, ...updates } : prev;
-            });
-        }
-    }, [periods.po_periods]);
-
     const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = (updater: any) => {
-        setColumnVisibility((prev) => {
-            const next = typeof updater === "function" ? updater(prev) : updater;
-            const final = { ...next };
-
-            // Find what changed
-            const changedKeys = Object.keys(next).filter((k) => next[k] !== prev[k]);
-            if (changedKeys.length === 0) return final;
-
-            for (const key of changedKeys) {
-                const isVisible = next[key];
-                if (key === "total_open_po" && isVisible) {
-                    // Disable all po_*
-                    periods.po_periods.forEach((p: any) => {
-                        final[`po_${p.key}`] = false;
-                    });
-                } else if (key.startsWith("po_") && isVisible) {
-                    // Disable total_open_po
-                    final["total_open_po"] = false;
-                }
-            }
-            return final;
-        });
+        const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+        setColumnVisibility(next);
     };
 
     const columns = useMemo(
         () =>
-            RecomendationV2Columns({ ...periods, month: tableState.month, year: tableState.year }),
-        [periods, tableState.month, tableState.year],
+            RecomendationV2Columns({
+                ...periods,
+                month: tableState.month,
+                year: tableState.year,
+                forecastMonths: tableState.forecastMonths,
+            }),
+        [periods, tableState.month, tableState.year, tableState.forecastMonths],
     );
 
     const months = [
@@ -153,63 +103,72 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     ];
 
     return (
-        <div className="flex flex-col gap-6 p-2 md:p-4">
-            <Card className="border-none shadow-2xl shadow-indigo-100/50 rounded-[2.5rem] overflow-hidden bg-white">
-                <CardHeader className="space-y-8 p-8 lg:p-10 border-b border-indigo-50/50 bg-linear-to-br from-white to-indigo-50/20">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-center gap-5">
-                            <div className="p-4 bg-indigo-600 text-white rounded-3xl shadow-lg shadow-indigo-200 animate-pulse-slow">
-                                <TrendingUp className="h-7 w-7" />
+        <div className="flex flex-col gap-1">
+            <Card className="border-none shadow-xl shadow-indigo-100/50 rounded-3xl overflow-hidden bg-white">
+                <CardHeader className="space-y-3 border-b border-indigo-50/50 bg-white">
+                    {/* ROW 1: TITLE & ACTIONS */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm">
+                                <TrendingUp className="h-4 w-4" />
                             </div>
                             <div>
-                                <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">
-                                    {title} <span className="text-indigo-600">v2</span>
-                                </CardTitle>
-                                <CardDescription className="text-slate-500 font-medium text-sm mt-1">
+                                <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
+                                    {title} <span className="text-indigo-600 font-bold">V2</span>
+                                </h2>
+                                <p className="text-[10px] text-slate-400 font-medium mt-1">
                                     {description}
-                                </CardDescription>
+                                </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-3">
-                            <Button
-                                onClick={handleBulkHorizon}
-                                disabled={bulkSaveHorizon.isPending}
-                                className="h-14 bg-indigo-600 text-white rounded-3xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all px-8 border-none group"
-                            >
-                                <Zap
-                                    className={`mr-2 h-5 w-5 ${bulkSaveHorizon.isPending ? "animate-spin" : "group-hover:scale-110 transition-transform"}`}
-                                />
-                                {bulkSaveHorizon.isPending ? "Memproses..." : "Bulk Horizon (3m)"}
-                            </Button>
+                        <div className="flex flex-wrap items-center gap-1 self-end md:self-auto">
+
 
                             <Button
                                 onClick={() => exportData.mutate(tableState.queryParams)}
                                 disabled={exportData.isPending || list.isLoading}
                                 variant="outline"
-                                className="h-14 bg-emerald-50 text-emerald-700 border-emerald-100 rounded-3xl font-black shadow-sm hover:bg-emerald-100 transition-all px-8 flex items-center gap-2 group"
+                                className="h-8 bg-emerald-50 text-emerald-700 border-emerald-100 rounded-xl font-bold shadow-sm hover:bg-emerald-100 transition-all px-3 text-[11px] flex items-center gap-1.5 group"
                             >
                                 <Download
-                                    className={`size-5 ${exportData.isPending ? "animate-bounce" : "group-hover:translate-y-0.5 transition-transform"}`}
+                                    className={`size-3.5 ${exportData.isPending ? "animate-bounce" : "group-hover:translate-y-0.5 transition-transform"}`}
                                 />
-                                {exportData.isPending ? "Exporting..." : "Excel"}
+                                {exportData.isPending ? "..." : "Excel"}
                             </Button>
+                        </div>
+                    </div>
 
-                            <div className="flex items-center gap-3 bg-white p-2 rounded-3xl border border-indigo-100 shadow-sm">
-                                <CalendarDays className="size-4 text-indigo-400 ml-2" />
+                    {/* ROW 2: SEARCH & FILTERS */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        {/* Search */}
+                        <div className="relative group w-full lg:max-w-md">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-all duration-300" />
+                            <Input
+                                placeholder="Cari material..."
+                                value={tableState.search}
+                                onChange={(e) => tableState.setSearch(e.target.value)}
+                                className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-indigo-500/10 text-sm"
+                            />
+                        </div>
+
+                        {/* Date & Horizon Selectors */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-100 shadow-xs">
+                                <CalendarDays className="size-3 text-indigo-400 ml-1.5" />
                                 <Select
                                     value={String(tableState.month)}
                                     onValueChange={(val) => tableState.setMonth(Number(val))}
                                 >
-                                    <SelectTrigger className="w-[140px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
+                                    <SelectTrigger className="w-[100px] h-7 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-[11px] px-1">
                                         <SelectValue placeholder="Bulan" />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
+                                    <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
                                         {months.map((m, i) => (
                                             <SelectItem
                                                 key={m}
                                                 value={String(i + 1)}
-                                                className="rounded-xl"
+                                                className="text-[11px] font-bold"
                                             >
                                                 {m}
                                             </SelectItem>
@@ -217,16 +176,16 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     </SelectContent>
                                 </Select>
 
-                                <div className="w-px h-6 bg-indigo-100" />
+                                <div className="w-px h-4 bg-indigo-100" />
 
                                 <Select
                                     value={String(tableState.year)}
                                     onValueChange={(val) => tableState.setYear(Number(val))}
                                 >
-                                    <SelectTrigger className="w-[100px] h-10 border-none bg-transparent focus:ring-0 font-bold text-slate-700">
+                                    <SelectTrigger className="w-[70px] h-7 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-[11px] px-1">
                                         <SelectValue placeholder="Tahun" />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-2xl border-indigo-50 shadow-xl">
+                                    <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
                                         {Array.from(
                                             { length: 5 },
                                             (_, i) => new Date().getFullYear() - 2 + i,
@@ -234,7 +193,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                             <SelectItem
                                                 key={y}
                                                 value={String(y)}
-                                                className="rounded-xl"
+                                                className="text-[11px] font-bold"
                                             >
                                                 {y}
                                             </SelectItem>
@@ -242,22 +201,14 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="relative group max-w-2xl">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-all duration-300" />
-                        <Input
-                            placeholder="Cari material berdasarkan nama atau barcode..."
-                            value={tableState.search}
-                            onChange={(e) => tableState.setSearch(e.target.value)}
-                            className="pl-12 h-14 bg-white border-slate-200 rounded-[1.25rem] focus-visible:ring-indigo-500/10 focus:border-indigo-500/50 transition-all duration-300 font-medium shadow-sm group-hover:shadow-md"
-                        />
+
+                        </div>
                     </div>
                 </CardHeader>
 
                 <CardContent className="p-0">
-                    <div className="px-8 lg:px-10 py-10">
+                    <div className="px-8 lg:px-10 pb-5">
                         {list.isLoading ? (
                             <div className="space-y-4">
                                 <TableSkeleton />
@@ -265,7 +216,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                         ) : (
                             <div>
                                 <DataTable
-                                    tableId="recommendation-v2-main-table"
+                                    tableId={`rec-v2-main-table-${type}`}
                                     columns={columns}
                                     data={list.data?.data ?? []}
                                     page={tableState.page}
@@ -283,40 +234,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                 </CardContent>
             </Card>
 
-            <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-                <DialogContent className="rounded-[2.5rem] p-8 lg:p-10 border-none shadow-2xl max-w-md bg-white overflow-hidden">
-                    <DialogHeader className="space-y-4">
-                        <div className="mx-auto w-20 h-20 bg-indigo-50 rounded-[2rem] flex items-center justify-center mb-2">
-                            <Zap className="h-10 w-10 text-indigo-600 animate-pulse" />
-                        </div>
-                        <DialogTitle className="text-2xl font-black text-slate-900 text-center tracking-tight">
-                            Eksekusi Bulk <span className="text-indigo-600">Horizon</span>
-                        </DialogTitle>
-                        <DialogDescription className="text-slate-500 font-medium text-center text-base leading-relaxed">
-                            Apakah Anda yakin ingin memperbarui **seluruh** Horizon ke **3 bulan**
-                            untuk kategori{" "}
-                            <span className="text-indigo-600 font-bold">{title}</span>? Aksi ini
-                            akan menimpa konfigurasi yang sudah ada.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="mt-8 flex-col sm:flex-row gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsBulkDialogOpen(false)}
-                            className="flex-1 h-14 rounded-2xl font-bold text-slate-600 border-slate-200 hover:bg-slate-50 transition-all"
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            onClick={confirmBulkHorizon}
-                            disabled={bulkSaveHorizon.isPending}
-                            className="flex-1 h-14 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all border-none"
-                        >
-                            {bulkSaveHorizon.isPending ? "Memproses..." : "Ya, Eksekusi"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+
         </div>
     );
 }

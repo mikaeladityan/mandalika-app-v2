@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { forecastService } from "./forecast.service";
-import { QueryForecastDTO, RunForecastDTO } from "./forecast.schema";
+import { QueryForecastDTO, RunForecastDTO, UpdateManualForecastDTO } from "./forecast.schema";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { errorAtom, notificationAtom } from "@/shared/store";
 import { FetchError, ResponseError } from "@/lib/utils/error";
+
+export const FORECAST_HORIZON_KEY = "erp_forecast_horizon";
 
 export function useForecast(params?: QueryForecastDTO) {
     const list = useQuery({
@@ -15,7 +17,7 @@ export function useForecast(params?: QueryForecastDTO) {
     });
     return { list };
 }
-export function useForecastTableState() {
+export function useForecastTableState(is_display?: boolean) {
     const { get, batchSet, searchParams } = useQueryParams();
 
     const [search, setSearch] = useState(get("search") ?? "");
@@ -29,15 +31,16 @@ export function useForecastTableState() {
     }, [debouncedSearch]);
 
     /**
-     * Horizon
+     * Horizon — persisted in localStorage so it syncs with Recommendation page.
      */
-    const horizon = get("horizon") ? Number(get("horizon")) : 4;
+    const storedHorizon = Number(localStorage.getItem(FORECAST_HORIZON_KEY)) || 4;
+    const horizon = get("horizon") ? Number(get("horizon")) : storedHorizon;
 
-    const setHorizon = (value: number | undefined) =>
-        batchSet({
-            horizon: String(value),
-            page: "1",
-        });
+    const setHorizon = (value: number | undefined) => {
+        if (value === undefined) return;
+        batchSet({ horizon: String(value), page: "1" });
+        localStorage.setItem(FORECAST_HORIZON_KEY, String(value));
+    };
 
     /**
      * Pagination
@@ -65,8 +68,9 @@ export function useForecastTableState() {
             page,
             take,
             search: get("search") ?? undefined,
+            is_display,
         }),
-        [searchParams],
+        [searchParams, is_display],
     );
 
     return {
@@ -121,5 +125,31 @@ export function useFormForecast() {
     return {
         run: run.mutateAsync,
         isPending: run.isPending,
+    };
+}
+
+export function useManualForecast() {
+    const setErr = useSetAtom(errorAtom);
+    const setNotif = useSetAtom(notificationAtom);
+    const queryClient = useQueryClient();
+
+    const update = useMutation<any, ResponseError, UpdateManualForecastDTO>({
+        mutationKey: ["forecasting", "manual-update"],
+        mutationFn: (body) => forecastService.updateManual(body),
+        onError: (err) => {
+            FetchError(err, setErr);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["forecast"] });
+            setNotif({
+                title: "Update Berhasil",
+                message: "Data forecast manual telah diperbarui.",
+            });
+        },
+    });
+
+    return {
+        update: update.mutateAsync,
+        isPending: update.isPending,
     };
 }

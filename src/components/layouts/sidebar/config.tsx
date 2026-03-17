@@ -17,6 +17,8 @@ import {
     BarChart,
     TruckElectric,
     BarChart2,
+    BarChart3,
+    BarChart4,
 } from "lucide-react";
 
 export type SidebarItemConfig = {
@@ -42,16 +44,32 @@ export function useSidebarData(): SidebarGroupConfig[] {
             label: "Utama",
             items: [
                 { title: "Dashboard", url: "/", icon: Home },
-                { title: "Forecasting", url: "/forecasts", icon: BarChart2 },
-                { title: "Safety Stock (PENDING)", url: "/safety-stock", icon: Boxes },
+                {
+                    title: "Forecasting",
+                    url: "/",
+                    icon: BarChart2,
+                    items: [
+                        { title: "Master", url: "/forecasts", icon: BarChart4 },
+                        { title: "Display", url: "/forecasts/display", icon: BarChart3 },
+                    ],
+                },
+                // { title: "Safety Stock (PENDING)", url: "/safety-stock", icon: Boxes },
             ],
         },
 
         {
-            label: "Penjualan",
+            label: "Pengeluaran",
             items: [
-                { title: "Penjualan (FG)", url: "/sales", icon: ShoppingBag },
-                { title: "Analitik Penjualan", url: "/sales/analytics", icon: BarChart },
+                {
+                    title: "Pengeluaran (FG)",
+                    icon: ShoppingBag,
+                    items: [
+                        { title: "Master Pengeluaran", url: "/sales", icon: Database },
+                        // Total Stock
+                        { title: "Rekap Pengeluaran", url: "/sales/rekap", icon: Boxes },
+                    ],
+                },
+                { title: "Analitik Pengeluaran", url: "/sales/analytics", icon: BarChart },
             ],
         },
 

@@ -350,7 +350,7 @@ export function DataTable<TData, TValue>({
                     className="overflow-auto max-h-[600px] scrollbar-thin scrollbar-thumb-border"
                 >
                     <table className="w-full border-separate border-spacing-0">
-                        <thead className="sticky top-0 z-2">
+                        <thead className="sticky top-0 z-1">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <Reorder.Group
                                     key={headerGroup.id}

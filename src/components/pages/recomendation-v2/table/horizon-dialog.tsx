@@ -32,11 +32,14 @@ interface HorizonDialogProps {
     data: RecomendationV2Response;
     month: number;
     year: number;
+    defaultHorizon?: number;
 }
 
-export function HorizonDialog({ data, month, year }: HorizonDialogProps) {
+export function HorizonDialog({ data, month, year, defaultHorizon }: HorizonDialogProps) {
     const [open, setOpen] = useState(false);
-    const [horizon, setHorizon] = useState<string>(String(data.work_order_horizon || ""));
+    const [horizon, setHorizon] = useState<string>(
+        String(data.work_order_horizon || defaultHorizon || ""),
+    );
 
     const { saveOrder } = useRecomendationV2Mutations();
 
@@ -49,9 +52,9 @@ export function HorizonDialog({ data, month, year }: HorizonDialogProps) {
 
     useEffect(() => {
         if (open) {
-            setHorizon(String(data.work_order_horizon || ""));
+            setHorizon(String(data.work_order_horizon || defaultHorizon || ""));
         }
-    }, [open, data]);
+    }, [open, data, defaultHorizon]);
 
     const handleSave = () => {
         const h = parseInt(horizon);
@@ -73,17 +76,18 @@ export function HorizonDialog({ data, month, year }: HorizonDialogProps) {
         );
     };
 
+    const hForDisplay = data.work_order_horizon || defaultHorizon || 0;
     const hasHorizon = !!data.work_order_horizon;
-    const triggerTotal = calculateTotalNeeded(data.needs, data.work_order_horizon || 0);
+    const triggerTotal = calculateTotalNeeded(data.needs, hForDisplay);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <div className="group cursor-pointer flex flex-col items-center">
                     <span
-                        className={`text-xs font-black tabular-nums transition-colors ${hasHorizon ? "text-slate-800" : "text-slate-300"}`}
+                        className={`text-xs font-black tabular-nums transition-colors ${hasHorizon ? "text-slate-800" : "text-slate-400 italic"}`}
                     >
-                        {hasHorizon ? formatNumber(triggerTotal) : "0"}
+                        {formatNumber(triggerTotal)}
                     </span>
                     <Settings2 className="size-3 text-slate-400 group-hover:text-indigo-600 transition-colors mt-0.5" />
                 </div>
@@ -113,15 +117,14 @@ export function HorizonDialog({ data, month, year }: HorizonDialogProps) {
                                     <SelectValue placeholder="Pilih Horizon Kebutuhan" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl">
-                                    <SelectItem value="1" className="font-bold">
-                                        1 Bulan (M)
-                                    </SelectItem>
-                                    <SelectItem value="2" className="font-bold">
-                                        2 Bulan (M + M1)
-                                    </SelectItem>
-                                    <SelectItem value="3" className="font-bold">
-                                        3 Bulan (M + M1 + M2)
-                                    </SelectItem>
+                                    {Array.from(
+                                        { length: defaultHorizon || 1 },
+                                        (_, i) => i + 1,
+                                    ).map((h) => (
+                                        <SelectItem key={h} value={String(h)} className="font-bold">
+                                            {h} Bulan {h === 1 ? "(M)" : `(M + ${h - 1}M)`}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -137,7 +140,9 @@ export function HorizonDialog({ data, month, year }: HorizonDialogProps) {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs font-bold">
-                                    <span className="text-slate-500 uppercase tracking-tight">UOM:</span>
+                                    <span className="text-slate-500 uppercase tracking-tight">
+                                        UOM:
+                                    </span>
                                     <span className="text-indigo-600 font-black">{data.uom}</span>
                                 </div>
                                 <Separator className="bg-indigo-100" />
