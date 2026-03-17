@@ -64,9 +64,12 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     title: "Pengeluaran (FG)",
                     icon: ShoppingBag,
                     items: [
-                        { title: "Master Pengeluaran", url: "/sales", icon: Database },
-                        // Total Stock
+                        { title: "Master Pengeluaran", url: "/sales?type=ALL", icon: Database },
                         { title: "Rekap Pengeluaran", url: "/sales/rekap", icon: Boxes },
+                        { title: "Offline", url: "/sales?type=OFFLINE", icon: ShoppingBag },
+                        { title: "Online", url: "/sales?type=ONLINE", icon: ShoppingBag },
+                        { title: "Spin Wheel", url: "/sales?type=SPIN_WHEEL", icon: ShoppingBag },
+                        { title: "Garansi Out", url: "/sales?type=GARANSI_OUT", icon: ShoppingBag },
                     ],
                 },
                 { title: "Analitik Pengeluaran", url: "/sales/analytics", icon: BarChart },

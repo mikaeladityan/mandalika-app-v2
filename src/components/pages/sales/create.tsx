@@ -1,6 +1,7 @@
 "use client";
 
 import { RequestSalesDTO, RequestSalesSchema } from "@/app/(application)/sales/server/sales.schema";
+import { SALES_TYPE } from "@/shared/types";
 import { useFormSales, useSales } from "@/app/(application)/sales/server/use.sales";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,13 +17,15 @@ import { Form } from "@/components/ui/form/main";
 import { SelectForm } from "@/components/ui/form/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, RefreshCcw, Send, CalendarDays, Info, Save } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function CreateSales() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const defaultType = searchParams.get("type") || "ALL";
 
     // LOGIKA DINAMIS M-1
     const getInitialPeriod = () => {
@@ -43,6 +46,7 @@ export function CreateSales() {
             quantity: 0,
             year: period.year,
             month: period.month,
+            type: defaultType as any,
         },
     });
 
@@ -143,6 +147,22 @@ export function CreateSales() {
                                 />
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SelectForm
+                                    required
+                                    name="type"
+                                    control={form.control}
+                                    label="Tipe Penjualan"
+                                    options={SALES_TYPE.map((t) => ({
+                                        label: t.replace("_", " "),
+                                        value: t,
+                                    }))}
+                                    placeholder="Pilih tipe..."
+                                    error={form.formState.errors.type}
+                                    isLoading={isPending}
+                                />
+                            </div>
+
                             {/* Hidden Fields untuk memastikan month/year terkirim */}
                             <input type="hidden" {...form.register("month")} />
                             <input type="hidden" {...form.register("year")} />
@@ -211,6 +231,3 @@ export function CreateSales() {
         </section>
     );
 }
-
-// Add memo for optimizations
-import { useMemo } from "react";

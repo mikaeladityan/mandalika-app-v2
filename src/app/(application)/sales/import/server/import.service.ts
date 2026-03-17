@@ -33,13 +33,14 @@ export class SalesImportService {
         return data.data;
     }
 
-    static async execute(importId: string, month: number, year: number) {
+    static async execute(importId: string, month: number, year: number, type: string) {
         await setupCSRFToken();
 
         const { data } = await api.post(`${API}/execute`, {
             import_id: importId,
             month,
             year,
+            type,
         });
 
         return data.data;

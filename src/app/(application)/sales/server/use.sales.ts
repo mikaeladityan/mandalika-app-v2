@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { QuerySalesDTO, RequestSalesDTO } from "./sales.schema";
+import { QuerySalesDTO, RequestSalesDTO, QuerySalesRekapDTO } from "./sales.schema";
 import { QueryDetailSale, SalesService } from "./sales.service";
 import { FetchError, ResponseError } from "@/lib/utils/error";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { errorAtom, notificationAtom } from "@/shared/store";
 import { useRouter } from "next/navigation";
+import { SalesTypeEnumDTO } from "@/shared/types";
 
 export function useFormSales(form?: any) {
     const setErr = useSetAtom(errorAtom);
@@ -88,41 +89,51 @@ export const useSales = (params?: QuerySalesDTO, queryDetail?: QueryDetailSale) 
 export function useSaleTableState() {
     const { get, batchSet, searchParams } = useQueryParams();
 
-    // Search Logic
+    // 1. Source of Truth: URL for immediate filters
+    const gender = get("gender") as any;
+    const size = get("size") ? Number(get("size")) : undefined;
+    const variant = get("variant") || undefined;
+    const horizon = get("horizon") ? Number(get("horizon")) : undefined;
+    const product_id = get("product_id") ? Number(get("product_id")) : undefined;
+    const product_id_2 = get("product_id_2") ? Number(get("product_id_2")) : undefined;
+    const type = get("type") || undefined;
+
+    // 2. Search Logic (with debouncing)
     const [search, setSearch] = useState(get("search") ?? "");
     const debouncedSearch = useDebounce(search, 500);
 
-    // Filters Logic
-    const [gender, setGender] = useState<any>(get("gender") ?? undefined);
-    const [size, setSize] = useState<number | undefined>(
-        get("size") ? Number(get("size")) : undefined,
-    );
-    const [variant, setVariant] = useState<string | undefined>(get("variant") ?? undefined);
-    const [horizon, setHorizon] = useState<number | undefined>(
-        get("horizon") ? Number(get("horizon")) : undefined,
-    );
-
-    const [product_id, setProductId] = useState<number | undefined>(
-        get("product_id") ? Number(get("product_id")) : undefined,
-    );
-    const [product_id_2, setProductId2] = useState<number | undefined>(
-        get("product_id_2") ? Number(get("product_id_2")) : undefined,
-    );
-
+    // Sync debounced search to URL
     useEffect(() => {
-        batchSet({
-            search: debouncedSearch || undefined,
-            gender: gender || undefined,
-            size: size ? String(size) : undefined,
-            variant: variant || undefined,
-            horizon: horizon ? String(horizon) : undefined,
-            product_id: product_id ? String(product_id) : undefined,
-            product_id_2: product_id_2 ? String(product_id_2) : undefined,
-            page: "1",
-        });
-    }, [debouncedSearch, gender, size, variant, horizon, product_id, product_id_2]);
+        if (debouncedSearch !== (get("search") ?? "")) {
+            batchSet({ search: debouncedSearch || undefined, page: "1" });
+        }
+    }, [debouncedSearch, get, batchSet]);
 
-    // Sorting Logic
+    // 3. Setters (updating URL via batchSet)
+    const setGender = useCallback((val: any) => batchSet({ gender: val, page: "1" }), [batchSet]);
+    const setSize = useCallback(
+        (val: any) => batchSet({ size: val ? String(val) : undefined, page: "1" }),
+        [batchSet],
+    );
+    const setVariant = useCallback((val: any) => batchSet({ variant: val, page: "1" }), [batchSet]);
+    const setHorizon = useCallback(
+        (val: any) => batchSet({ horizon: val ? String(val) : undefined, page: "1" }),
+        [batchSet],
+    );
+    const setProductId = useCallback(
+        (val: any) => batchSet({ product_id: val ? String(val) : undefined, page: "1" }),
+        [batchSet],
+    );
+    const setProductId2 = useCallback(
+        (val: any) => batchSet({ product_id_2: val ? String(val) : undefined, page: "1" }),
+        [batchSet],
+    );
+    const setType = useCallback(
+        (val: any) => batchSet({ type: val === "ALL" ? undefined : val, page: "1" }),
+        [batchSet],
+    );
+
+    // Sorting & Pagination
     const sortBy = get("sortBy") ?? "quantity";
     const sortOrder = (get("sortOrder") as "asc" | "desc") ?? "desc";
 
@@ -134,8 +145,11 @@ export function useSaleTableState() {
         [sortBy, sortOrder, batchSet],
     );
 
-    const setPage = (page: number) => batchSet({ page: String(page) });
-    const setPageSize = (take: number) => batchSet({ take: String(take), page: "1" });
+    const setPage = useCallback((page: number) => batchSet({ page: String(page) }), [batchSet]);
+    const setPageSize = useCallback(
+        (take: number) => batchSet({ take: String(take), page: "1" }),
+        [batchSet],
+    );
 
     const queryParams = useMemo<QuerySalesDTO>(
         () => ({
@@ -150,6 +164,7 @@ export function useSaleTableState() {
             horizon,
             product_id,
             product_id_2,
+            type: type as SalesTypeEnumDTO,
         }),
         [
             searchParams,
@@ -162,18 +177,24 @@ export function useSaleTableState() {
             horizon,
             product_id,
             product_id_2,
+            type,
         ],
     );
 
     const resetFilters = useCallback(() => {
         setSearch("");
-        setGender(undefined);
-        setSize(undefined);
-        setVariant(undefined);
-        setHorizon(undefined);
-        setProductId(undefined);
-        setProductId2(undefined);
-    }, []);
+        batchSet({
+            search: undefined,
+            gender: undefined,
+            size: undefined,
+            variant: undefined,
+            horizon: undefined,
+            product_id: undefined,
+            product_id_2: undefined,
+            type: undefined,
+            page: "1",
+        });
+    }, [batchSet]);
 
     return {
         search,
@@ -190,6 +211,8 @@ export function useSaleTableState() {
         setProductId,
         product_id_2,
         setProductId2,
+        type,
+        setType,
         sortBy,
         sortOrder,
         onSort,
@@ -197,6 +220,116 @@ export function useSaleTableState() {
         setPage,
         setPageSize,
         resetFilters,
+    };
+}
+
+export function useSaleRekapTableState() {
+    const { get, batchSet, searchParams } = useQueryParams();
+
+    // Recap specific filters: Month & Year (No horizon)
+    const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const month = get("month") ? Number(get("month")) : prevMonthDate.getMonth() + 1;
+    const year = get("year") ? Number(get("year")) : prevMonthDate.getFullYear();
+    const gender = get("gender") as any;
+    const size = get("size") ? Number(get("size")) : undefined;
+    const variant = get("variant") || undefined;
+
+    // Search Logic
+    const [search, setSearch] = useState(get("search") ?? "");
+    const debouncedSearch = useDebounce(search, 500);
+
+    useEffect(() => {
+        if (debouncedSearch !== (get("search") ?? "")) {
+            batchSet({ search: debouncedSearch || undefined, page: "1" });
+        }
+    }, [debouncedSearch, get, batchSet]);
+
+    // Setters
+    const setMonth = useCallback((val: number) => batchSet({ month: String(val), page: "1" }), [batchSet]);
+    const setYear = useCallback((val: number) => batchSet({ year: String(val), page: "1" }), [batchSet]);
+    const setGender = useCallback((val: any) => batchSet({ gender: val, page: "1" }), [batchSet]);
+    const setSize = useCallback((val: any) => batchSet({ size: val ? String(val) : undefined, page: "1" }), [batchSet]);
+    const setVariant = useCallback((val: any) => batchSet({ variant: val, page: "1" }), [batchSet]);
+
+    // Sorting & Pagination
+    const sortBy = get("sortBy") ?? "total_qty";
+    const sortOrder = (get("sortOrder") as "asc" | "desc") ?? "desc";
+
+    const onSort = useCallback(
+        (key: string) => {
+            const nextOrder = sortBy === key && sortOrder === "asc" ? "desc" : "asc";
+            batchSet({ sortBy: key, sortOrder: nextOrder, page: "1" });
+        },
+        [sortBy, sortOrder, batchSet],
+    );
+
+    const setPage = useCallback((page: number) => batchSet({ page: String(page) }), [batchSet]);
+    const setPageSize = useCallback((take: number) => batchSet({ take: String(take), page: "1" }), [batchSet]);
+
+    const queryParams = useMemo<QuerySalesRekapDTO>(
+        () => ({
+            take: Number(get("take") ?? 50),
+            page: Number(get("page") ?? 1),
+            search: get("search") ?? undefined,
+            month,
+            year,
+            sortBy: sortBy as any,
+            sortOrder,
+            gender: gender as any,
+            size,
+            variant,
+        }),
+        [searchParams, get, sortBy, sortOrder, gender, size, variant, month, year],
+    );
+
+    const resetFilters = useCallback(() => {
+        setSearch("");
+        batchSet({
+            search: undefined,
+            gender: undefined,
+            size: undefined,
+            variant: undefined,
+            month: String(now.getMonth() + 1),
+            year: String(now.getFullYear()),
+            page: "1",
+        });
+    }, [batchSet, now]);
+
+    return {
+        search,
+        setSearch,
+        month,
+        setMonth,
+        year,
+        setYear,
+        gender,
+        setGender,
+        size,
+        setSize,
+        variant,
+        setVariant,
+        sortBy,
+        sortOrder,
+        onSort,
+        queryParams,
+        setPage,
+        setPageSize,
+        resetFilters,
+    };
+}
+
+export function useSaleRekapQuery(params: QuerySalesRekapDTO) {
+    const { data: rawData, ...rest } = useQuery({
+        queryKey: ["sales", "rekap", params],
+        queryFn: () => SalesService.rekap(params),
+        enabled: !!params,
+    });
+
+    return {
+        data: rawData?.rekap ?? [],
+        total: rawData?.len ?? 0,
+        ...rest,
     };
 }
 

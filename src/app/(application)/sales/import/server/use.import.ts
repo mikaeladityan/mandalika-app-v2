@@ -21,11 +21,13 @@ export function useExecuteImportSales() {
             importId,
             month,
             year,
+            type,
         }: {
             importId: string;
             month: number;
             year: number;
-        }) => SalesImportService.execute(importId, month, year),
+            type: string;
+        }) => SalesImportService.execute(importId, month, year, type),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sales"], type: "all" }),
     });
 }

@@ -60,8 +60,9 @@ export function Sales() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: (key) => table.onSort(key),
+                type: table.type,
             }),
-        [periods, table.sortBy, table.sortOrder, table.onSort],
+        [periods, table.sortBy, table.sortOrder, table.onSort, table.type],
     );
 
     const isTableLoading = isLoading || isFetching || isRefetching;
@@ -74,14 +75,14 @@ export function Sales() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div>
                             <h2 className="text-lg font-black tracking-tight text-slate-800">
-                                Manajemen Penjualan
+                                Manajemen Penjualan {table.type && table.type !== "ALL" ? `(${table.type})` : ""}
                             </h2>
                             <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                                Monitoring tren penjualan produk aktual
+                                Monitoring tren penjualan produk aktual {table.type ? table.type.toLowerCase() : "semua tipe"}
                             </p>
                         </div>
                         <div className="flex gap-1.5">
-                            <Link href={"/sales/create"}>
+                            <Link href={`/sales/create${table.type ? `?type=${table.type}` : ""}`}>
                                 <Button
                                     variant="teal"
                                     className="h-8 px-3 cursor-pointer font-bold shadow-sm shadow-teal-50 text-[11px]"
@@ -90,7 +91,7 @@ export function Sales() {
                                     Input
                                 </Button>
                             </Link>
-                            <Link href="/sales/import">
+                            <Link href={`/sales/import${table.type ? `?type=${table.type}` : ""}`}>
                                 <Button
                                     variant="outline"
                                     className="h-8 px-3 text-[11px] font-bold"
@@ -244,7 +245,8 @@ export function Sales() {
                                 table.variant ||
                                 table.size ||
                                 table.horizon ||
-                                table.search) && (
+                                table.search ||
+                                table.type) && (
                                 <Button
                                     variant="ghost"
                                     onClick={table.resetFilters}

@@ -11,6 +11,7 @@ type Props = {
     sortOrder?: "asc" | "desc";
     onSort: (key: string) => void;
     periods: Array<{ year: number; month: number }>;
+    type?: string;
 };
 
 const formatMonthYear = (year: number, month: number) =>
@@ -24,6 +25,7 @@ export const SalesColumns = ({
     sortOrder,
     onSort,
     periods,
+    type,
 }: Props): ColumnDef<SalesListItemDTO>[] => {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
@@ -63,7 +65,7 @@ export const SalesColumns = ({
 
             return (
                 <Link
-                    href={`/sales/${row.original.product_id}?month=${found.month}&year=${found.year}`}
+                    href={`/sales/${row.original.product_id}?month=${found.month}&year=${found.year}${type ? `&type=${type}` : ""}`}
                     className="cursor-pointer group w-full rounded-md px-2 py-1.5 flex items-center justify-start gap-1 hover:bg-muted/60 transition-colors"
                 >
                     <span className="text-[13px] font-bold leading-none">

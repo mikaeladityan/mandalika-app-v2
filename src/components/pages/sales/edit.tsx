@@ -28,11 +28,13 @@ export function EditSales() {
 
     const year = Number(searchParams.get("year"));
     const month = Number(searchParams.get("month"));
+    const type = searchParams.get("type") || "ALL";
 
     const query: QueryDetailSale = {
         product_id: Number(id),
         month,
         year,
+        type,
     };
 
     const { sale, isLoading, isFetching } = useSales(undefined, query);
@@ -43,6 +45,7 @@ export function EditSales() {
             quantity: 0,
             month,
             year,
+            type: type as any,
             product_id: Number(id),
         },
     });
@@ -53,6 +56,7 @@ export function EditSales() {
                 quantity: Number(sale.quantity),
                 month,
                 year,
+                type: type as any,
                 product_id: Number(id),
             });
         }
@@ -110,6 +114,10 @@ export function EditSales() {
                                 <span className="flex items-center gap-1">
                                     <Calendar className="size-3.5" />
                                     {periodLabel}
+                                </span>
+                                <span>•</span>
+                                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold">
+                                    {type}
                                 </span>
                             </CardDescription>
                         </CardHeader>

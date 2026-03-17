@@ -36,9 +36,10 @@ import {
     usePreviewImportSales,
 } from "@/app/(application)/sales/import/server/use.import";
 import { SalesImportPreviewDTO } from "@/app/(application)/sales/import/server/import.schema";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ResultDialog } from "./result.dialog";
+import { SALES_TYPE } from "@/shared/types";
 
 /* Options */
 
@@ -72,6 +73,7 @@ const YEAR_OPTIONS: Option[] = (() => {
 type ImportSalesFormValues = {
     month: number;
     year: number;
+    type: string;
 };
 
 const MAX_ROWS = 5000;
@@ -79,11 +81,14 @@ const MAX_ROWS = 5000;
 export function ImportSalesForm() {
     const router = useRouter();
     const now = new Date();
+    const searchParams = useSearchParams();
+    const defaultType = searchParams.get("type") || "ALL";
 
     const form = useForm<ImportSalesFormValues>({
         defaultValues: {
             month: now.getMonth() + 1,
             year: now.getFullYear(),
+            type: defaultType,
         },
     });
 
@@ -121,14 +126,15 @@ export function ImportSalesForm() {
     async function handleExecute() {
         if (!importId || stats.invalid > 0) return;
 
-        const { month, year } = form.getValues();
+        const { month, year, type } = form.getValues();
 
         const result = await executeMutation.mutateAsync({
             importId,
             month,
             year,
+            type,
         });
-        
+
         setImportResult(result);
 
         toast.success("Import completed");
@@ -157,7 +163,8 @@ export function ImportSalesForm() {
                             Import Data Sales
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Upload pencapaian penjualan bulanan untuk diproses menjadi forecast kebutuhan.
+                            Upload pencapaian penjualan bulanan untuk diproses menjadi forecast
+                            kebutuhan.
                         </p>
                     </div>
                 </div>
@@ -166,7 +173,10 @@ export function ImportSalesForm() {
                         target="_blank"
                         href="https://docs.google.com/spreadsheets/d/1DoTlWLwf2k1rU_9vCvG2znZ01Teu7PWOzfOmD08DFLk/edit?usp=sharing"
                     >
-                        <Button variant="outline" className="shadow-sm border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800">
+                        <Button
+                            variant="outline"
+                            className="shadow-sm border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800"
+                        >
                             <Container className="mr-2 h-4 w-4" /> Download Template
                         </Button>
                     </Link>
@@ -200,7 +210,9 @@ export function ImportSalesForm() {
                                     {file ? file.name : "Klik atau seret file ke sini"}
                                 </span>
                                 <span className="text-sm text-slate-400">
-                                    {file ? `${(file.size / 1024).toFixed(2)} KB` : "Excel atau CSV (Maks 5MB)"}
+                                    {file
+                                        ? `${(file.size / 1024).toFixed(2)} KB`
+                                        : "Excel atau CSV (Maks 5MB)"}
                                 </span>
                             </div>
                         </label>
@@ -225,7 +237,9 @@ export function ImportSalesForm() {
                                 size="lg"
                                 className="px-8 shadow-md"
                                 onClick={() => setOpenDialog(true)}
-                                disabled={!importId || stats.valid === 0 || executeMutation.isPending}
+                                disabled={
+                                    !importId || stats.valid === 0 || executeMutation.isPending
+                                }
                             >
                                 <Database className="mr-2 h-4 w-4" />
                                 Jalankan Import
@@ -239,7 +253,9 @@ export function ImportSalesForm() {
                             >
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertDescription>
-                                    Terdapat <strong>{stats.invalid} baris tidak valid</strong>. Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses.
+                                    Terdapat <strong>{stats.invalid} baris tidak valid</strong>.
+                                    Hanya <strong>{stats.valid} baris valid</strong> yang akan
+                                    diproses.
                                 </AlertDescription>
                             </Alert>
                         )}
@@ -266,8 +282,15 @@ export function ImportSalesForm() {
                         <CardContent className="pt-6">
                             <Tabs defaultValue="preview" className="w-full">
                                 <TabsList className="bg-slate-100/80 p-1 mb-6">
-                                    <TabsTrigger value="preview" className="px-6">Preview ({stats.valid})</TabsTrigger>
-                                    <TabsTrigger value="errors" className="px-6 text-red-600 data-[state=active]:bg-red-50">Invalid Data ({stats.invalid})</TabsTrigger>
+                                    <TabsTrigger value="preview" className="px-6">
+                                        Preview ({stats.valid})
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="errors"
+                                        className="px-6 text-red-600 data-[state=active]:bg-red-50"
+                                    >
+                                        Invalid Data ({stats.invalid})
+                                    </TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="preview" className="mt-0">
@@ -288,7 +311,9 @@ export function ImportSalesForm() {
                                                 </p>
                                             </div>
                                         ) : (
-                                            <PreviewTable rows={rows.filter((r) => r.errors.length)} />
+                                            <PreviewTable
+                                                rows={rows.filter((r) => r.errors.length)}
+                                            />
                                         )}
                                     </div>
                                 </TabsContent>
@@ -329,6 +354,18 @@ export function ImportSalesForm() {
                                 options={YEAR_OPTIONS}
                                 onValueChange={(v) => form.setValue("year", Number(v))}
                             />
+
+                            <SelectForm
+                                name="type"
+                                label="Tipe Penjualan"
+                                required
+                                control={form.control}
+                                options={SALES_TYPE.map((t) => ({
+                                    label: t.replace("_", " "),
+                                    value: t,
+                                }))}
+                                onValueChange={(v) => form.setValue("type", String(v))}
+                            />
                         </div>
                     </div>
 
@@ -336,16 +373,20 @@ export function ImportSalesForm() {
                         <Button variant="ghost" onClick={() => setOpenDialog(false)}>
                             Batal
                         </Button>
-                        <Button onClick={handleExecute} disabled={executeMutation.isPending} className="bg-primary shadow-md">
+                        <Button
+                            onClick={handleExecute}
+                            disabled={executeMutation.isPending}
+                            className="bg-primary shadow-md"
+                        >
                             {executeMutation.isPending ? "Memproses..." : "Konfirmasi & Import"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            <ResultDialog 
-                result={importResult} 
-                dryRun={false} 
+            <ResultDialog
+                result={importResult}
+                dryRun={false}
                 open={!!importResult}
                 onOpenChange={() => setImportResult(null)}
             />
