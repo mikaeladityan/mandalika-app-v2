@@ -114,18 +114,14 @@ export function SalesAnalytics() {
                 total,
                 average: avg.toFixed(0),
                 product: s.product,
-                color: idx === 0 ? "#10b981" : "#3b82f6", // Emerald for P1, Blue for P2
+                color: idx === 0 ? "oklch(0.69 0.17 236)" : "oklch(0.60 0.15 270)", // Cyan for P1, Violet for P2
             };
         });
     }, [sales, chartData]);
 
     const isDataLoading = isLoading || isFetching;
 
-    const isTrendUp =
-        chartData.length > 1
-            ? chartData[chartData.length - 1].quantity >= chartData[0].quantity
-            : true;
-    const chartColor = isTrendUp ? "#10b981" : "#ef4444";
+    const chartColor = "oklch(0.69 0.17 236)";
 
     return (
         <section className="space-y-6">
@@ -138,9 +134,9 @@ export function SalesAnalytics() {
             </header>
 
             <Card>
-                <CardHeader className="py-4">
-                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full">
-                        <div className="flex flex-col md:flex-row gap-2 flex-1">
+                <CardHeader className="py-3 px-4">
+                    <div className="flex flex-col md:flex-row gap-3 justify-between items-center w-full">
+                        <div className="flex flex-col md:flex-row gap-2 flex-1 w-full md:w-auto">
                             <Popover
                                 open={openProductSelector}
                                 onOpenChange={setOpenProductSelector}
@@ -273,7 +269,7 @@ export function SalesAnalytics() {
                                             "w-full md:w-fit justify-between text-left font-normal hover:bg-accent/50",
                                             !table.product_id_2 && "text-muted-foreground",
                                             table.product_id_2 &&
-                                                "text-blue-600 bg-blue-50/50 hover:bg-blue-100/50",
+                                                "text-primary bg-primary/5 hover:bg-primary/10 border-primary/20",
                                         )}
                                         disabled={isDataLoading}
                                     >
@@ -281,7 +277,7 @@ export function SalesAnalytics() {
                                             <div
                                                 className={cn(
                                                     "w-2 h-2 rounded-full shrink-0",
-                                                    table.product_id_2 ? "bg-blue-500" : "bg-muted",
+                                                    table.product_id_2 ? "bg-primary" : "bg-muted",
                                                 )}
                                             />
                                             {(() => {
@@ -308,7 +304,7 @@ export function SalesAnalytics() {
                                                                 {selectedProduct2.product_type.name}
                                                             </span>
                                                         )}
-                                                        <span className="text-[10px] font-medium bg-blue-100/50 text-blue-700 px-1.5 py-0.5 rounded uppercase">
+                                                        <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
                                                             {selectedProduct2.size}
                                                         </span>
                                                     </>
@@ -424,10 +420,10 @@ export function SalesAnalytics() {
 
             {summaries.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="bg-emerald-50/20 border-emerald-100 col-span-1 md:col-span-1">
+                    <Card className="border-none shadow-xs rounded-2xl bg-primary/5 col-span-1 md:col-span-1">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-bold flex items-center gap-2 flex-wrap leading-tight">
-                                <BarChart2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <BarChart2 className="w-4 h-4 text-primary shrink-0" />
                                 <span className="truncate">{summaries[0].product.name}</span>
                             </CardTitle>
                             <CardDescription className="truncate flex items-center gap-1.5 flex-wrap">
@@ -437,13 +433,13 @@ export function SalesAnalytics() {
                                     {summaries[0].product.product_type?.name}
                                 </span>
                                 <span>•</span>
-                                <span className="font-medium bg-emerald-100 text-emerald-800 px-1 rounded text-[10px] uppercase">
+                                <span className="font-medium bg-primary/20 text-primary px-1 rounded text-[10px] uppercase">
                                     {String(summaries[0].product.size).toUpperCase()}
                                 </span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-black text-emerald-700">
+                            <div className="text-3xl font-black text-primary">
                                 {summaries[0].total.toLocaleString("id-ID")}{" "}
                                 <span className="text-sm font-medium text-muted-foreground uppercase">
                                     {summaries[0].product.size}
@@ -457,8 +453,9 @@ export function SalesAnalytics() {
 
                     <Card
                         className={cn(
+                            "border-none shadow-xs rounded-2xl",
                             summaries.length > 1
-                                ? "bg-blue-50/20 border-blue-100"
+                                ? "bg-indigo-50/30"
                                 : "bg-background",
                         )}
                     >
@@ -466,7 +463,7 @@ export function SalesAnalytics() {
                             <CardTitle className="text-sm font-medium text-muted-foreground">
                                 {summaries.length > 1 ? (
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-blue-700 font-bold text-base truncate">
+                                        <span className="text-indigo-600 font-bold text-base truncate">
                                             {summaries[1].product.name}
                                         </span>
                                         <span className="text-xs font-normal truncate flex items-center gap-1 flex-wrap text-muted-foreground">
@@ -476,7 +473,7 @@ export function SalesAnalytics() {
                                                 {summaries[1].product.product_type?.name}
                                             </span>
                                             <span>•</span>
-                                            <span className="font-medium bg-blue-100 text-blue-800 px-1 rounded text-[10px] uppercase">
+                                            <span className="font-medium bg-indigo-100 text-indigo-800 px-1 rounded text-[10px] uppercase">
                                                 {String(summaries[1].product.size).toUpperCase()}
                                             </span>
                                         </span>
@@ -490,7 +487,7 @@ export function SalesAnalytics() {
                             <div
                                 className={cn(
                                     "text-2xl font-bold",
-                                    summaries.length > 1 && "text-blue-800",
+                                    summaries.length > 1 && "text-indigo-800",
                                 )}
                             >
                                 {summaries.length > 1
@@ -508,7 +505,7 @@ export function SalesAnalytics() {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-none shadow-xs rounded-2xl">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">
                                 {summaries.length > 1 ? "Perbandingan Avg" : "Rentang Waktu"}
@@ -549,24 +546,24 @@ export function SalesAnalytics() {
                                         <linearGradient id="colorP1" x1="0" y1="0" x2="0" y2="1">
                                             <stop
                                                 offset="5%"
-                                                stopColor="#10b981"
+                                                stopColor="oklch(0.69 0.17 236)"
                                                 stopOpacity={0.3}
                                             />
                                             <stop
                                                 offset="95%"
-                                                stopColor="#10b981"
+                                                stopColor="oklch(0.69 0.17 236)"
                                                 stopOpacity={0}
                                             />
                                         </linearGradient>
                                         <linearGradient id="colorP2" x1="0" y1="0" x2="0" y2="1">
                                             <stop
                                                 offset="5%"
-                                                stopColor="#3b82f6"
+                                                stopColor="oklch(0.60 0.15 270)"
                                                 stopOpacity={0.3}
                                             />
                                             <stop
                                                 offset="95%"
-                                                stopColor="#3b82f6"
+                                                stopColor="oklch(0.60 0.15 270)"
                                                 stopOpacity={0}
                                             />
                                         </linearGradient>
@@ -700,7 +697,7 @@ export function SalesAnalytics() {
                                                 ? summaries[0].product.name
                                                 : "Sales Volume"
                                         }
-                                        fill="#10b981"
+                                        fill="oklch(0.69 0.17 236)"
                                         radius={[4, 4, 0, 0]}
                                         maxBarSize={100}
                                         opacity={0.15}
@@ -709,7 +706,7 @@ export function SalesAnalytics() {
                                         <Bar
                                             dataKey="quantity_2"
                                             name={summaries[1].product.name}
-                                            fill="#3b82f6"
+                                            fill="oklch(0.60 0.15 270)"
                                             radius={[4, 4, 0, 0]}
                                             maxBarSize={100}
                                             opacity={0.15}
@@ -720,11 +717,11 @@ export function SalesAnalytics() {
                                     <Line
                                         type="monotone"
                                         dataKey={summaries.length > 1 ? "quantity_1" : "quantity"}
-                                        stroke="#10b981"
+                                        stroke="oklch(0.69 0.17 236)"
                                         strokeWidth={4}
                                         dot={{
                                             r: 5,
-                                            fill: "#10b981",
+                                            fill: "oklch(0.69 0.17 236)",
                                             stroke: "#fff",
                                             strokeWidth: 3,
                                         }}
@@ -739,7 +736,7 @@ export function SalesAnalytics() {
                                             offset={15}
                                             fontSize={10}
                                             fontWeight={700}
-                                            fill="#047857"
+                                            fill="oklch(0.50 0.15 236)"
                                             formatter={(val: any) =>
                                                 Number(val).toLocaleString("id-ID")
                                             }
@@ -749,11 +746,11 @@ export function SalesAnalytics() {
                                         <Line
                                             type="monotone"
                                             dataKey="quantity_2"
-                                            stroke="#3b82f6"
+                                            stroke="oklch(0.60 0.15 270)"
                                             strokeWidth={4}
                                             dot={{
                                                 r: 5,
-                                                fill: "#3b82f6",
+                                                fill: "oklch(0.60 0.15 270)",
                                                 stroke: "#fff",
                                                 strokeWidth: 3,
                                             }}
@@ -766,7 +763,7 @@ export function SalesAnalytics() {
                                                 offset={15}
                                                 fontSize={10}
                                                 fontWeight={700}
-                                                fill="#1d4ed8"
+                                                fill="oklch(0.45 0.15 270)"
                                                 formatter={(val: any) =>
                                                     Number(val).toLocaleString("id-ID")
                                                 }

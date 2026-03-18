@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -81,13 +81,14 @@ const MAX_ROWS = 5000;
 export function ImportSalesForm() {
     const router = useRouter();
     const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
     const searchParams = useSearchParams();
     const defaultType = searchParams.get("type") || "ALL";
 
     const form = useForm<ImportSalesFormValues>({
         defaultValues: {
-            month: now.getMonth() + 1,
-            year: now.getFullYear(),
+            month: prevMonthDate.getMonth() + 1,
+            year: prevMonthDate.getFullYear(),
             type: defaultType,
         },
     });
@@ -98,6 +99,11 @@ export function ImportSalesForm() {
     const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
     const [openDialog, setOpenDialog] = useState(false);
     const [importResult, setImportResult] = useState<any>(null);
+
+    const typeLabel = useMemo(() => {
+        const t = form.watch("type") || defaultType;
+        return t.replace("_", " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+    }, [form.watch("type"), defaultType]);
 
     const previewMutation = usePreviewImportSales();
     const getPreviewMutation = useGetPreviewImport();
@@ -160,10 +166,10 @@ export function ImportSalesForm() {
                     </Button>
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                            Import Data Sales
+                            Import Data Sales {typeLabel}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Upload pencapaian penjualan bulanan untuk diproses menjadi forecast
+                            Upload pencapaian penjualan {typeLabel.toLowerCase()} bulanan untuk diproses menjadi forecast
                             kebutuhan.
                         </p>
                     </div>
@@ -328,7 +334,7 @@ export function ImportSalesForm() {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Calendar className="h-5 w-5 text-primary" />
-                            Pilih Periode Sales
+                            Pilih Periode {typeLabel}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -389,6 +395,7 @@ export function ImportSalesForm() {
                 dryRun={false}
                 open={!!importResult}
                 onOpenChange={() => setImportResult(null)}
+                typeLabel={typeLabel}
             />
         </div>
     );

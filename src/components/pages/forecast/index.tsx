@@ -87,31 +87,31 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
     return (
         <div className="flex flex-col gap-4">
             {/* MAIN CONTENT CARD */}
-            <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
-                <CardHeader className="space-y-3 border-b border-slate-50">
+            <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+                <CardHeader className="space-y-4 p-6 border-b border-border/50 bg-white">
                     {/* ROW 1: TITLE & PRIMARY ACTIONS */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-indigo-600 rounded-lg shrink-0">
-                                <LayoutDashboard className="h-3.5 w-3.5 text-white" />
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                                <LayoutDashboard className="size-5" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black tracking-tight text-slate-900 leading-none">
+                                <h1 className="text-xl font-bold tracking-tight text-foreground">
                                     Forecast Engine
-                                </h2>
-                                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                                </h1>
+                                <p className="text-xs text-muted-foreground font-medium">
                                     Kelola proyeksi stok dan sinkronisasi produksi.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             <Link href="/forecasts/percentages">
                                 <Button
                                     variant="outline"
-                                    className="rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-700 h-8 px-3 text-[11px]"
+                                    className="rounded-lg font-semibold h-9 px-4"
                                 >
-                                    <Percent className="mr-1.5 h-3 w-3 text-emerald-500" />
+                                    <Percent className="mr-1.5 size-4 text-primary" />
                                     Percentages
                                 </Button>
                             </Link>
@@ -119,12 +119,12 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                             <Button
                                 onClick={() => setOpenForecastDialog(true)}
                                 disabled={isProcessingForecast}
-                                className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white h-8 shadow-sm px-4 text-[11px] transition-all"
+                                className="rounded-lg font-semibold h-9 px-4"
                             >
                                 {isProcessingForecast ? (
-                                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin text-amber-400" />
+                                    <Loader2 className="mr-1.5 size-4 animate-spin" />
                                 ) : (
-                                    <Zap className="mr-1.5 h-3 w-3 fill-amber-400 text-amber-400" />
+                                    <Zap className="mr-1.5 size-4 fill-amber-400 text-amber-400" />
                                 )}
                                 {isProcessingForecast ? "Proses..." : "Run Analytics"}
                             </Button>
@@ -133,30 +133,30 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
 
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1">
-                        <div className="relative w-full lg:max-w-md group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                        <div className="relative w-full lg:max-w-sm group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
-                                placeholder="Cari..."
+                                placeholder="Cari material..."
                                 value={table.search}
                                 onChange={(e) => table.setSearch(e.target.value)}
-                                className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-indigo-500/20 text-sm"
+                                className="pl-10 h-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all"
                             />
                         </div>
 
-                        <div className="flex items-center gap-3 w-full lg:w-auto">
-                            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-xl border border-slate-100 flex-1 lg:flex-none">
-                                <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
-                                <Label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">
-                                    Horizon SS (Avg)
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg border border-transparent focus-within:border-primary/10 transition-all">
+                                <CalendarRange className="size-4 text-primary/60" />
+                                <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-tight">
+                                    Horizon SS
                                 </Label>
                                 <Select
                                     value={String(table.horizon)}
                                     onValueChange={(val) => table.setHorizon(Number(val))}
                                 >
-                                    <SelectTrigger className="w-24 border-none bg-transparent h-6 focus:ring-0 font-bold text-slate-700 p-0 text-xs">
+                                    <SelectTrigger className="w-24 border-none bg-transparent h-6 focus:ring-0 font-bold text-foreground p-0 text-xs">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-slate-200">
+                                    <SelectContent className="rounded-xl border-border/50">
                                         {[3, 4, 6, 12].map((h) => (
                                             <SelectItem
                                                 key={h}
@@ -173,13 +173,13 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                     </div>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="p-0 px-6 pb-6">
                     {list.isLoading ? (
-                        <div className="p-8">
+                        <div className="py-10">
                             <TableSkeleton />
                         </div>
                     ) : (
-                        <div className="p-0">
+                        <div className="overflow-hidden">
                             <DataTable
                                 tableId="forecast-main-table"
                                 columns={columns}

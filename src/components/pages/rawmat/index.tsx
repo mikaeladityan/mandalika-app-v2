@@ -17,6 +17,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
     DropdownMenu,
@@ -85,81 +86,99 @@ export function RawMaterials() {
 
     return (
         <section className="space-y-5 w-full">
-            <div className="grid grid-cols-4 gap-5 2xl:w-8/12">
-                <Card className="bg-linear-to-tr from-cyan-100 via-cyan-500 to-cyan-700">
-                    <CardHeader>
-                        <h1 className="font-semibold text-white text-xl">Total Kategori</h1>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        {countUtils.isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <Loader2 size={73} className="animate-spin" strokeWidth={4} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
+                <Card className="border-none shadow-xs rounded-2xl overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Tipe Kategori
+                            </p>
+                            <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
+                                <Plus size={18} />
                             </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {countUtils.isLoading ? (
+                            <Skeleton className="h-12 w-20" />
                         ) : (
-                            <p className="font-semibold text-white text-7xl">
+                            <p className="text-5xl font-black tracking-tighter text-slate-900 border-l-4 border-primary pl-4">
                                 {countUtils.data?.categories}
                             </p>
                         )}
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-0">
                         <Button
-                            className="flex items-center justify-start gap-1 text-black"
+                            className="w-full justify-between items-center text-xs font-bold rounded-xl"
                             onClick={() => router.push("/rawmat/categories")}
-                            variant={"outline"}
-                            size={"sm"}
+                            variant="ghost"
                         >
-                            <p>Selengkapnya</p>
-                            <ArrowRight size={18} className="" />
+                            <span>Kelola Kategori</span>
+                            <ArrowRight size={14} className="text-primary" />
                         </Button>
                     </CardFooter>
                 </Card>
-                <Card className="bg-linear-to-tr from-amber-100 via-amber-500 to-amber-600">
-                    <CardHeader>
-                        <h1 className="font-semibold text-xl text-white">Total Satuan</h1>
-                    </CardHeader>
-                    <CardContent className="text-center text-white">
-                        {countUtils.isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <Loader2 size={73} className="animate-spin" strokeWidth={4} />
+
+                <Card className="border-none shadow-xs rounded-2xl overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Satuan / Unit
+                            </p>
+                            <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
+                                <Package size={18} />
                             </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {countUtils.isLoading ? (
+                            <Skeleton className="h-12 w-20" />
                         ) : (
-                            <p className="font-semibold text-7xl">{countUtils.data?.units}</p>
+                            <p className="text-5xl font-black tracking-tighter text-slate-900 border-l-4 border-primary pl-4">
+                                {countUtils.data?.units}
+                            </p>
                         )}
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-0">
                         <Button
-                            className="flex items-center justify-start gap-1"
+                            className="w-full justify-between items-center text-xs font-bold rounded-xl"
                             onClick={() => router.push("/rawmat/units")}
-                            variant={"outline"}
-                            size={"sm"}
+                            variant="ghost"
                         >
-                            <p>Selengkapnya</p>
-                            <ArrowRight size={18} className="" />
+                            <span>Kelola Satuan</span>
+                            <ArrowRight size={14} className="text-primary" />
                         </Button>
                     </CardFooter>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <h1 className="font-semibold  text-xl">Total Supplier</h1>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        {countUtils.isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <Loader2 size={73} className="animate-spin" strokeWidth={4} />
+
+                <Card className="border-none shadow-xs rounded-2xl overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Supplier Aktif
+                            </p>
+                            <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
+                                <Plus size={18} />
                             </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {countUtils.isLoading ? (
+                            <Skeleton className="h-12 w-20" />
                         ) : (
-                            <p className="font-semibold text-7xl">{countUtils.data?.suppliers}</p>
+                            <p className="text-5xl font-black tracking-tighter text-slate-900 border-l-4 border-primary pl-4">
+                                {countUtils.data?.suppliers}
+                            </p>
                         )}
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-0">
                         <Button
-                            className="flex items-center justify-start gap-1"
+                            className="w-full justify-between items-center text-xs font-bold rounded-xl"
                             onClick={() => router.push("/rawmat/suppliers")}
-                            variant={"outline"}
-                            size={"sm"}
+                            variant="ghost"
                         >
-                            <p>Selengkapnya</p>
-                            <ArrowRight size={18} className="" />
+                            <span>Kelola Supplier</span>
+                            <ArrowRight size={14} className="text-primary" />
                         </Button>
                     </CardFooter>
                 </Card>
@@ -259,8 +278,13 @@ export function RawMaterials() {
                             </Link>
 
                             <Button
-                                variant={table.isDeleted ? "outline" : "rose"}
+                                variant="outline"
                                 onClick={table.toggleTrashMode}
+                                className={
+                                    table.isDeleted
+                                        ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
+                                        : "text-muted-foreground"
+                                }
                             >
                                 {table.isDeleted ? <Package size={16} /> : <Trash size={16} />}
                             </Button>
@@ -288,29 +312,6 @@ export function RawMaterials() {
                                     <Import size={16} /> Import
                                 </Button>
                             </Link>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        Kolom <ChevronDown size={16} />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {Object.entries(columnVisibility).map(([k, v]) => (
-                                        <DropdownMenuCheckboxItem
-                                            key={k}
-                                            checked={v}
-                                            onCheckedChange={(c) =>
-                                                setColumnVisibility((p) => ({
-                                                    ...p,
-                                                    [k]: Boolean(c),
-                                                }))
-                                            }
-                                        >
-                                            {k.replace("_", " ").toUpperCase()}
-                                        </DropdownMenuCheckboxItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                     </div>
                 </CardHeader>

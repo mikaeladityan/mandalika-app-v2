@@ -219,8 +219,13 @@ export function Products() {
                             </Link>
 
                             <Button
-                                variant={table.isTrashMode ? "outline" : "rose"}
+                                variant="outline"
                                 onClick={table.toggleTrashMode}
+                                className={
+                                    table.isTrashMode
+                                        ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
+                                        : "text-muted-foreground"
+                                }
                             >
                                 {table.isTrashMode ? (
                                     <>
@@ -255,31 +260,6 @@ export function Products() {
                         </div>
 
                         <div className="flex gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        Kolom
-                                        <ChevronDown className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {Object.entries(columnVisibility).map(([key, value]) => (
-                                        <DropdownMenuCheckboxItem
-                                            key={key}
-                                            checked={value}
-                                            onCheckedChange={(checked) =>
-                                                setColumnVisibility((prev) => ({
-                                                    ...prev,
-                                                    [key]: Boolean(checked),
-                                                }))
-                                            }
-                                        >
-                                            {key.replace("_", " ").toUpperCase()}
-                                        </DropdownMenuCheckboxItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
                             <Link href="/products/import">
                                 <Button variant="outline">
                                     <Import className="h-4 w-4" />

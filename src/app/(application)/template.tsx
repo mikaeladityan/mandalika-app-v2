@@ -10,12 +10,13 @@ export default function ApplicationTemplate({ children }: { children: React.Reac
         <RequireAuth>
             {/* <AuthBoundary /> */}
             <SidebarProvider>
-                <div className="flex min-h-screen w-full overflow-hidden">
+                <div className="flex min-h-screen w-full">
                     <AppSidebar />
-
-                    <div className="flex flex-col flex-1 min-w-0 space-y-5">
+                    <div className="flex flex-col flex-1 min-w-0">
                         <Navbar />
-                        <main className="flex-1 min-w-0 overflow-hidden px-3 py-2">{children}</main>
+                        <main className="flex-1 min-w-0 px-4 py-4">
+                            {children}
+                        </main>
                     </div>
                 </div>
             </SidebarProvider>

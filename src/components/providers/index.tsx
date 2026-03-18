@@ -12,7 +12,6 @@ export function RootProvider({ children }: { children: React.ReactNode }) {
         <JotaiProvider>
             <QueryClientProvider client={queryClient}>
                 {children}
-                <ReactQueryDevtools initialIsOpen={false} />
             </QueryClientProvider>
         </JotaiProvider>
     );

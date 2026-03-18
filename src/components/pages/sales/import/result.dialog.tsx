@@ -9,9 +9,10 @@ interface ResultDialogProps {
     dryRun: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    typeLabel?: string;
 }
 
-export function ResultDialog({ result, dryRun, open, onOpenChange }: ResultDialogProps) {
+export function ResultDialog({ result, dryRun, open, onOpenChange, typeLabel }: ResultDialogProps) {
     if (!result) return null;
     const { stats, duration, importId } = result;
 
@@ -31,7 +32,7 @@ export function ResultDialog({ result, dryRun, open, onOpenChange }: ResultDialo
                                 </div>
                                 <div>
                                     <DialogTitle className="text-xl font-bold text-slate-900">
-                                        Hasil Import Sales
+                                        Hasil Import Sales {typeLabel}
                                     </DialogTitle>
                                     <p className="text-xs text-slate-500 font-mono mt-0.5">ID: {importId}</p>
                                 </div>
@@ -139,6 +140,7 @@ export function ResultDialog({ result, dryRun, open, onOpenChange }: ResultDialo
                                     </h4>
                                     <div className="space-y-3">
                                         <InfoRows label="Mode" value={dryRun ? "Dry Run" : "Live Write"} />
+                                        <InfoRows label="Tipe" value={typeLabel || "General"} />
                                         <InfoRows label="Waktu" value={new Date().toLocaleTimeString('id-ID')} />
                                         <InfoRows label="Status" value="Selesai" highlight />
                                     </div>

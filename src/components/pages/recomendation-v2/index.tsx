@@ -55,7 +55,6 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
         },
     );
 
-
     const periods = useMemo(() => {
         if (!(list.data as any)?.meta) {
             return {
@@ -103,28 +102,26 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     ];
 
     return (
-        <div className="flex flex-col gap-1">
-            <Card className="border-none shadow-xl shadow-indigo-100/50 rounded-3xl overflow-hidden bg-white">
-                <CardHeader className="space-y-3 border-b border-indigo-50/50 bg-white">
+        <div className="flex flex-col gap-4">
+            <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+                <CardHeader className="space-y-4 border-b border-border/50 bg-white p-6">
                     {/* ROW 1: TITLE & ACTIONS */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm">
-                                <TrendingUp className="h-4 w-4" />
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                                <TrendingUp className="size-5" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
-                                    {title} <span className="text-indigo-600 font-bold">V2</span>
-                                </h2>
-                                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                                <h1 className="text-xl font-bold text-foreground tracking-tight">
+                                    {title} <span className="text-primary">V2</span>
+                                </h1>
+                                <p className="text-xs text-muted-foreground font-medium">
                                     {description}
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-1 self-end md:self-auto">
-
-
                             <Button
                                 onClick={() => exportData.mutate(tableState.queryParams)}
                                 disabled={exportData.isPending || list.isLoading}
@@ -142,25 +139,25 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                         {/* Search */}
-                        <div className="relative group w-full lg:max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-all duration-300" />
+                        <div className="relative group w-full lg:max-w-sm">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                                 placeholder="Cari material..."
                                 value={tableState.search}
                                 onChange={(e) => tableState.setSearch(e.target.value)}
-                                className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-indigo-500/10 text-sm"
+                                className="pl-10 h-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all"
                             />
                         </div>
 
                         {/* Date & Horizon Selectors */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-100 shadow-xs">
-                                <CalendarDays className="size-3 text-indigo-400 ml-1.5" />
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-transparent focus-within:border-primary/10 transition-all">
+                                <CalendarDays className="size-4 text-primary/60 ml-1" />
                                 <Select
                                     value={String(tableState.month)}
                                     onValueChange={(val) => tableState.setMonth(Number(val))}
                                 >
-                                    <SelectTrigger className="w-[100px] h-7 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-[11px] px-1">
+                                    <SelectTrigger className="w-[110px] h-8 border-none bg-transparent focus:ring-0 font-semibold text-foreground text-xs px-1">
                                         <SelectValue placeholder="Bulan" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
@@ -176,13 +173,13 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     </SelectContent>
                                 </Select>
 
-                                <div className="w-px h-4 bg-indigo-100" />
+                                <div className="w-px h-5 bg-border/50" />
 
                                 <Select
                                     value={String(tableState.year)}
                                     onValueChange={(val) => tableState.setYear(Number(val))}
                                 >
-                                    <SelectTrigger className="w-[70px] h-7 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-[11px] px-1">
+                                    <SelectTrigger className="w-[80px] h-8 border-none bg-transparent focus:ring-0 font-semibold text-foreground text-xs px-1">
                                         <SelectValue placeholder="Tahun" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
@@ -201,40 +198,33 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     </SelectContent>
                                 </Select>
                             </div>
-
-
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-0">
-                    <div className="px-8 lg:px-10 pb-5">
-                        {list.isLoading ? (
-                            <div className="space-y-4">
-                                <TableSkeleton />
-                            </div>
-                        ) : (
-                            <div>
-                                <DataTable
-                                    tableId={`rec-v2-main-table-${type}`}
-                                    columns={columns}
-                                    data={list.data?.data ?? []}
-                                    page={tableState.page}
-                                    pageSize={tableState.take}
-                                    total={list.data?.meta?.total ?? 0}
-                                    onPageChange={tableState.setPage}
-                                    onPageSizeChange={tableState.setTake}
-                                    state={{ columnVisibility }}
-                                    onColumnVisibilityChange={handleColumnVisibilityChange}
-                                    // enableMultiSelect={false}
-                                />
-                            </div>
-                        )}
-                    </div>
+                <CardContent className="p-0 px-6 pb-6">
+                    {list.isLoading ? (
+                        <div className="py-10">
+                            <TableSkeleton />
+                        </div>
+                    ) : (
+                        <div className="overflow-hidden">
+                            <DataTable
+                                tableId={`rec-v2-main-table-${type}`}
+                                columns={columns}
+                                data={list.data?.data ?? []}
+                                page={tableState.page}
+                                pageSize={tableState.take}
+                                total={list.data?.meta?.total ?? 0}
+                                onPageChange={tableState.setPage}
+                                onPageSizeChange={tableState.setTake}
+                                state={{ columnVisibility }}
+                                onColumnVisibilityChange={handleColumnVisibilityChange}
+                            />
+                        </div>
+                    )}
                 </CardContent>
             </Card>
-
-
         </div>
     );
 }

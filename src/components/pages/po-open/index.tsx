@@ -71,7 +71,7 @@ export function OpenPo({ title, description }: OpenPoProps) {
                     {/* ROW 1: TITLE & PRIMARY ACTIONS */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                            <div className="p-1.5 bg-primary/10 text-primary rounded-lg shrink-0">
                                 <Truck className="h-4 w-4" />
                             </div>
                             <div>
@@ -88,20 +88,20 @@ export function OpenPo({ title, description }: OpenPoProps) {
                             <Button
                                 onClick={exportToExcel}
                                 disabled={list.isLoading || !list.data?.data?.length}
-                                className="h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm font-bold gap-1.5 transition-all text-[11px] px-3"
+                                className="h-8 bg-primary hover:bg-primary/90 text-white rounded-full shadow-sm font-bold gap-1.5 transition-all text-[11px] px-3"
                             >
                                 <Download className="w-3 h-3" />
                                 Excel
                             </Button>
 
-                            <div className="flex items-center rounded-xl border border-blue-200 overflow-hidden shrink-0">
+                            <div className="flex items-center rounded-full border border-primary/20 overflow-hidden shrink-0">
                                 <Button
                                     onClick={() => setView("table")}
                                     variant="ghost"
-                                    className={`h-8 px-3 rounded-none font-bold gap-1.5 transition-all border-r border-blue-200 text-[11px] ${
+                                    className={`h-8 px-3 rounded-none font-bold gap-1.5 transition-all border-r border-primary/20 text-[11px] ${
                                         view === "table"
-                                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                                            : "text-blue-600 hover:bg-amber-50"
+                                            ? "bg-primary text-white hover:bg-primary/90"
+                                            : "text-primary hover:bg-primary/5"
                                     }`}
                                 >
                                     <List className="w-3 h-3" />
@@ -112,8 +112,8 @@ export function OpenPo({ title, description }: OpenPoProps) {
                                     variant="ghost"
                                     className={`h-8 px-3 rounded-none font-bold gap-1.5 transition-all text-[11px] ${
                                         view === "supplier"
-                                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                                            : "text-blue-600 hover:bg-amber-50"
+                                            ? "bg-primary text-white hover:bg-primary/90"
+                                            : "text-primary hover:bg-primary/5"
                                     }`}
                                 >
                                     <LayoutGrid className="w-3 h-3" />
@@ -126,12 +126,12 @@ export function OpenPo({ title, description }: OpenPoProps) {
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 pt-1">
                         <div className="relative w-full sm:w-64 lg:w-72 group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <Input
                                 placeholder="Cari..."
                                 value={table.search}
                                 onChange={(e) => table.setSearch(e.target.value)}
-                                className="pl-9 h-9 w-full bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-blue-500/20 text-sm"
+                                className="pl-9 h-9 w-full bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-primary/20 text-sm"
                             />
                         </div>
 
@@ -191,9 +191,9 @@ export function OpenPo({ title, description }: OpenPoProps) {
                                         onPageSizeChange={table.setTake}
                                     />
                                     {/* Grand Total Summary Bar */}
-                                    <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-blue-50/50 rounded-2xl border border-blue-100 gap-4 mt-4">
+                                    <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-primary/5 rounded-2xl border border-primary/10 gap-4 mt-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2.5 bg-white text-blue-600 rounded-xl shadow-sm border border-blue-100">
+                                            <div className="p-2.5 bg-white text-primary rounded-xl shadow-xs border border-primary/10">
                                                 <Calculator className="h-5 w-5" />
                                             </div>
                                             <div>
@@ -205,12 +205,12 @@ export function OpenPo({ title, description }: OpenPoProps) {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="h-10 w-px bg-blue-100 hidden sm:block" />
+                                        <div className="h-10 w-px bg-primary/10 hidden sm:block" />
                                         <div className="text-center sm:text-right">
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                                                 Grand Total Period
                                             </p>
-                                            <p className="text-2xl font-black text-blue-600 tracking-tighter">
+                                            <p className="text-2xl font-black text-primary tracking-tighter">
                                                 Rp {formatNumber(grandTotal)}
                                             </p>
                                         </div>

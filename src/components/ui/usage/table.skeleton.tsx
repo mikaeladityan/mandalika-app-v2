@@ -11,7 +11,7 @@ export function TableSkeleton() {
     return (
         <div className="w-full space-y-6">
             {/* Table Skeleton */}
-            <div className="rounded-md border overflow-hidden">
+            <div className="rounded border overflow-hidden">
                 <Table>
                     <TableHeader className="bg-muted/50">
                         <TableRow>

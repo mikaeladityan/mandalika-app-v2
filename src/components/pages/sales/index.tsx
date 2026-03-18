@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, ChevronDown, PlusCircle, Import, Loader2, X, Download } from "lucide-react";
+import { Search, ChevronDown, PlusCircle, Import, Loader2, X, Download, TrendingUp } from "lucide-react";
 import { useSaleQuery, useSaleTableState } from "@/app/(application)/sales/server/use.sales";
 import { useType } from "@/app/(application)/products/(component)/type/server/use.type";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
     DropdownMenu,
@@ -67,44 +68,53 @@ export function Sales() {
 
     const isTableLoading = isLoading || isFetching || isRefetching;
 
+    const typeLabel = useMemo(() => {
+        if (!table.type || table.type === "ALL") return "Semua Channel";
+        return table.type.replace("_", " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+    }, [table.type]);
+
     return (
-        <section>
-            <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
-                <CardHeader className="space-y-4 p-4 lg:p-5 border-b border-slate-50">
-                    {/* ROW 1: TITLE & ACTIONS */}
+        <section className="flex flex-col gap-4">
+            <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+                <CardHeader className="space-y-4 p-6 border-b border-border/50 bg-white">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div>
-                            <h2 className="text-lg font-black tracking-tight text-slate-800">
-                                Manajemen Penjualan {table.type && table.type !== "ALL" ? `(${table.type})` : ""}
-                            </h2>
-                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                                Monitoring tren penjualan produk aktual {table.type ? table.type.toLowerCase() : "semua tipe"}
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                                <TrendingUp className="size-5" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-foreground tracking-tight">
+                                    Manajemen Penjualan {typeLabel !== "Semua Channel" ? `— ${typeLabel}` : ""}
+                                </h1>
+                                <p className="text-xs text-muted-foreground font-medium">
+                                    Monitoring tren penjualan {typeLabel.toLowerCase()} produk secara aktual.
+                                </p>
+                            </div>
                         </div>
-                        <div className="flex gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Link href={`/sales/create${table.type ? `?type=${table.type}` : ""}`}>
                                 <Button
-                                    variant="teal"
-                                    className="h-8 px-3 cursor-pointer font-bold shadow-sm shadow-teal-50 text-[11px]"
+                                    variant="default"
+                                    className="h-9 px-4 font-semibold"
                                 >
-                                    <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+                                    <PlusCircle className="mr-1.5 size-4" />
                                     Input
                                 </Button>
                             </Link>
                             <Link href={`/sales/import${table.type ? `?type=${table.type}` : ""}`}>
                                 <Button
                                     variant="outline"
-                                    className="h-8 px-3 text-[11px] font-bold"
+                                    className="h-9 px-4 font-semibold"
                                 >
-                                    <Import className="mr-1.5 h-3.5 w-3.5" />
+                                    <Import className="mr-1.5 size-4" />
                                     Import
                                 </Button>
                             </Link>
                             <Button
-                                variant="success"
-                                className="h-8 px-3 cursor-pointer text-[11px] font-bold"
+                                variant="outline"
+                                className="h-9 px-4 font-semibold border-emerald-600/20 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
                             >
-                                <Download className="mr-1.5 h-3.5 w-3.5" />
+                                <Download className="mr-1.5 size-4" />
                                 Export
                             </Button>
                         </div>
@@ -112,27 +122,26 @@ export function Sales() {
 
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col lg:flex-row lg:items-center gap-3 pt-1">
-                        {/* ===== Search ===== */}
-                        <InputGroup className="w-full lg:max-w-sm">
-                            <InputGroupInput
-                                placeholder="Cari..."
-                                value={table.search}
-                                onChange={(e) => table.setSearch(e.target.value)}
-                                className="h-9 text-sm"
-                            />
-                            <InputGroupAddon>
-                                <Search className="h-3.5 w-3.5" />
-                            </InputGroupAddon>
-                            <InputGroupAddon align="inline-end">
-                                {isFetching ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                    <span className="text-[10px] text-muted-foreground font-bold">
-                                        {total}
-                                    </span>
-                                )}
-                            </InputGroupAddon>
-                        </InputGroup>
+                        <div className="relative group w-full lg:max-w-sm">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            <InputGroup className="w-full">
+                                <InputGroupInput
+                                    placeholder="Cari transaksi..."
+                                    value={table.search}
+                                    onChange={(e) => table.setSearch(e.target.value)}
+                                    className="h-10 pl-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all"
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    {isFetching ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                        <Badge variant="secondary" className="text-[10px] font-bold h-5 px-1.5">
+                                            {total}
+                                        </Badge>
+                                    )}
+                                </InputGroupAddon>
+                            </InputGroup>
+                        </div>
 
                         {/* ===== Filters ===== */}
                         <div className="flex flex-wrap gap-1.5 items-center">

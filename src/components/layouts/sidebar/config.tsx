@@ -1,7 +1,6 @@
 import { useWarehouses } from "@/app/(application)/shared/use.shared";
 import {
     Home,
-    Users,
     ShoppingBag,
     Settings,
     Boxes,
@@ -51,41 +50,20 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     items: [
                         { title: "Master", url: "/forecasts", icon: BarChart4 },
                         { title: "Display", url: "/forecasts/display", icon: BarChart3 },
+                        { title: "Percentages", url: "/forecasts/percentages", icon: BarChart },
                     ],
                 },
-                // { title: "Safety Stock (PENDING)", url: "/safety-stock", icon: Boxes },
             ],
         },
-
         {
-            label: "Pengeluaran",
-            items: [
-                {
-                    title: "Pengeluaran (FG)",
-                    icon: ShoppingBag,
-                    items: [
-                        { title: "Master Pengeluaran", url: "/sales?type=ALL", icon: Database },
-                        { title: "Rekap Pengeluaran", url: "/sales/rekap", icon: Boxes },
-                        { title: "Offline", url: "/sales?type=OFFLINE", icon: ShoppingBag },
-                        { title: "Online", url: "/sales?type=ONLINE", icon: ShoppingBag },
-                        { title: "Spin Wheel", url: "/sales?type=SPIN_WHEEL", icon: ShoppingBag },
-                        { title: "Garansi Out", url: "/sales?type=GARANSI_OUT", icon: ShoppingBag },
-                    ],
-                },
-                { title: "Analitik Pengeluaran", url: "/sales/analytics", icon: BarChart },
-            ],
-        },
-
-        {
+            label: "Inventory",
             items: [
                 {
                     title: "Produk (FG)",
                     icon: Boxes,
                     items: [
                         { title: "Master FG", url: "/products", icon: Database },
-                        // Total Stock
                         { title: "Rekap Stock", url: "/products/stocks", icon: Boxes },
-                        // Dinamis Gudang Stock
                         ...fg.map((warehouse) => ({
                             title: warehouse.name.toLocaleLowerCase(),
                             url: `/products/stocks/${warehouse.id}`,
@@ -93,18 +71,12 @@ export function useSidebarData(): SidebarGroupConfig[] {
                         })),
                     ],
                 },
-            ],
-        },
-        {
-            items: [
                 {
                     title: "Raw Material",
                     icon: Recycle,
                     items: [
                         { title: "Master RM", url: "/rawmat", icon: Database },
-                        // Total Stock
                         { title: "Rekap Stock", url: "/rawmat/stocks", icon: Boxes },
-                        // Dinamis Gudang Stock
                         ...rm.map((warehouse) => ({
                             title: warehouse.name.toLocaleLowerCase(),
                             url: `/rawmat/stocks/${warehouse.id}`,
@@ -112,77 +84,44 @@ export function useSidebarData(): SidebarGroupConfig[] {
                         })),
                     ],
                 },
+                { title: "Gudang", url: "/warehouses", icon: Warehouse },
             ],
         },
         {
-            label: "Gudang",
-            items: [{ title: "Gudang", url: "/warehouses", icon: Warehouse }],
-        },
-        {
-            label: "Produksi",
-            items: [
-                { title: "Resep", url: "/recipes", icon: FlaskConical },
-                { title: "BOM", url: "/bom", icon: Flame },
-            ],
-        },
-
-        // {
-        //     items: [
-        //         {
-        //             title: "Produksi",
-        //             icon: Boxes,
-        //             items: [
-        //                 { title: "Material", url: "/rawmat", icon: Boxes },
-        //                 { title: "Bom", url: "/bom", icon: GitPullRequestCreateArrow },
-        //             ],
-        //         },
-        //     ],
-        // },
-        // {
-        //     items: [{ title: "Gudang", url: "/warehouses", icon: Warehouse }],
-        // },
-        // {
-        //     label: "Rekomendasi",
-        //     items: [
-        //         {
-        //             title: "Rekomendasi",
-        //             icon: Replace,
-        //             items: [
-        //                 { title: "FFO", url: "/recomendation/ffo", icon: HeartPulse },
-        //                 { title: "FP LOKAL", url: "/recomendation/fp-local", icon: PrinterCheck },
-        //                 { title: "FP INTER", url: "/recomendation/fp-inter", icon: PrinterCheck },
-        //             ],
-        //         },
-        //     ],
-        // },
-
-        {
-            label: "Rekomendasi (PPIC)",
+            label: "Operational",
             items: [
                 {
-                    title: "Rekomendasi V2",
+                    title: "Pengeluaran (FG)",
+                    icon: ShoppingBag,
+                    items: [
+                        { title: "Master", url: "/sales?type=ALL", icon: Database },
+                        { title: "Rekap", url: "/sales/rekap", icon: Boxes },
+                        { title: "Offline", url: "/sales?type=OFFLINE", icon: ShoppingBag },
+                        { title: "Online", url: "/sales?type=ONLINE", icon: ShoppingBag },
+                        { title: "Spin Wheel", url: "/sales?type=SPIN_WHEEL", icon: ShoppingBag },
+                        { title: "Garansi Out", url: "/sales?type=GARANSI_OUT", icon: ShoppingBag },
+                    ],
+                },
+                { title: "Analitik Sales", url: "/sales/analytics", icon: BarChart },
+                {
+                    title: "Rekomendasi",
                     icon: Replace,
                     items: [
-                        { title: "FFO", url: "/recomendation-v2/ffo", icon: HeartPulse },
-                        {
-                            title: "FP LOKAL",
-                            url: "/recomendation-v2/fp-local",
-                            icon: PrinterCheck,
-                        },
-                        {
-                            title: "FP INTER",
-                            url: "/recomendation-v2/fp-inter",
-                            icon: PrinterCheck,
-                        },
+                        { title: "FFO", url: "/recomendation-v2/ffo", icon: Replace },
+                        { title: "FP Inter", url: "/recomendation-v2/fp-inter", icon: Replace },
+                        { title: "FP Local", url: "/recomendation-v2/fp-local", icon: Replace },
                     ],
                 },
             ],
         },
         {
-            label: "Purchase",
+            label: "Purchase & Production",
             items: [
                 { title: "Purchase", url: "/purchase", icon: BanknoteArrowUp },
-                { title: "PO Open", url: "/po/open", icon: TruckElectric },
+                { title: "PO Tracking", url: "/po/open", icon: TruckElectric },
+                { title: "Batch Produksi", url: "/production", icon: PrinterCheck },
+                { title: "Resep", url: "/recipes", icon: FlaskConical },
+                { title: "BOM", url: "/bom", icon: Flame },
             ],
         },
         // {
@@ -199,17 +138,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
         //     ],
         // },
         {
-            items: [
-                {
-                    title: "Pengaturan",
-                    icon: Settings,
-                    items: [
-                        { title: "Pengaturan Umum", url: "/settings", icon: Settings },
-                        { title: "Pengguna", url: "/settings/users", icon: Users },
-                        { title: "Roles & Permissions", url: "/settings/roles", icon: Settings },
-                    ],
-                },
-            ],
+            items: [{ title: "Pengaturan", url: "/settings", icon: Settings }],
         },
     ];
 }

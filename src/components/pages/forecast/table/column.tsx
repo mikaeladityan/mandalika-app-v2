@@ -38,7 +38,7 @@ const FormulaHint = ({
                 className="w-80 p-3 bg-white text-slate-900 border-slate-200 shadow-xl z-100"
             >
                 <div className="space-y-2">
-                    <p className="font-bold text-[10px] uppercase tracking-wider text-indigo-600 border-b border-indigo-50 pb-1">
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-primary border-b border-primary/10 pb-1">
                         {title}
                     </p>
                     <div className="bg-slate-50 p-2 rounded border border-slate-100 font-mono text-[10px] leading-relaxed wrap-break-word text-slate-700">
@@ -89,8 +89,8 @@ export const ForecastColumns = ({
                 <div className="flex flex-col items-start gap-0 min-w-[200px]">
                     <span className="font-black text-[10px] uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                         Forecast Value
-                        <div className="h-1 w-1 rounded-full bg-indigo-400" />
-                        <span className="text-indigo-600 font-bold">{rangeText}</span>
+                        <div className="h-1 w-1 rounded-full bg-primary" />
+                        <span className="text-primary font-bold">{rangeText}</span>
                     </span>
                     <span className="text-[8px] text-slate-400 font-medium italic">
                         Trend & Analysis Data Bulanan
@@ -148,11 +148,11 @@ export const ForecastColumns = ({
                                                 });
                                             }}
                                             className={cn(
-                                                "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[70px] cursor-pointer",
+                                                "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[72px] cursor-pointer",
                                                 isAdjusted
-                                                    ? "bg-indigo-50/50 border-indigo-100 hover:bg-indigo-100/50"
+                                                    ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
                                                     : isCurrent
-                                                      ? "bg-slate-50 border-blue-200 hover:bg-white"
+                                                      ? "bg-slate-50 border-primary/30 hover:bg-white"
                                                       : "bg-white border-transparent hover:border-slate-200 hover:bg-slate-50",
                                             )}
                                         >
@@ -161,7 +161,7 @@ export const ForecastColumns = ({
                                                     {formatMonthYear(p.year, p.month)}
                                                 </span>
                                                 {isCurrent && (
-                                                    <div className="size-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                                                    <div className="size-1 rounded-full bg-primary shadow-[0_0_8px_rgba(0,174,239,0.5)]" />
                                                 )}
                                             </div>
 
@@ -170,7 +170,7 @@ export const ForecastColumns = ({
                                                     className={cn(
                                                         "text-[11px] font-bold tabular-nums tracking-tight",
                                                         isAdjusted
-                                                            ? "text-indigo-700"
+                                                            ? "text-primary"
                                                             : "text-slate-900",
                                                         !found && "text-slate-300 italic",
                                                     )}
@@ -248,8 +248,8 @@ export const ForecastColumns = ({
                                                     )}
                                                 </div>
 
-                                                <div className="mt-1 space-y-1 bg-indigo-50 p-1.5 rounded-md border border-indigo-100">
-                                                    <div className="flex justify-between text-xs text-indigo-900 border-t border-indigo-200 mt-1 pt-1">
+                                                <div className="mt-1 space-y-1 bg-primary/5 p-1.5 rounded-md border border-primary/10">
+                                                    <div className="flex justify-between text-xs text-primary border-t border-primary/10 mt-1 pt-1">
                                                         <span className="font-bold">
                                                             Final Forecast:
                                                         </span>
@@ -291,12 +291,12 @@ export const ForecastColumns = ({
                         <div className="flex flex-col gap-1">
                             <Button
                                 size="icon"
-                                className="h-6 w-6 rounded-md cursor-pointer hover:scale-110 transition-transform bg-teal-50 hover:bg-teal-100 border-teal-200"
+                                className="h-6 w-6 rounded-md cursor-pointer hover:scale-110 transition-transform bg-primary/5 hover:bg-primary/10 border-primary/20"
                                 variant="outline"
                                 title="Run Forecast"
                                 onClick={() => setOpen(true)}
                             >
-                                <TrendingUpDown className="size-2.5 text-teal-600" />
+                                <TrendingUpDown className="size-2.5 text-primary" />
                             </Button>
                             <ForecastRunDialog
                                 open={open}
@@ -328,7 +328,7 @@ export const ForecastColumns = ({
         {
             id: "edar",
             header: () => (
-                <div className="flex items-center font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
+                <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     EDAR
                     <FormulaHint
                         title="Persentase Edar (Distribution)"
@@ -341,7 +341,7 @@ export const ForecastColumns = ({
                 const edar = row.original.distribution_percentage;
                 if (!edar || edar <= 0) return null;
                 return (
-                    <div className="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block border border-blue-100 min-w-10 text-center shadow-xs">
+                    <div className="text-[10px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded inline-block border border-primary/10 min-w-10 text-center shadow-xs">
                         {edar}%
                     </div>
                 );
@@ -354,7 +354,7 @@ export const ForecastColumns = ({
         {
             id: "total-forecast",
             header: () => (
-                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap">
+                <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     Total Forecast
                     <FormulaHint
                         title="Total Forecast"
@@ -370,13 +370,12 @@ export const ForecastColumns = ({
 
                 return (
                     <div className="flex flex-col">
-                        <span className="font-bold text-indigo-700 text-[11px] leading-tight">
+                        <span className="font-bold text-primary text-[11px] leading-tight">
                             {Math.round(
                                 Number(s.safety_stock_summary.total_forecast || 0),
                             ).toLocaleString("id-ID")}{" "}
-                            <span className="text-[9px] font-medium text-indigo-500">ML</span>
+                            <span className="text-[9px] font-medium text-primary/60">ML</span>
                         </span>
-                        {/* <span className="text-[10px] text-slate-400 font-medium">{s.} Bulan</span> */}
                     </div>
                 );
             },
@@ -386,7 +385,7 @@ export const ForecastColumns = ({
         {
             id: "total-demand",
             header: () => (
-                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap text-rose-600">
+                <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     Jumlah Forecast
                     <FormulaHint
                         title="Total Demand"
@@ -416,7 +415,7 @@ export const ForecastColumns = ({
         {
             id: "safety_p",
             header: () => (
-                <div className="flex items-center font-bold text-xs uppercase text-slate-500 whitespace-nowrap">
+                <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     % SAFETY
                     <FormulaHint
                         title="Safety Stock Ratio"
@@ -434,7 +433,7 @@ export const ForecastColumns = ({
         {
             id: "safety-stock",
             header: () => (
-                <div className="flex items-center font-bold text-xs uppercase whitespace-nowrap">
+                <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     Safety Stock
                     <FormulaHint
                         title="Safety Stock"
@@ -483,8 +482,8 @@ export const ForecastColumns = ({
             header: () => {
                 const first = periods[0];
                 return (
-                    <div className="font-bold text-[10px] 2xl:text-xs uppercase text-orange-600 whitespace-nowrap flex items-center gap-1">
-                        <Factory size={14} className="text-orange-400" />
+                    <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap gap-1">
+                        <Factory size={14} className="text-slate-400" />
                         Produce {first ? formatMonthYear(first.year, first.month) : ""}
                         <FormulaHint
                             title="Need Produce"
