@@ -18,6 +18,7 @@ import {
     BarChart2,
     BarChart3,
     BarChart4,
+    Store,
 } from "lucide-react";
 
 export type SidebarItemConfig = {
@@ -85,6 +86,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     ],
                 },
                 { title: "Gudang", url: "/warehouses", icon: Warehouse },
+                { title: "Outlet", url: "/outlets", icon: Store },
             ],
         },
         {

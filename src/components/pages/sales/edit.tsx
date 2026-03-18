@@ -211,8 +211,7 @@ export function EditSales() {
                         </CardContent>
                         <CardFooter className="p-6 pt-0">
                             <Button
-                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-teal-100"
-                                variant="teal"
+                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-primary/20"
                                 disabled={isPending}
                             >
                                 {isPending ? (

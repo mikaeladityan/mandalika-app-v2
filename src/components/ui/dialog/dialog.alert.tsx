@@ -14,9 +14,10 @@ interface DialogAlertProps {
     title: string;
     children: React.ReactNode;
     onClick?: () => Promise<void>;
+    asChild?: boolean;
 }
 
-export function DialogAlert({ children, label, title, onClick }: DialogAlertProps) {
+export function DialogAlert({ children, label, title, onClick, asChild }: DialogAlertProps) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -39,9 +40,13 @@ export function DialogAlert({ children, label, title, onClick }: DialogAlertProp
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="flex items-center justify-center gap-2 p-3 py-2 rounded-lg bg-amber-500 text-sm border border-amber-500 hover:bg-amber-600/80 transition-all ease-in-out duration-200 cursor-pointer text-white">
-                    {label}
-                </button>
+                {asChild ? (
+                    React.isValidElement(label) ? label : <span>{label}</span>
+                ) : (
+                    <button className="flex items-center justify-center gap-2 p-3 py-2 rounded-lg bg-amber-500 text-sm border border-amber-500 hover:bg-amber-600/80 transition-all ease-in-out duration-200 cursor-pointer text-white">
+                        {label}
+                    </button>
+                )}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -51,9 +56,8 @@ export function DialogAlert({ children, label, title, onClick }: DialogAlertProp
                 <DialogFooter className="sm:justify-end">
                     <Button
                         disabled={loading}
-                        className="cursor-pointer"
+                        className="cursor-pointer font-bold shadow-md shadow-primary/20"
                         onClick={handleConfirm}
-                        variant={"teal"}
                     >
                         {loading ? "Memproses..." : "Konfirmasi"}
                     </Button>

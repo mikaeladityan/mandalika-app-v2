@@ -66,11 +66,11 @@ export function Login() {
                 className="z-10 w-full max-w-[440px]"
             >
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4 shadow-lg shadow-blue-200">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20">
                         <Sparkles className="text-white w-8 h-8" />
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">
-                        Mandalika <span className="text-blue-600">ERP</span>
+                        Mandalika <span className="text-primary">ERP</span>
                     </h1>
                     <p className="text-slate-500 font-medium">
                         Sistem Manajemen Bisnis & Inventaris
@@ -100,7 +100,7 @@ export function Login() {
                                     placeholder="nama@perusahaan.com"
                                     type="email"
                                     autoFocus
-                                    className="pl-3 h-11 transition-all focus:ring-2 focus:ring-blue-500/20"
+                                    className="pl-3 h-11 transition-all focus:ring-2 focus:ring-primary/20"
                                     error={form.formState.errors.email}
                                 />
                             </div>
@@ -112,7 +112,7 @@ export function Login() {
                                     label="Kata Sandi"
                                     placeholder="••••••••"
                                     type={showPassword ? "text" : "password"}
-                                    className="pl-3 h-11 transition-all focus:ring-2 focus:ring-blue-500/20"
+                                    className="pl-3 h-11 transition-all focus:ring-2 focus:ring-primary/20"
                                     error={form.formState.errors.password}
                                     showVisibilityToggle
                                     onToggleVisibility={() => setShowPassword(!showPassword)}
@@ -131,8 +131,8 @@ export function Login() {
                                     className={cn(
                                         "flex items-center justify-center w-5 h-5 border-2 rounded-md transition-all duration-200",
                                         form.watch("remember")
-                                            ? "bg-blue-600 border-blue-600"
-                                            : "bg-white border-slate-200 group-hover:border-blue-300",
+                                            ? "bg-primary border-primary"
+                                            : "bg-white border-slate-200 group-hover:border-primary/30",
                                     )}
                                 >
                                     {form.watch("remember") && (
@@ -143,7 +143,7 @@ export function Login() {
                                     className={cn(
                                         "text-sm font-medium transition-colors",
                                         form.watch("remember")
-                                            ? "text-blue-700"
+                                            ? "text-primary font-bold"
                                             : "text-slate-500 group-hover:text-slate-700",
                                     )}
                                 >
@@ -154,7 +154,7 @@ export function Login() {
                             {process.env.NEXT_PUBLIC_CAN_REGISTER && (
                                 <Link
                                     href="/auth/register"
-                                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all"
+                                    className="text-sm font-semibold text-primary hover:text-primary/80 hover:underline underline-offset-4 transition-all"
                                 >
                                     Daftar Akun Baru
                                 </Link>
@@ -164,7 +164,7 @@ export function Login() {
                         <Button
                             disabled={isPending || !form.formState.isValid}
                             type="submit"
-                            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-70"
+                            className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-70"
                         >
                             {isPending ? (
                                 <div className="flex items-center justify-center gap-2">

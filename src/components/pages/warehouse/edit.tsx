@@ -266,9 +266,9 @@ export function EditWarehouse() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-6 space-y-4">
-                            <div className="p-4 bg-teal-50 rounded-lg border border-teal-100">
-                                <h4 className="text-sm font-bold text-teal-900 mb-1">Informasi</h4>
-                                <p className="text-xs text-teal-700 leading-relaxed italic">
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                <h4 className="text-sm font-bold text-slate-900 mb-1">Informasi</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed italic">
                                     Pembaruan data alamat akan langsung berdampak pada pencatatan
                                     logistik dan distribusi barang.
                                 </p>
@@ -276,8 +276,7 @@ export function EditWarehouse() {
                         </CardContent>
                         <CardFooter className="p-6 pt-0">
                             <Button
-                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-teal-100"
-                                variant="teal"
+                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-primary/20"
                                 disabled={isPending}
                             >
                                 {isPending ? (

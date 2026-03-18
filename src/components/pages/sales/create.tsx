@@ -197,11 +197,11 @@ export function CreateSales() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-6">
-                            <div className="p-4 bg-teal-50 rounded-lg border border-teal-100 mb-6">
-                                <h4 className="text-sm font-bold text-teal-900 mb-1">
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 mb-6">
+                                <h4 className="text-sm font-bold text-slate-900 mb-1">
                                     Status Recon
                                 </h4>
-                                <p className="text-xs text-teal-700 italic">
+                                <p className="text-xs text-muted-foreground italic">
                                     Data untuk bulan {period.label} sedang dalam tahap pengumpulan
                                     data aktual sebelum dilakukan Reconcile.
                                 </p>
@@ -209,8 +209,7 @@ export function CreateSales() {
                         </CardContent>
                         <CardFooter className="p-6 pt-0">
                             <Button
-                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-teal-100"
-                                variant="teal"
+                                className="w-full h-11 cursor-pointer font-bold shadow-md shadow-primary/20"
                                 disabled={isPending}
                             >
                                 {isPending ? (

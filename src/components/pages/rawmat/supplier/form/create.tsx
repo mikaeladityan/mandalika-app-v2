@@ -100,7 +100,7 @@ export function CreateSupplier() {
                     </CardHeader>
 
                     <CardFooter>
-                        <Button className="w-full" disabled={create.isPending} variant="teal">
+                        <Button className="w-full" disabled={create.isPending}>
                             {create.isPending ? <Loader2 className="animate-spin" /> : <Save />}
                             Simpan
                         </Button>

@@ -72,11 +72,11 @@ export function Register() {
                 className="z-10 w-full max-w-[500px]"
             >
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 mb-4 shadow-lg shadow-blue-200">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20">
                         <UserCheck className="text-white w-7 h-7" />
                     </div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                        Buat Akun <span className="text-blue-600">ERP</span>
+                        Buat Akun <span className="text-primary">ERP</span>
                     </h1>
                     <p className="text-slate-500 text-sm mt-1 font-medium">
                         Bergabung dengan sistem ERP
@@ -97,7 +97,7 @@ export function Register() {
                             placeholder="nama@perusahaan.com"
                             type="email"
                             autoFocus
-                            className="h-11 transition-all focus:ring-2 focus:ring-blue-500/10"
+                            className="h-11 transition-all focus:ring-2 focus:ring-primary/10"
                             error={form.formState.errors.email}
                         />
 
@@ -108,7 +108,7 @@ export function Register() {
                                 label="Kata Sandi Baru"
                                 placeholder="Min. 8 karakter"
                                 type={showPassword ? "text" : "password"}
-                                className="h-11 transition-all focus:ring-2 focus:ring-blue-500/10"
+                                className="h-11 transition-all focus:ring-2 focus:ring-primary/10"
                                 error={form.formState.errors.password}
                                 showVisibilityToggle
                                 onToggleVisibility={() => setShowPassword(!showPassword)}
@@ -135,7 +135,7 @@ export function Register() {
                             label="Konfirmasi Kata Sandi"
                             placeholder="Ulangi kata sandi"
                             type={showConfirmPassword ? "text" : "password"}
-                            className="h-11 transition-all focus:ring-2 focus:ring-blue-500/10"
+                            className="h-11 transition-all focus:ring-2 focus:ring-primary/10"
                             error={form.formState.errors.confirm_password}
                             showVisibilityToggle
                             onToggleVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -146,7 +146,7 @@ export function Register() {
                             <Button
                                 disabled={isPending || !form.formState.isValid}
                                 type="submit"
-                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-70 group"
+                                className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-70 group"
                             >
                                 {isPending ? (
                                     <div className="flex items-center justify-center gap-2">
@@ -169,7 +169,7 @@ export function Register() {
                             <span className="text-sm text-slate-400">Sudah punya akun?</span>
                             <Link
                                 href="/auth"
-                                className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:underline underline-offset-4"
+                                className="text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1 hover:underline underline-offset-4"
                             >
                                 Masuk ke Sini
                             </Link>

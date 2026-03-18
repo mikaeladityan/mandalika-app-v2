@@ -88,7 +88,7 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
         <div className="flex flex-col gap-4">
             {/* MAIN CONTENT CARD */}
             <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
-                <CardHeader className="space-y-4 p-6 border-b border-border/50 bg-white">
+                <CardHeader className="space-y-4 border-b border-border/50 bg-white">
                     {/* ROW 1: TITLE & PRIMARY ACTIONS */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">

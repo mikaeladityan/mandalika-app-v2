@@ -103,7 +103,7 @@ export function EditCategory() {
                         </CardContent>
                     )}
                     <CardFooter>
-                        <Button className="w-full" disabled={update.isPending} variant="teal">
+                        <Button className="w-full" disabled={update.isPending}>
                             {update.isPending ? <Loader2 className="animate-spin" /> : <Save />}
                             Simpan
                         </Button>
