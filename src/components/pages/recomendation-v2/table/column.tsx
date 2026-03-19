@@ -14,9 +14,9 @@ import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PeriodProps {
-    sales_periods: { month: number; year: number; period: Date | string; key: string }[];
-    forecast_periods: { month: number; year: number; period: Date | string; key: string }[];
-    po_periods: { month: number; year: number; period: Date | string; key: string }[];
+    sales_periods: { month: number; year: number; key: string }[];
+    forecast_periods: { month: number; year: number; key: string }[];
+    po_periods: { month: number; year: number; key: string }[];
     month: number;
     year: number;
     forecastMonths: number;
