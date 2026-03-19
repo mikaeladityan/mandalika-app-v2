@@ -7,14 +7,7 @@ export class PurchaseService {
     static async list(query: QueryPurchaseDTO) {
         try {
             const { data } = await api.get(API, { params: query });
-            return data.data as {
-                data: PurchaseResponse[];
-                meta: {
-                    total: number;
-                    page: number;
-                    take: number;
-                };
-            };
+            return data.data as { data: PurchaseResponse[]; len: number };
         } catch (error) {
             throw error;
         }

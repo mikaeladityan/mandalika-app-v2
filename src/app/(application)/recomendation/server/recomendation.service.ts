@@ -8,22 +8,10 @@ export class RecomendationService {
         const { data } = await api.get(API, { params: query });
         return data.data as {
             data: RecomendationResponse[];
-            meta: {
-                total: number;
-                page: number;
-                take: number;
-                sales_periods: {
-                    month: number;
-                    year: number;
-                    period: Date | string;
-                    key: string;
-                }[];
-                forecast_periods: {
-                    month: number;
-                    year: number;
-                    period: Date | string;
-                    key: string;
-                }[];
+            len: number;
+            periods: {
+                sales_periods: { month: number; year: number; period: Date | string; key: string }[];
+                forecast_periods: { month: number; year: number; period: Date | string; key: string }[];
             };
         };
     }

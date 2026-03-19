@@ -12,7 +12,15 @@ export class RecomendationV2Service {
     static async list(params: QueryRecomendationV2DTO) {
         try {
             const { data } = await api.get<
-                ApiSuccessResponse<{ data: Array<RecomendationV2Response>; meta: any }>
+                ApiSuccessResponse<{
+                    data: Array<RecomendationV2Response>;
+                    len: number;
+                    periods: {
+                        sales_periods: { month: number; year: number; key: string }[];
+                        forecast_periods: { month: number; year: number; key: string }[];
+                        po_periods: { month: number; year: number; key: string }[];
+                    };
+                }>
             >(`${process.env.NEXT_PUBLIC_API}/api/app/recomendations-v2`, { params });
             return data.data;
         } catch (error) {

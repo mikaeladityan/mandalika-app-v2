@@ -43,12 +43,12 @@ export function Recomendation({ title, description, type }: RecomendationProps) 
     });
 
     const periods = useMemo(() => {
-        if (!list.data?.meta) return { sales_periods: [], forecast_periods: [] };
+        if (!list.data?.periods) return { sales_periods: [], forecast_periods: [] };
         return {
-            sales_periods: list.data.meta.sales_periods,
-            forecast_periods: list.data.meta.forecast_periods,
+            sales_periods: list.data.periods.sales_periods,
+            forecast_periods: list.data.periods.forecast_periods,
         };
-    }, [list.data?.meta]);
+    }, [list.data?.periods]);
 
     const columns = useMemo(() => RecomendationColumns(periods), [periods]);
 
@@ -187,7 +187,7 @@ export function Recomendation({ title, description, type }: RecomendationProps) 
                                     data={list.data?.data ?? []}
                                     page={tableState.page}
                                     pageSize={tableState.take}
-                                    total={list.data?.meta?.total ?? 0}
+                                    total={list.data?.len ?? 0}
                                     onPageChange={tableState.setPage}
                                     onPageSizeChange={tableState.setTake}
                                     state={{ columnVisibility }}

@@ -56,7 +56,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
     );
 
     const periods = useMemo(() => {
-        if (!(list.data as any)?.meta) {
+        if (!list.data?.periods) {
             return {
                 sales_periods: [],
                 forecast_periods: [],
@@ -64,11 +64,11 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
             };
         }
         return {
-            sales_periods: (list.data as any).meta.sales_periods || [],
-            forecast_periods: (list.data as any).meta.forecast_periods || [],
-            po_periods: (list.data as any).meta.po_periods || [],
+            sales_periods: list.data.periods.sales_periods ?? [],
+            forecast_periods: list.data.periods.forecast_periods ?? [],
+            po_periods: list.data.periods.po_periods ?? [],
         };
-    }, [list.data]);
+    }, [list.data?.periods]);
 
     const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = (updater: any) => {
         const next = typeof updater === "function" ? updater(columnVisibility) : updater;
@@ -215,7 +215,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 data={list.data?.data ?? []}
                                 page={tableState.page}
                                 pageSize={tableState.take}
-                                total={list.data?.meta?.total ?? 0}
+                                total={list.data?.len ?? 0}
                                 onPageChange={tableState.setPage}
                                 onPageSizeChange={tableState.setTake}
                                 state={{ columnVisibility }}

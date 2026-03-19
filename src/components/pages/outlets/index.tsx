@@ -17,6 +17,8 @@ import {
     ChevronLeft,
     ChevronRight,
     ChevronsRight,
+    Eye,
+    Settings2,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -36,7 +38,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -201,8 +202,8 @@ export function Outlets() {
 
             <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="space-y-4 border-b bg-white">
-                    <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
-                        <div className="relative w-full lg:max-w-md group">
+                    <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+                        <div className="relative w-full lg:max-w-md group shrink-0">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                                 placeholder="Cari nama atau kode outlet..."
@@ -335,7 +336,9 @@ export function Outlets() {
                                                 className="text-[16px] font-bold leading-tight mt-1 group-hover:text-primary transition-colors truncate"
                                                 title={outlet.name}
                                             >
-                                                {outlet.name}
+                                                <Link href={`/outlets/${outlet.id}`}>
+                                                    {outlet.name}
+                                                </Link>
                                             </CardTitle>
                                         </div>
 
@@ -359,7 +362,16 @@ export function Outlets() {
                                                     className="cursor-pointer"
                                                 >
                                                     <Link href={`/outlets/${outlet.id}`}>
-                                                        <Edit2 className="mr-2 h-4 w-4" />
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Detail Outlet
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    asChild
+                                                    className="cursor-pointer"
+                                                >
+                                                    <Link href={`/outlets/${outlet.id}/edit`}>
+                                                        <Settings2 className="mr-2 h-4 w-4" />
                                                         Edit Outlet
                                                     </Link>
                                                 </DropdownMenuItem>
@@ -376,7 +388,9 @@ export function Outlets() {
                                                     title={`Hapus outlet ${outlet.name}?`}
                                                     asChild
                                                     onClick={async () => {
-                                                        await deleteOutlet.mutateAsync({ id: outlet.id });
+                                                        await deleteOutlet.mutateAsync({
+                                                            id: outlet.id,
+                                                        });
                                                     }}
                                                     label={
                                                         <DropdownMenuItem
@@ -389,7 +403,8 @@ export function Outlets() {
                                                     }
                                                 >
                                                     <DialogDescription>
-                                                        Apakah Anda yakin ingin menghapus outlet ini? Tindakan ini tidak dapat dibatalkan.
+                                                        Apakah Anda yakin ingin menghapus outlet
+                                                        ini? Tindakan ini tidak dapat dibatalkan.
                                                     </DialogDescription>
                                                 </DialogAlert>
                                             </DropdownMenuContent>

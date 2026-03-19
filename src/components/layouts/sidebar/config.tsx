@@ -19,6 +19,8 @@ import {
     BarChart3,
     BarChart4,
     Store,
+    ArrowLeftRight,
+    History,
 } from "lucide-react";
 
 export type SidebarItemConfig = {
@@ -87,6 +89,8 @@ export function useSidebarData(): SidebarGroupConfig[] {
                 },
                 { title: "Gudang", url: "/warehouses", icon: Warehouse },
                 { title: "Outlet", url: "/outlets", icon: Store },
+                { title: "Stock Transfer", url: "/stock-transfers", icon: ArrowLeftRight },
+                { title: "Movement Log", url: "/stock-movements", icon: History },
             ],
         },
         {

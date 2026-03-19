@@ -218,7 +218,7 @@ export function Purchase({ title, description }: PurchaseProps) {
                                         data={list.data?.data ?? []}
                                         page={table.page}
                                         pageSize={table.take}
-                                        total={list.data?.meta?.total ?? 0}
+                                        total={list.data?.len ?? 0}
                                         onPageChange={table.setPage}
                                         onPageSizeChange={table.setTake}
                                     />
