@@ -33,8 +33,10 @@ export function useRecipe(params?: QueryRecipeDTO, id?: number) {
 }
 
 export function useRecipeUtilsOption() {
-    const product = useProductsQuery({ page: 1, take: 100, status: "ACTIVE", sortBy: "name", sortOrder: "asc" });
-    const rawmat = useRawMaterialsQuery({ page: 1, take: 100, status: "actived", sortBy: "name", sortOrder: "asc" });
+    // Memperbesar limit `take` agar options mencakup semua data, terutama saat mode edit data karena
+    // SelectForm saat ini bekerja secara client-side filter.
+    const product = useProductsQuery({ page: 1, take: 5000, status: "ACTIVE", sortBy: "name", sortOrder: "asc" });
+    const rawmat = useRawMaterialsQuery({ page: 1, take: 5000, status: "actived", sortBy: "name", sortOrder: "asc" });
 
     return { product, rawmat };
 }

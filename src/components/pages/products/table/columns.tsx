@@ -2,34 +2,14 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import {
-    Ban,
-    Clock,
-    DatabaseBackup,
-    Heart,
-    Loader2,
-    LucideCircleFadingPlus,
-    Trash2,
-} from "lucide-react";
+import { Ban, Clock, Heart, LucideCircleFadingPlus, Trash2 } from "lucide-react";
 
 import { ResponseProductDTO } from "@/app/(application)/products/server/products.schema";
-// import { useActionProduct } from "@/app/(application)/products/server/use.products";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SortableHeader } from "@/components/ui/table/sortable";
 import { cn, ParseDate } from "@/lib/utils";
 import { StatusEnumDTO } from "@/shared/types";
-import { useState } from "react";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 type ProductColumnsProps = {
     sortBy?: string;
@@ -43,12 +23,28 @@ export const ProductColumns = ({
     onSort,
 }: ProductColumnsProps): ColumnDef<ResponseProductDTO>[] => [
     {
-        id: "name",
-        accessorKey: "name",
-        enableHiding: false, // ❗ biasanya kolom utama tidak boleh di-hide
+        id: "code",
+        accessorKey: "code",
         header: () => (
             <SortableHeader
-                label="Nama Produk"
+                label="KODE FG"
+                sortKey="code"
+                activeSortBy={sortBy}
+                activeSortOrder={sortOrder}
+                onSort={onSort}
+            />
+        ),
+        cell: ({ row }) => (
+            <span className="font-mono font-bold text-slate-600">{row.original.code}</span>
+        ),
+    },
+    {
+        id: "name",
+        accessorKey: "name",
+        enableHiding: false,
+        header: () => (
+            <SortableHeader
+                label="NAMA PRODUK"
                 sortKey="name"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
@@ -56,37 +52,33 @@ export const ProductColumns = ({
             />
         ),
         cell: ({ row }) => (
-            <>
-                <Link href={`/products/${row.original.id}`}>
-                    <h2 className="font-medium underline">{row.original.name}</h2>
-                    <span className="text-xs text-gray-500">{row.original.code}</span>
-                </Link>
-            </>
+            <Link
+                href={`/products/${row.original.id}`}
+                className="hover:underline font-medium text-slate-800"
+            >
+                {row.original.size?.size}
+                {row.original.unit?.name.toLocaleUpperCase()} {row.original.gender} -{" "}
+                {row.original.name.toLocaleUpperCase()}
+            </Link>
         ),
-    },
-    {
-        id: "gender",
-        accessorKey: "gender",
-        enableHiding: true,
-        header: "Gender",
-        cell: ({ row }) => {
-            const g = row.original.gender;
-            return g === "WOMEN" ? "Wanita" : g === "MEN" ? "Pria" : "Unisex";
-        },
     },
     {
         id: "type",
         accessorKey: "product_type",
         enableHiding: true,
-        header: "Tipe Produk",
-        cell: ({ row }) => row.original.product_type?.name.toUpperCase(),
+        header: "KATEGORI",
+        cell: ({ row }) => (
+            <span className="text-zinc-500 font-semibold uppercase">
+                {row.original.product_type?.name}
+            </span>
+        ),
     },
     {
         id: "size",
         enableHiding: true,
         header: () => (
             <SortableHeader
-                label="Ukuran"
+                label="SATUAN"
                 sortKey="size"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
@@ -94,53 +86,62 @@ export const ProductColumns = ({
             />
         ),
         cell: ({ row }) => (
-            <div className="uppercase font-bold text-slate-700">
+            <div className="font-bold text-slate-700">
                 {row.original.size?.size} {row.original.unit?.name}
             </div>
         ),
     },
     {
+        id: "status",
+        accessorKey: "status",
+        enableHiding: true,
+        header: "STATUS",
+        cell: ({ row }) => <BadgeStatus status={row.original.status as StatusEnumDTO} />,
+    },
+    {
+        id: "actions",
+        header: "AKSI",
+        cell: ({ row }) => (
+            <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-1 duration-200">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[10px] py-0 px-2 font-bold bg-white hover:bg-zinc-50 border-zinc-200"
+                    asChild
+                >
+                    <Link href={`/products/${row.original.id}`}>Detail</Link>
+                </Button>
+                {/* <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[10px] py-0 px-2 font-bold text-red-500 hover:text-red-600 hover:bg-red-50 border-zinc-200 cursor-pointer"
+                >
+                    Hapus
+                </Button> */}
+            </div>
+        ),
+    },
+
+    {
         id: "created_at",
         accessorKey: "created_at",
-        enableHiding: true,
-        header: () => (
-            <SortableHeader
-                label="Pembuatan"
-                sortKey="created_at"
-                activeSortBy={sortBy}
-                activeSortOrder={sortOrder}
-                onSort={onSort}
-            />
+        header: "PEMBUATAN",
+        cell: ({ row }) => (
+            <span className="text-zinc-500">{ParseDate(row.original.created_at)}</span>
         ),
-        cell: ({ row }) => <>{ParseDate(row.original.created_at)} WIB</>,
     },
     {
         id: "updated_at",
         accessorKey: "updated_at",
-        enableHiding: true,
-        header: () => (
-            <SortableHeader
-                label="Update"
-                sortKey="updated_at"
-                activeSortBy={sortBy}
-                activeSortOrder={sortOrder}
-                onSort={onSort}
-            />
+        header: "UPDATE",
+        cell: ({ row }) => (
+            <span className="text-zinc-500">{ParseDate(row.original.updated_at)}</span>
         ),
-        cell: ({ row }) => <>{ParseDate(row.original.updated_at)} WIB</>,
     },
     {
         id: "distribution_percentage",
         accessorKey: "distribution_percentage",
-        header: () => (
-            <SortableHeader
-                label="Edar (%)"
-                sortKey="distribution_percentage"
-                activeSortBy={sortBy}
-                activeSortOrder={sortOrder}
-                onSort={onSort}
-            />
-        ),
+        header: "EDAR (%)",
         cell: ({ row }) => (
             <div className="font-mono text-blue-600 font-bold">
                 {((row.original.distribution_percentage ?? 0) * 100).toFixed(0)}%
@@ -150,27 +151,12 @@ export const ProductColumns = ({
     {
         id: "safety_percentage",
         accessorKey: "safety_percentage",
-        header: () => (
-            <SortableHeader
-                label="Safety (%)"
-                sortKey="safety_percentage"
-                activeSortBy={sortBy}
-                activeSortOrder={sortOrder}
-                onSort={onSort}
-            />
-        ),
+        header: "SAFETY (%)",
         cell: ({ row }) => (
             <div className="font-mono text-emerald-600 font-bold">
                 {((row.original.safety_percentage ?? 0) * 100).toFixed(0)}%
             </div>
         ),
-    },
-    {
-        id: "status",
-        accessorKey: "status",
-        enableHiding: true,
-        header: "Status",
-        cell: ({ row }) => <BadgeStatus status={row.original.status as StatusEnumDTO} />,
     },
 ];
 

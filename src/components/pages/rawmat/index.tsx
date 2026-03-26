@@ -195,7 +195,9 @@ export function RawMaterials() {
             <Card className="w-full">
                 <CardHeader className="space-y-4">
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight">Manajemen Raw Material</h2>
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Manajemen Raw Material
+                        </h2>
                         <p className="text-sm text-muted-foreground">
                             Kelola seluruh produk mentah / material produksi
                         </p>
@@ -302,8 +304,8 @@ export function RawMaterials() {
                             onClick={table.toggleTrashMode}
                             className={
                                 table.isDeleted
-                                    ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
-                                    : "text-muted-foreground"
+                                    ? "text-muted-foreground"
+                                    : "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
                             }
                         >
                             {table.isDeleted ? <Package size={16} /> : <Trash size={16} />}

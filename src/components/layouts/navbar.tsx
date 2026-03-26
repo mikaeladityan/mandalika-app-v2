@@ -1,5 +1,7 @@
-import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { LogOut, User, ChevronDown, Bell } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import {
     DropdownMenu,
@@ -12,10 +14,94 @@ import {
 import { useAuth, useFormAuth } from "@/app/auth/server/use.auth";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Badge } from "../ui/badge";
+import { isPathActive } from "./sidebar/utils";
+import { useSidebarData } from "./sidebar/config";
 
 export function Navbar() {
     const { account } = useAuth();
     const { logout, isPending } = useFormAuth();
+    const pathname = usePathname();
+    const sidebarData = useSidebarData();
+
+    // 1. DYNAMIC BREADCRUMBS & LOGIC
+    const getMetadata = () => {
+        let workspace = "System Dashboard";
+        let parent = "Dashboard";
+        let child = "Shell Utama ERP";
+
+        for (const group of sidebarData) {
+            for (const item of group.items) {
+                // Direct match
+                if (item.url && isPathActive(pathname, item.url)) {
+                    workspace = `${group.label || "System"} Workspace`;
+                    parent = group.label || "System";
+                    child = item.title;
+                    return { workspace, parent, child };
+                }
+                // Nested match
+                if (item.items) {
+                    for (const sub of item.items) {
+                        if (sub.url && isPathActive(pathname, sub.url)) {
+                            workspace = `${group.label || "System"} Workspace`;
+                            parent = item.title;
+                            child = sub.title;
+                            return { workspace, parent, child };
+                        }
+                        if (sub.items) {
+                            for (const ssi of sub.items) {
+                                if (ssi.url && isPathActive(pathname, ssi.url)) {
+                                    workspace = `${group.label || "System"} Workspace`;
+                                    parent = sub.title;
+                                    child = ssi.title;
+                                    return { workspace, parent, child };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return { workspace, parent, child };
+    };
+
+    const { workspace, parent, child } = getMetadata();
+
+    // 2. DYNAMIC NEXT FLOW BUTTON
+    const getNextFlow = () => {
+        if (pathname === "/") {
+            return { label: "Master Data", url: "/warehouses" };
+        }
+        if (
+            pathname.startsWith("/warehouses") ||
+            pathname.startsWith("/outlets") ||
+            pathname.startsWith("/products") ||
+            pathname.startsWith("/rawmat")
+        ) {
+            return { label: "Purchasing", url: "/purchase" };
+        }
+        if (pathname.startsWith("/purchase") || pathname.startsWith("/po")) {
+            return { label: "Manufacturing", url: "/production" };
+        }
+        if (
+            pathname.startsWith("/production") ||
+            pathname.startsWith("/recipes") ||
+            pathname.startsWith("/bom")
+        ) {
+            return { label: "Inventory", url: "/stock-transfers" };
+        }
+        if (pathname.startsWith("/stock-transfers") || pathname.startsWith("/stock-movements")) {
+            return { label: "POS", url: "/sales" };
+        }
+        if (pathname.startsWith("/sales")) {
+            return { label: "Finance", url: "/forecasts" };
+        }
+        if (pathname.startsWith("/forecasts") || pathname.startsWith("/recomendation")) {
+            return { label: "Settings", url: "/settings" };
+        }
+        return { label: "Home", url: "/" };
+    };
+
+    const nextFlow = getNextFlow();
 
     const initials = account?.user
         ? `${account.user.first_name[0]}${account.user.last_name?.[0] ?? ""}`.toUpperCase()
@@ -29,19 +115,41 @@ export function Navbar() {
         <nav className="flex items-center justify-between bg-white/88 backdrop-blur-md px-5 h-[60px] border-b border-[#E2E8F0] sticky top-0 z-30 shadow-[0_8px_22px_rgba(15,23,42,0.05)] gap-3">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-primary/10 text-[#64748B] hover:text-primary transition-colors size-9 rounded-lg" />
-                <div className="flex flex-col gap-0.5 leading-none">
+                <div className="flex flex-col gap-1 leading-none">
                     <small className="text-[10px] text-[#64748B] uppercase tracking-[0.12em] font-extrabold">
-                        System Dashboard
+                        {workspace}
                     </small>
                     <div className="flex items-center gap-1.5 text-[14px]">
-                        <b className="text-[#0F172A] font-extrabold">Dashboard</b>
-                        <span className="text-[#64748B]/40 font-light -translate-y-px">/</span>
-                        <b className="text-[#0F172A] font-extrabold">Shell Utama ERP</b>
+                        <b className="text-[#0F172A] font-light tracking-wide">{parent}</b>
+                        <span className="text-[#64748B]/40 -translate-y-px">/</span>
+                        <b className="text-[#0F172A] font-light tracking-wide">{child}</b>
                     </div>
                 </div>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
+                {/* Flow Navigation */}
+                <div className="hidden lg:flex items-center gap-2 mr-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-[11.5px] font-bold text-muted-foreground hover:text-primary transition-colors border border-transparent hover:border-border rounded-[10px]"
+                        asChild
+                    >
+                        {/* Point back to dashboard as temporary Roadmap substitute */}
+                        <Link href="/">Roadmap</Link>
+                    </Button>
+                    <Button
+                        size="sm"
+                        className="h-8 px-3 text-[11.5px] font-bold bg-[#D4AF37] hover:bg-[#B49020] text-white shadow-[0_10px_20px_rgba(212,175,55,0.2)] rounded-[10px] transition-all"
+                        asChild
+                    >
+                        <Link href={nextFlow.url}>Next: {nextFlow.label}</Link>
+                    </Button>
+                </div>
+
+                <div className="h-6 w-px bg-border/50 hidden lg:block" />
+
                 <Button
                     variant="ghost"
                     size="icon"

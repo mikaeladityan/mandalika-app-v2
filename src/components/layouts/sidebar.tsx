@@ -30,7 +30,9 @@ import { HeaderLogo } from "./sidebar/header";
 
 function CollapsibleMenuSubItem({ item, pathname }: { item: SidebarItemConfig; pathname: string }) {
     const isActive =
-        item.items?.some((subSubItem) => subSubItem.url && isPathActive(pathname, subSubItem.url)) ?? false;
+        item.items?.some(
+            (subSubItem) => subSubItem.url && isPathActive(pathname, subSubItem.url),
+        ) ?? false;
     const [open, setOpen] = useState(isActive);
 
     useEffect(() => {
@@ -44,9 +46,10 @@ function CollapsibleMenuSubItem({ item, pathname }: { item: SidebarItemConfig; p
                     <SidebarMenuButton
                         isActive={open}
                         className={cn(
-                            "w-full px-3 py-2 rounded-md text-[12px] font-medium text-zinc-400 border border-transparent transition-all flex items-center gap-3",
-                            "hover:bg-white/5 hover:text-white",
-                            open && "text-zinc-200 font-semibold bg-white/5 shadow-[inset_1px_0_0_#D4AF37]"
+                            "w-full px-[13px] py-[10px] rounded-[12px] text-[13px] font-semibold text-zinc-400 border border-transparent transition-all duration-200 ease-out flex items-center gap-3",
+                            "hover:bg-white/5 hover:text-white hover:translate-x-[2px] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]",
+                            open &&
+                                "bg-linear-to-r from-[rgba(212,175,55,0.24)] to-[rgba(212,175,55,0.08)] text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)] font-bold",
                         )}
                     >
                         {item.icon && <item.icon className="h-4 w-4 shrink-0 transition-colors" />}
@@ -54,35 +57,45 @@ function CollapsibleMenuSubItem({ item, pathname }: { item: SidebarItemConfig; p
                         <ChevronDown
                             className={cn(
                                 "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
-                                open ? "rotate-180 text-zinc-300" : "text-zinc-600"
+                                open ? "rotate-180 text-zinc-300" : "text-zinc-600",
                             )}
                         />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                    <div className="ml-[18px] pl-2 mt-1 border-l border-zinc-800/50 space-y-1">
+                    <div className="ml-2 mr-2 mt-1 mb-2 p-2 border-l-2 border-[#D4AF37]/10 bg-linear-to-b from-white/5 to-transparent rounded-r-[12px] space-y-1">
                         {item.items?.map((subSubItem, idx) => {
-                            const isSubActive = subSubItem.url ? isPathActive(pathname, subSubItem.url) : false;
-                            
+                            const isSubActive = subSubItem.url
+                                ? isPathActive(pathname, subSubItem.url)
+                                : false;
+
                             return (
                                 <SidebarMenuButton
                                     key={idx}
                                     asChild
                                     isActive={isSubActive}
                                     className={cn(
-                                        "w-full px-3 py-1.5 rounded text-[11px] font-medium text-zinc-500 transition-all flex items-center gap-2.5 border border-transparent",
-                                        "hover:bg-white/5 hover:text-zinc-300",
-                                        isSubActive && "text-[#F6D365] font-semibold bg-white/5"
+                                        "w-full px-[16px] py-[6px] rounded-[9px] text-[12px] font-medium text-zinc-500 transition-all duration-200 ease-out flex items-center gap-2.5 border border-transparent",
+                                        "hover:bg-white/5 hover:text-white hover:translate-x-[2px] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]",
+                                        isSubActive &&
+                                            "bg-linear-to-r from-[rgba(212,175,55,0.24)] to-[rgba(212,175,55,0.08)] text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)] font-bold",
                                     )}
                                 >
                                     {subSubItem.url ? (
-                                        <Link href={subSubItem.url} className="flex items-center gap-2.5 w-full">
-                                            {subSubItem.icon && <subSubItem.icon className="h-3.5 w-3.5 shrink-0" />}
+                                        <Link
+                                            href={subSubItem.url}
+                                            className="flex items-center gap-2.5 w-full"
+                                        >
+                                            {subSubItem.icon && (
+                                                <subSubItem.icon className="h-3.5 w-3.5 shrink-0" />
+                                            )}
                                             <span className="truncate">{subSubItem.title}</span>
                                         </Link>
                                     ) : (
                                         <span className="flex items-center gap-2.5 w-full">
-                                            {subSubItem.icon && <subSubItem.icon className="h-3.5 w-3.5 shrink-0" />}
+                                            {subSubItem.icon && (
+                                                <subSubItem.icon className="h-3.5 w-3.5 shrink-0" />
+                                            )}
                                             <span className="truncate">{subSubItem.title}</span>
                                         </span>
                                     )}
@@ -100,7 +113,8 @@ function CollapsibleMenuItem({ item, pathname }: { item: SidebarItemConfig; path
     const isActive =
         item.items?.some((subItem) => {
             if (subItem.url) return isPathActive(pathname, subItem.url);
-            if (subItem.items) return subItem.items.some(ssi => ssi.url && isPathActive(pathname, ssi.url));
+            if (subItem.items)
+                return subItem.items.some((ssi) => ssi.url && isPathActive(pathname, ssi.url));
             return false;
         }) ?? false;
     const [open, setOpen] = useState(isActive);
@@ -117,9 +131,10 @@ function CollapsibleMenuItem({ item, pathname }: { item: SidebarItemConfig; path
                     <SidebarMenuButton
                         isActive={open}
                         className={cn(
-                            "w-full px-3 py-2.5 rounded-md text-zinc-400 font-semibold text-[13px] transition-all duration-200 flex items-center gap-3",
-                            "hover:bg-white/5 hover:text-white border border-transparent",
-                            open && "bg-linear-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)]"
+                            "w-full px-[13px] py-[10px] rounded-[12px] text-zinc-400 font-semibold text-[13px] transition-all duration-200 ease-out flex items-center gap-3",
+                            "hover:bg-white/5 hover:text-white hover:translate-x-[2px] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)] border border-transparent",
+                            open &&
+                                "bg-linear-to-r from-[rgba(212,175,55,0.24)] to-[rgba(212,175,55,0.08)] text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)] font-bold",
                         )}
                     >
                         {item.icon && (
@@ -140,29 +155,32 @@ function CollapsibleMenuItem({ item, pathname }: { item: SidebarItemConfig; path
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                    <SidebarMenuSub className="ml-[20px] pl-2.5 mt-1.5 mb-2 border-l border-zinc-800 space-y-1">
+                    <SidebarMenuSub className="ml-2 mr-2 mb-2 p-2 pb-2 border-l-2 border-[#D4AF37]/20 bg-linear-to-b from-white/5 to-white/0 rounded-r-[14px] space-y-1">
                         {item.items?.map((subItem) => {
                             if (subItem.items && subItem.items.length > 0) {
                                 return (
-                                    <CollapsibleMenuSubItem 
-                                        key={subItem.title} 
-                                        item={subItem} 
-                                        pathname={pathname} 
+                                    <CollapsibleMenuSubItem
+                                        key={subItem.title}
+                                        item={subItem}
+                                        pathname={pathname}
                                     />
                                 );
                             }
 
-                            const isSubActive = subItem.url ? isPathActive(pathname, subItem.url) : false;
-                            
+                            const isSubActive = subItem.url
+                                ? isPathActive(pathname, subItem.url)
+                                : false;
+
                             return (
                                 <SidebarMenuSubItem key={subItem.title}>
                                     <SidebarMenuButton
                                         asChild
                                         isActive={isSubActive}
                                         className={cn(
-                                            "w-full px-3 py-2 rounded text-[12px] font-medium text-zinc-400 transition-all flex items-center gap-3 border border-transparent",
-                                            "hover:bg-white/5 hover:text-white",
-                                            isSubActive && "text-[#F6D365] font-semibold bg-white/5 shadow-[inset_1px_0_0_#D4AF37]"
+                                            "w-full px-[16px] py-[6px] rounded-[9px] text-[12px] font-medium text-zinc-400 transition-all duration-200 ease-out flex items-center gap-3 border border-transparent",
+                                            "hover:bg-white/5 hover:text-white hover:translate-x-[2px] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]",
+                                            isSubActive &&
+                                                "bg-linear-to-r from-[rgba(212,175,55,0.24)] to-[rgba(212,175,55,0.08)] text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)] font-bold",
                                         )}
                                     >
                                         {subItem.url ? (
@@ -184,7 +202,9 @@ function CollapsibleMenuItem({ item, pathname }: { item: SidebarItemConfig; path
                                             </Link>
                                         ) : (
                                             <span className="flex items-center gap-3 w-full">
-                                                {subItem.icon && <subItem.icon className="h-4 w-4 text-zinc-500" />}
+                                                {subItem.icon && (
+                                                    <subItem.icon className="h-4 w-4 text-zinc-500" />
+                                                )}
                                                 <span className="truncate">{subItem.title}</span>
                                             </span>
                                         )}
@@ -202,16 +222,17 @@ function CollapsibleMenuItem({ item, pathname }: { item: SidebarItemConfig; path
 function DirectMenuItem({ item, pathname }: { item: SidebarItemConfig; pathname: string }) {
     if (!item.url) return null;
     const isActive = isPathActive(pathname, item.url);
-    
+
     return (
         <SidebarMenuItem>
             <SidebarMenuButton
                 asChild
                 isActive={isActive}
                 className={cn(
-                    "w-full px-3 py-2.5 rounded-md text-zinc-400 font-semibold text-[13px] transition-all duration-200 flex items-center gap-3",
-                    "hover:bg-white/5 hover:text-white border border-transparent",
-                    isActive && "bg-linear-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)]"
+                    "w-full px-[13px] py-[10px] rounded-[12px] text-zinc-400 font-semibold text-[13px] transition-all duration-200 ease-out flex items-center gap-3",
+                    "hover:bg-white/5 hover:text-white hover:translate-x-[2px] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)] border border-transparent",
+                    isActive &&
+                        "bg-linear-to-r from-[rgba(212,175,55,0.24)] to-[rgba(212,175,55,0.08)] text-[#F6D365] shadow-[inset_2px_0_0_#D4AF37,0_10px_22px_rgba(15,23,42,0.16)] font-bold",
                 )}
             >
                 <Link href={item.url} className="flex items-center gap-3 w-full">
@@ -286,7 +307,9 @@ export function AppSidebar() {
                                     </div>
                                     <div className="flex flex-col items-start ml-2 flex-1 overflow-hidden">
                                         <span className="truncate text-[13px] font-bold text-zinc-200 group-hover:text-white transition-colors w-full">
-                                            {account?.user?.first_name ?? account?.email?.split("@")[0] ?? "User"}
+                                            {account?.user?.first_name ??
+                                                account?.email?.split("@")[0] ??
+                                                "User"}
                                         </span>
                                         <span className="truncate text-[10px] font-bold text-zinc-500 w-full uppercase tracking-wider">
                                             Administrator
@@ -295,7 +318,11 @@ export function AppSidebar() {
                                     <ChevronDown className="ml-auto size-4 text-zinc-600 group-hover:text-zinc-400 shrink-0" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent side="top" align="start" className="w-64 rounded-md border-zinc-800 shadow-2xl p-1.5 dark mb-1">
+                            <DropdownMenuContent
+                                side="top"
+                                align="start"
+                                className="w-64 rounded-md border-zinc-800 shadow-2xl p-1.5 dark mb-1"
+                            >
                                 <DropdownMenuItem
                                     onClick={async () => await logout()}
                                     className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer rounded py-2.5 font-semibold text-xs"

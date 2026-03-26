@@ -31,6 +31,9 @@ import {
     Shield,
     Beaker,
     Coins,
+    Warehouse,
+    Boxes,
+    Database,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -83,12 +86,19 @@ export function DetailProduct() {
         0,
     );
 
+    // Hitung total stok dari semua gudang
+    const totalStock = product.product_inventories?.reduce(
+        (acc: number, item: any) => acc + item.quantity,
+        0,
+    );
+
     return (
         <div className="w-full space-y-6 pb-10">
             {/* Top Navigation */}
             <div className="flex items-center justify-between">
-                <Button size="sm"   onClick={() => window.history.back()}
+                <Button
                     size="sm"
+                    onClick={() => window.history.back()}
                     variant="ghost"
                     className="hover:bg-slate-100 transition-colors"
                 >
@@ -100,9 +110,10 @@ export function DetailProduct() {
                             <Edit2 className="mr-2 h-4 w-4" /> Edit
                         </Link>
                     </Button> */}
-                    <Button size="sm"   onClick={() => refetch()}
-                        variant="outline"
+                    <Button
                         size="sm"
+                        onClick={() => refetch()}
+                        variant="outline"
                         disabled={isRefetching}
                     >
                         <RefreshCw
@@ -152,12 +163,18 @@ export function DetailProduct() {
             </div>
 
             <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full md:w-100 grid-cols-2 mb-4">
+                <TabsList className="grid w-full md:w-[450px] grid-cols-3 mb-4">
                     <TabsTrigger value="info">Informasi Umum</TabsTrigger>
                     <TabsTrigger value="recipes">
-                        Resep & Material
+                        Resep & BOM
                         <Badge className="ml-2 bg-primary/10 text-primary border-none h-5 px-1.5 min-w-5 justify-center">
                             {product?.recipes?.length || 0}
+                        </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="inventory">
+                        Stok
+                        <Badge className="ml-2 bg-slate-100 text-slate-600 border-none h-5 px-1.5 min-w-5 justify-center">
+                            {totalStock || 0}
                         </Badge>
                     </TabsTrigger>
                 </TabsList>
@@ -200,19 +217,30 @@ export function DetailProduct() {
                                             value={`${product?.review_period} Hari`}
                                             color="cyan"
                                         />
+                                        <InfoItem
+                                            icon={Shield}
+                                            label="Safety Stock (%)"
+                                            value={`${product?.safety_percentage || 0}%`}
+                                            color="orange"
+                                            tooltip="Persentase stok cadangan"
+                                        />
+                                        <InfoItem
+                                            icon={BarChart3}
+                                            label="Distribusi (%)"
+                                            value={`${product?.distribution_percentage || 0}%`}
+                                            color="blue"
+                                            tooltip="Persentase distribusi produk"
+                                        />
                                     </div>
 
-                                    {/* {product?.description && (
-                                    <div className="mt-6">
-                                        <Separator className="mb-4" />
-                                        <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-slate-700">
-                                            <FileText className="h-4 w-4" /> Deskripsi
-                                        </h4>
-                                        <div className="bg-slate-50 p-4 rounded-lg border text-sm text-slate-600 leading-relaxed">
-                                            {product.description}
+                                    {product?.description && (
+                                        <div className="mt-8 pt-6 border-t border-slate-100">
+                                            <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Deskripsi Produk</h4>
+                                            <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 text-sm text-slate-600 leading-relaxed italic">
+                                                "{product.description}"
+                                            </div>
                                         </div>
-                                    </div>
-                                )} */}
+                                    )}
                                 </CardContent>
                             </Card>
 
@@ -253,87 +281,70 @@ export function DetailProduct() {
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2">
                                         <Beaker className="h-5 w-5 text-primary" />
-                                        Daftar Resep & Bahan Baku
+                                        Bill of Materials (BOM)
                                     </CardTitle>
                                     <CardDescription>
-                                        Daftar material untuk memproduksi 1 unit produk ini.
+                                        Formula bahan baku yang dibutuhkan untuk memproduksi 1 unit {product.name}.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
-                                            <thead className="bg-slate-50 border-y text-slate-500 font-medium">
+                                            <thead className="bg-slate-50 border-y text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                                                 <tr>
-                                                    <th className="text-left py-3 px-6">
-                                                        Material
-                                                    </th>
-                                                    <th className="text-center py-3 px-4">
-                                                        Jumlah
-                                                    </th>
-                                                    <th className="text-right py-3 px-4">
-                                                        Harga Satuan
-                                                    </th>
-                                                    <th className="text-right py-3 px-6">
-                                                        Subtotal
-                                                    </th>
+                                                    <th className="text-left py-4 px-6">Material</th>
+                                                    <th className="text-center py-4 px-4">Jumlah / Qty</th>
+                                                    <th className="text-right py-4 px-4">Harga Satuan</th>
+                                                    <th className="text-right py-4 px-6">Subtotal</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y">
+                                            <tbody className="divide-y divide-slate-100">
                                                 {product.recipes?.map((item: any, idx: number) => (
                                                     <tr
                                                         key={idx}
-                                                        className="hover:bg-slate-50 transition-colors"
+                                                        className="hover:bg-slate-50/80 transition-colors group"
                                                     >
                                                         <td className="py-4 px-6">
                                                             <Link
                                                                 href={`/rawmat/${item.raw_material.id}`}
+                                                                className="hover:underline underline-offset-4"
                                                             >
-                                                                <div className="font-semibold text-slate-900">
+                                                                <div className="font-bold text-slate-900">
                                                                     {item.raw_material.name}
                                                                 </div>
-                                                                <div className="text-xs text-muted-foreground mt-0.5">
-                                                                    Stok tersedia:{" "}
-                                                                    {
-                                                                        item.raw_material
-                                                                            .current_stock
-                                                                    }
+                                                                <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                                                                    <Database className="h-3 w-3" />
+                                                                    Global Stock: {item.raw_material.current_stock ?? 0}
                                                                 </div>
                                                             </Link>
                                                         </td>
-                                                        <td className="py-4 px-4 text-center whitespace-nowrap">
+                                                        <td className="py-4 px-4 text-center">
                                                             <Badge
-                                                                variant="secondary"
-                                                                className="font-mono"
+                                                                variant="outline"
+                                                                className="font-mono bg-white shadow-sm border-slate-200"
                                                             >
                                                                 {item.quantity}{" "}
-                                                                {
-                                                                    item.raw_material
-                                                                        .unit_raw_material.name
-                                                                }
+                                                                {item.raw_material.unit_raw_material.name}
                                                             </Badge>
                                                         </td>
-                                                        <td className="py-4 px-4 text-right text-slate-600">
-                                                            Rp{" "}
-                                                            {item.raw_material.price.toLocaleString()}
+                                                        <td className="py-4 px-4 text-right text-slate-600 font-medium tabular-nums">
+                                                            Rp {item.raw_material.price.toLocaleString("id-ID")}
                                                         </td>
-                                                        <td className="py-4 px-6 text-right font-medium text-slate-900">
-                                                            Rp{" "}
-                                                            {(
-                                                                item.quantity *
-                                                                item.raw_material.price
-                                                            ).toLocaleString()}
+                                                        <td className="py-4 px-6 text-right font-black text-slate-900 tabular-nums">
+                                                            Rp {(item.quantity * item.raw_material.price).toLocaleString("id-ID")}
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {(!product.recipes ||
-                                                    product.recipes.length === 0) && (
+                                                {(!product.recipes || product.recipes.length === 0) && (
                                                     <tr>
                                                         <td
                                                             colSpan={4}
-                                                            className="py-12 text-center text-muted-foreground"
+                                                            className="py-16 text-center"
                                                         >
-                                                            Belum ada data bahan baku yang
-                                                            ditambahkan.
+                                                            <div className="flex flex-col items-center gap-2 text-slate-400">
+                                                                <Boxes className="h-10 w-10 opacity-20" />
+                                                                <p className="text-sm font-medium">BOM Belum Dikonfigurasi</p>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 )}
@@ -342,17 +353,90 @@ export function DetailProduct() {
                                     </div>
                                 </CardContent>
                                 {product.recipes?.length > 0 && (
-                                    <CardFooter className="bg-slate-50/50 justify-end border-t py-4">
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-sm text-muted-foreground font-medium">
-                                                Total Estimasi Biaya:
+                                    <CardFooter className="bg-slate-900 py-6 justify-between border-t border-slate-800 rounded-b-xl px-8">
+                                        <div className="flex items-center gap-2 text-slate-400 uppercase tracking-widest text-[10px] font-black">
+                                            <Coins className="h-4 w-4 text-yellow-500" />
+                                            Cost Calculation
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <span className="text-[11px] text-white/60 font-medium uppercase tracking-wider">
+                                                Estimasi Modal BOM:
                                             </span>
-                                            <span className="text-xl font-bold text-primary">
-                                                Rp {totalProductionCost?.toLocaleString()}
+                                            <span className="text-2xl font-black text-white tabular-nums">
+                                                Rp {totalProductionCost?.toLocaleString("id-ID")}
                                             </span>
                                         </div>
                                     </CardFooter>
                                 )}
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="inventory" className="mt-0">
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                    <div className="space-y-1">
+                                        <CardTitle className="text-lg flex items-center gap-2">
+                                            <Warehouse className="h-5 w-5 text-primary" />
+                                            Ketersediaan Stok
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Jumlah stok fisik {product.name} di setiap gudang.
+                                        </CardDescription>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total On-Hand</p>
+                                        <p className="text-2xl font-black text-primary">{totalStock} {product.unit?.name}</p>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-slate-50 border-y text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                                                <tr>
+                                                    <th className="text-left py-4 px-6 text-slate-500 border-r border-slate-100">Gudang / Lokasi</th>
+                                                    <th className="text-center py-4 px-4">Status</th>
+                                                    <th className="text-right py-4 px-4">Min. Stok</th>
+                                                    <th className="text-right py-4 px-6">Quantity Tersedia</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {product.product_inventories?.map((inv: any, idx: number) => (
+                                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="py-4 px-6 font-bold text-slate-900 border-r border-slate-100">
+                                                            {inv.warehouse.name}
+                                                        </td>
+                                                        <td className="py-4 px-4 text-center">
+                                                            {inv.quantity <= (inv.min_stock || 0) ? (
+                                                                <Badge variant="destructive" className="h-5 text-[10px] font-bold">LOW STOCK</Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="h-5 text-[10px] font-bold text-green-600 border-green-200 bg-green-50">NORMAL</Badge>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-4 px-4 text-right text-slate-400 font-medium italic">
+                                                            {inv.min_stock || 0} {product.unit?.name}
+                                                        </td>
+                                                        <td className="py-4 px-6 text-right">
+                                                            <span className={`text-lg font-black tabular-nums ${inv.quantity <= (inv.min_stock || 0) ? 'text-destructive' : 'text-slate-900'}`}>
+                                                                {inv.quantity}
+                                                            </span>
+                                                            <span className="ml-1 text-xs text-slate-400 font-bold uppercase">{product.unit?.name}</span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {(!product.product_inventories || product.product_inventories.length === 0) && (
+                                                    <tr>
+                                                        <td colSpan={4} className="py-16 text-center text-slate-400">
+                                                            <div className="flex flex-col items-center gap-2">
+                                                                <Boxes className="h-10 w-10 opacity-20" />
+                                                                <p className="text-sm">Data stok tidak ditemukan di gudang manapun.</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
                             </Card>
                         </TabsContent>
                     </div>
@@ -386,13 +470,18 @@ export function DetailProduct() {
                                     href={`/products/${product.id}/edit`}
                                     className="w-full block"
                                 >
-                                    <Button size="sm"   className="w-full bg-primary hover:bg-primary/90">
+                                    <Button
+                                        size="sm"
+                                        className="w-full bg-primary hover:bg-primary/90"
+                                    >
                                         <Edit2 className="mr-2 h-4 w-4" /> Edit Produk
                                     </Button>
                                 </Link>
                                 <div className="space-y-2">
                                     {isDeleted ? (
-                                        <Button size="sm"   onClick={() => handleRestored(product.id)}
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleRestored(product.id)}
                                             className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                                             disabled={changeStatus.isPending}
                                         >
@@ -404,7 +493,9 @@ export function DetailProduct() {
                                             Restore Produk
                                         </Button>
                                     ) : (
-                                        <Button size="sm"   onClick={() => handleDeleted(product.id)}
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleDeleted(product.id)}
                                             variant="outline"
                                             className="w-full text-destructive border-destructive/20 hover:bg-destructive hover:text-white"
                                             disabled={changeStatus.isPending}
@@ -433,18 +524,24 @@ export function DetailProduct() {
                                     <Badge variant="outline">{product.status}</Badge>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground">Jumlah Material</span>
-                                    <span className="font-semibold">
+                                    <span className="text-muted-foreground">Total Material</span>
+                                    <span className="font-bold">
                                         {product.recipes?.length || 0} Item
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Total Stok</span>
+                                    <span className={`${totalStock === 0 ? 'text-destructive' : 'text-slate-900'} font-bold`}>
+                                        {totalStock || 0} {product.unit?.name}
                                     </span>
                                 </div>
                                 <Separator />
                                 <div className="space-y-1">
-                                    <p className="text-xs text-muted-foreground">
-                                        Harga Pokok Produksi (HPP):
+                                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                                        Harga Pokok Produksi (HPP)
                                     </p>
-                                    <p className="text-2xl font-bold tracking-tight text-slate-900">
-                                        Rp {totalProductionCost?.toLocaleString()}
+                                    <p className="text-2xl font-black tracking-tight text-slate-900 tabular-nums">
+                                        Rp {totalProductionCost?.toLocaleString("id-ID")}
                                     </p>
                                 </div>
                             </CardContent>
@@ -533,10 +630,12 @@ export function DetailProductError({ onRetry }: { onRetry: () => void }) {
                     </CardDescription>
                 </CardHeader>
                 <CardFooter className="flex flex-col gap-3">
-                    <Button size="sm"   onClick={onRetry} className="w-full">
+                    <Button size="sm" onClick={onRetry} className="w-full">
                         <RefreshCw className="h-4 w-4 mr-2" /> Coba Lagi
                     </Button>
-                    <Button size="sm"   onClick={() => window.history.back()}
+                    <Button
+                        size="sm"
+                        onClick={() => window.history.back()}
                         variant="ghost"
                         className="w-full"
                     >

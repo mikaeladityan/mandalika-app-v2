@@ -57,40 +57,49 @@ export function Recipe() {
     const isDataLoading = isLoading || isFetching || isRefetching;
 
     return (
-        <section className="space-y-6 max-w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <section className="space-y-6 max-w-full animate-in fade-in duration-500">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/60 pb-5">
+                <div className="space-y-1.5">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-slate-950">
                         Resep Produk
                     </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Kelola formulasi produk dan pantau kebutuhan bahan baku.
+                    <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
+                        Kelola formulasi produk dan pantau kebutuhan bahan baku untuk efisiensi
+                        produksi.
                     </p>
                 </div>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2.5">
                     <Link href="/recipes/import">
-                        <Button className="shadow-sm" variant={"outline"}>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-9 font-bold bg-white shadow-sm hover:bg-slate-50 border-slate-200"
+                        >
                             <Import className="h-4 w-4 mr-2" /> Import
                         </Button>
                     </Link>
                     <Link href="/recipes/form">
-                        <Button className="shadow-sm">
-                            <Plus className="h-4 w-4 mr-2" /> Tambah Resep Baru
+                        <Button
+                            size="sm"
+                            className="h-9 font-bold bg-primary hover:bg-primary-dark text-white shadow-md transition-all active:scale-[0.98]"
+                        >
+                            <Plus className="h-4 w-4 mr-2" /> Tambah Resep
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            <Card className="border-none shadow-sm">
-                <CardHeader className="pb-4">
+            <Card className="border border-slate-200 rounded-[18px] shadow-[0_10px_20px_rgba(15,23,42,0.06)] overflow-hidden bg-white">
+                <CardHeader className="p-5 border-b border-slate-100 bg-slate-50/30">
                     <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
-                        <InputGroup className="md:max-w-md rounded-lg shadow-sm border-slate-200">
+                        <InputGroup className="md:max-w-md bg-white rounded-lg shadow-sm border-slate-200 transition-focus-within focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 overflow-hidden h-9">
                             <InputGroupInput
                                 placeholder="Cari nama produk atau kode..."
                                 value={table.search}
                                 onChange={(e) => table.setSearch(e.target.value)}
+                                className="h-full border-none focus-visible:ring-0 text-[13px]"
                             />
-                            <InputGroupAddon>
+                            <InputGroupAddon className="bg-transparent border-none">
                                 {isFetching ? (
                                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 ) : (
@@ -105,9 +114,9 @@ export function Recipe() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => table.setSearch("")}
-                                    className="text-slate-500"
+                                    className="h-9 text-slate-500 hover:text-primary hover:bg-primary/5 font-bold transition-colors"
                                 >
-                                    <FilterX className="h-4 w-4 mr-2" /> Reset
+                                    <FilterX className="h-4 w-4 mr-2" /> Reset Filter
                                 </Button>
                             )}
                         </div>
@@ -116,11 +125,11 @@ export function Recipe() {
 
                 <CardContent>
                     {isDataLoading ? (
-                        <div className="space-y-3">
+                        <div className="p-5 space-y-4">
                             {[...Array(5)].map((_, i) => (
                                 <div
                                     key={i}
-                                    className="h-16 w-full bg-white border rounded-lg animate-pulse"
+                                    className="h-16 w-full bg-slate-50/50 border border-slate-100 rounded-xl animate-pulse"
                                 />
                             ))}
                         </div>

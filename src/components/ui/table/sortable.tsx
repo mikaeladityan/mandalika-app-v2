@@ -22,14 +22,14 @@ export function SortableHeader({
         <Button
             type="button"
             onClick={() => onSort(sortKey)}
-            className="flex items-center gap-1 font-medium hover:text-primary cursor-pointer hover:border-primary"
+            className="flex items-center gap-1 font-bold hover:text-primary text-[10px] cursor-pointer hover:border-primary"
             variant="ghost"
-            size="sm"
+            size="xs"
         >
             {label}
-            {!isActive && <ArrowUpDown size={14} />}
-            {isActive && activeSortOrder === "asc" && <ArrowUp size={14} />}
-            {isActive && activeSortOrder === "desc" && <ArrowDown size={14} />}
+            {!isActive && <ArrowUpDown className="size-4 font-bold" />}
+            {isActive && activeSortOrder === "asc" && <ArrowUp className="size-4 font-bold" />}
+            {isActive && activeSortOrder === "desc" && <ArrowDown className="size-4 font-bold" />}
         </Button>
     );
 }

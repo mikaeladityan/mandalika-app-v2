@@ -9,6 +9,7 @@ type PropsCheckboxForm = {
     label?: string;
     error?: { message?: string };
     disabled?: boolean;
+    className?: string;
 };
 
 export function CheckboxForm({
@@ -17,6 +18,7 @@ export function CheckboxForm({
     label,
     error,
     disabled,
+    className,
 }: PropsCheckboxForm) {
     return (
         <Controller
@@ -35,7 +37,10 @@ export function CheckboxForm({
                         {label && (
                             <label
                                 htmlFor={name}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                className={cn(
+                                    "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+                                    className
+                                )}
                             >
                                 {label}
                             </label>

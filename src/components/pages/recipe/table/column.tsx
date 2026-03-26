@@ -49,7 +49,7 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
         id: "product_info",
         header: () => (
             <SortableHeader
-                label="Produk (Finish Good)"
+                label="PRODUK (FINISHED GOOD)"
                 sortKey="product"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
@@ -57,37 +57,42 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
             />
         ),
         cell: ({ row }) => (
-            <div className="flex flex-col gap-1 min-w-50 p-2">
-                <div className="flex items-center gap-2">
-                    <Link href={`/recipes/form/${row.original.id}`} className="hover:underline">
-                        <span className="font-bold text-slate-900 leading-tight">
+            <div className="flex flex-col gap-1.5 min-w-56 py-3 px-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                        href={`/recipes/form/${row.original.id}`}
+                        className="hover:underline decoration-primary"
+                    >
+                        <span className="font-bold text-slate-950 text-[13px] leading-tight">
                             {row.original.name}
                         </span>
                     </Link>
-                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">
-                        v.{row.original.version}
-                    </span>
-                    {row.original.is_active && (
-                        <span className="text-[9px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                            Active
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-extrabold bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md border border-amber-200/50">
+                            v{row.original.version}
                         </span>
-                    )}
+                        {row.original.is_active && (
+                            <span className="text-[9px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-md uppercase tracking-tighter shadow-sm">
+                                Active
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono bg-blue-50 text-blue-700 w-fit px-1.5 py-0.5 rounded border border-blue-100 uppercase">
+                    <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-500 w-fit px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-tight">
                         {row.original.code}
                     </span>
-                    <span className="text-[10px] font-mono bg-slate-100 text-slate-600 w-fit px-1.5 py-0.5 rounded border border-slate-200 uppercase">
+                    <span className="text-[10px] font-bold bg-zinc-900 text-zinc-100 w-fit px-2 py-0.5 rounded border border-zinc-700 uppercase tracking-tight">
                         {row.original.size?.size} {row.original.unit?.name}
                     </span>
                 </div>
                 {row.original.description && (
-                    <p className="text-[10px] text-slate-400 italic mt-1 line-clamp-1">
-                        "{row.original.description}"
+                    <p className="text-[11px] text-slate-400 font-medium italic mt-0.5 line-clamp-1 border-l-2 border-slate-100 pl-2">
+                        {row.original.description}
                     </p>
                 )}
                 <div className="mt-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded uppercase">
+                    <span className="text-[10px] font-black px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md uppercase tracking-wider border border-slate-200/50">
                         {row.original.product_type?.name}
                     </span>
                 </div>
@@ -97,43 +102,45 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
     {
         id: "material_details",
         header: () => (
-            <div className="grid grid-cols-12 w-full gap-2 px-2">
-                <div className="col-span-8 text-left uppercase text-[10px] font-bold text-slate-500">
-                    Bahan Baku / Material
+            <div className="grid grid-cols-12 w-full gap-2 px-4 py-2 border-l border-slate-100">
+                <div className="col-span-8 text-left uppercase text-[9px] font-black text-slate-500 tracking-wider">
+                    BAHAN BAKU / MATERIAL
                 </div>
-                <div className="col-span-2 text-right uppercase text-[10px] font-bold text-slate-500">
-                    Kebutuhan
+                <div className="col-span-2 text-right uppercase text-[9px] font-black text-slate-500 tracking-wider">
+                    QTY
                 </div>
-                <div className="col-span-2 text-right uppercase text-[10px] font-bold text-slate-500">
-                    Stok
+                <div className="col-span-2 text-right uppercase text-[9px] font-black text-slate-500 tracking-wider">
+                    STOK
                 </div>
             </div>
         ),
         cell: ({ row }) => (
-            <div className="flex flex-col min-w-150">
+            <div className="flex flex-col min-w-150 border-l border-slate-50">
                 {row.original.materials.map((mat, idx) => (
                     <div
                         key={idx}
-                        className={`grid grid-cols-12 w-full items-center py-2 px-2 ${
+                        className={`grid grid-cols-12 w-full items-center py-2.5 px-4 ${
                             idx !== row.original.materials.length - 1
                                 ? "border-b border-slate-50"
                                 : ""
-                        } hover:bg-slate-50/50 transition-colors`}
+                        } hover:bg-slate-50/50 transition-colors group`}
                     >
                         {/* Nama Material */}
                         <div className="col-span-8 flex flex-col pr-4">
-                            <span className="text-sm font-medium text-slate-700">{mat.name}</span>
-                            <span className="text-[10px] font-mono text-slate-400 uppercase">
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-primary transition-colors">
+                                {mat.name}
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-tighter">
                                 {mat.barcode || "-"}
                             </span>
                         </div>
 
                         {/* Quantity */}
                         <div className="col-span-2 text-right">
-                            <span className="text-sm font-bold text-slate-700">
+                            <span className="text-[11px] font-black text-slate-950">
                                 {Number(mat.quantity).toLocaleString()}
                             </span>
-                            <span className="text-[10px] text-slate-400 ml-1 uppercase">
+                            <span className="text-[9px] font-black text-slate-400 ml-1 uppercase">
                                 {mat.unit}
                             </span>
                         </div>
@@ -141,7 +148,7 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
                         {/* Stock */}
                         <div className="col-span-2 text-right">
                             <span
-                                className={`text-sm font-medium ${
+                                className={`text-[11px] font-bold ${
                                     Number(mat.stock) < Number(mat.quantity)
                                         ? "text-rose-500"
                                         : "text-slate-500"
@@ -149,7 +156,7 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
                             >
                                 {Math.round(Number(mat.stock)).toLocaleString()}
                             </span>
-                            <span className="text-[10px] text-slate-400 ml-1 uppercase">
+                            <span className="text-[9px] font-bold text-slate-400 ml-1 uppercase">
                                 {mat.unit}
                             </span>
                         </div>
@@ -162,7 +169,7 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
         id: "total_material",
         header: () => (
             <SortableHeader
-                label="Total"
+                label="TOTAL"
                 sortKey="totalMaterial"
                 activeSortBy={sortBy}
                 activeSortOrder={sortOrder}
@@ -170,14 +177,16 @@ export const RecipeColumns = ({ sortBy, sortOrder, onSort }: Props): ColumnDef<G
             />
         ),
         cell: ({ row }) => (
-            <div className="flex flex-col items-center justify-center gap-1 text-slate-500 min-w-24">
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+            <div className="flex flex-col items-center justify-center gap-1.5 text-slate-500 min-w-24">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200/50 shadow-xs">
                     <Beaker className="h-3 w-3" />
-                    <span className="text-xs font-bold leading-none">
+                    <span className="text-[12px] font-black leading-none tabular-nums">
                         {row.original.total_material || 0}
                     </span>
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-tighter">Material</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                    Material
+                </span>
             </div>
         ),
     },

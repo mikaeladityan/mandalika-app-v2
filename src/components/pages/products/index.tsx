@@ -49,9 +49,11 @@ export function Products() {
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const defaultColumnVisibility = useMemo(
         () => ({
+            gender: false,
             created_at: false,
             updated_at: false,
-            status: false,
+            distribution_percentage: false,
+            safety_percentage: false,
         }),
         [],
     );
@@ -125,8 +127,9 @@ export function Products() {
                         {/* Gender */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button size="sm"  variant={table.gender ? "default" : "outline"}
-                                    
+                                <Button
+                                    size="sm"
+                                    variant={table.gender ? "default" : "outline"}
                                     className="w-full md:w-auto justify-between"
                                 >
                                     {table.gender === "WOMEN"
@@ -196,8 +199,9 @@ export function Products() {
 
                         {/* Reset All Filters */}
                         {(table.gender || table.type_id || table.size_id || table.search) && (
-                            <Button size="sm"  variant="ghost"
-                                
+                            <Button
+                                size="sm"
+                                variant="ghost"
                                 onClick={table.resetFilters}
                                 className="h-9 px-2 text-muted-foreground hover:text-foreground"
                             >
@@ -207,17 +211,18 @@ export function Products() {
                     </div>
 
                     {/* ===== Actions ===== */}
-                    <div className="flex flex-col md:flex-row justify-between gap-2">
+                    <div className="flex flex-col md:flex-row justify-end gap-2">
                         <div className="flex gap-2">
                             <Link href="/products/create">
-                                <Button size="sm"  >
+                                <Button size="sm">
                                     <Plus className="h-4 w-4" />
                                     Produk
                                 </Button>
                             </Link>
 
-                            <Button size="sm"  variant="outline"
-                                
+                            <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={table.toggleTrashMode}
                                 className={
                                     table.isTrashMode
@@ -225,17 +230,7 @@ export function Products() {
                                         : "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
                                 }
                             >
-                                {table.isTrashMode ? (
-                                    <>
-                                        <Package className="h-4 w-4" />
-                                        List Produk
-                                    </>
-                                ) : (
-                                    <>
-                                        <Trash className="h-4 w-4" />
-                                        Sampah
-                                    </>
-                                )}
+                                {table.isTrashMode ? <Package /> : <Trash />}
                             </Button>
 
                             {table.isTrashMode && (
@@ -268,7 +263,8 @@ export function Products() {
                                     </span>
 
                                     {table.isTrashMode ? (
-                                        <Button size="sm"  
+                                        <Button
+                                            size="sm"
                                             variant="outline"
                                             disabled={bulkStatus.isPending}
                                             className="shadow-sm cursor-pointer"
@@ -283,7 +279,8 @@ export function Products() {
                                             Restore
                                         </Button>
                                     ) : (
-                                        <Button size="sm"  
+                                        <Button
+                                            size="sm"
                                             variant="destructive"
                                             disabled={bulkStatus.isPending}
                                             className="shadow-sm cursor-pointer border-red-500/30"
@@ -299,7 +296,8 @@ export function Products() {
                                         </Button>
                                     )}
 
-                                    <Button size="sm"  
+                                    <Button
+                                        size="sm"
                                         variant="outline"
                                         className="text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"
                                         onClick={() => setRowSelection({})}
@@ -309,13 +307,14 @@ export function Products() {
                                 </div>
                             )}
                             <Link href="/products/import">
-                                <Button size="sm"  variant="outline" >
+                                <Button size="sm" variant="outline">
                                     <Import className="h-4 w-4" />
                                     Import
                                 </Button>
                             </Link>
-                            <Button size="sm"  variant="default"
-                                
+                            <Button
+                                size="sm"
+                                variant="default"
                                 disabled={exportCsv.isPending}
                                 className="cursor-pointer"
                                 onClick={handleExportAll}
