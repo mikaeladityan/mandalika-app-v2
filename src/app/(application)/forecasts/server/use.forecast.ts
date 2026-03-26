@@ -59,6 +59,31 @@ export function useForecastTableState(is_display?: boolean) {
             page: "1",
         });
 
+    const type_id = get("type_id") ? Number(get("type_id")) : undefined;
+    const size_id = get("size_id") ? Number(get("size_id")) : undefined;
+
+    const setType = (id: number | undefined) =>
+        batchSet({
+            type_id: id ? String(id) : undefined,
+            page: "1",
+        });
+
+    const setSize = (id: number | undefined) =>
+        batchSet({
+            size_id: id ? String(id) : undefined,
+            page: "1",
+        });
+
+    const resetFilters = () => {
+        setSearch("");
+        batchSet({
+            search: undefined,
+            type_id: undefined,
+            size_id: undefined,
+            page: "1",
+        });
+    };
+
     /**
      * Query DTO
      */
@@ -68,6 +93,8 @@ export function useForecastTableState(is_display?: boolean) {
             page,
             take,
             search: get("search") ?? undefined,
+            type_id,
+            size_id,
             is_display,
         }),
         [searchParams, is_display],
@@ -77,6 +104,13 @@ export function useForecastTableState(is_display?: boolean) {
         // search
         search,
         setSearch,
+
+        // filters
+        type_id,
+        setType,
+        size_id,
+        setSize,
+        resetFilters,
 
         // horizon
         horizon,

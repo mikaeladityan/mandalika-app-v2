@@ -23,6 +23,9 @@ import { Label } from "@/components/ui/label";
 
 import { Separator } from "@/components/ui/separator";
 
+import { SelectFilter } from "@/components/ui/form/select";
+import { X } from "lucide-react";
+
 import {
     useForecast,
     useForecastTableState,
@@ -33,6 +36,8 @@ import { useBulkProduction } from "@/app/(application)/production/server/use.pro
 import { BatchForecastDialog } from "./dialogs/batch-forecast.dialog";
 import { SyncProductionDialog } from "./dialogs/sync-production.dialog";
 import { ManualForecastDialog } from "./dialogs/manual-forecast.dialog";
+import { useType } from "@/app/(application)/products/(component)/type/server/use.type";
+import { useSizes } from "@/app/(application)/products/(component)/size/server/use.size";
 
 export function Forecast({ is_display }: { is_display?: boolean }) {
     // UI States
@@ -40,6 +45,10 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
     const [openProductionDialog, setOpenProductionDialog] = useState(false);
     const [manualEditData, setManualEditData] = useState<any>(null);
     const handleEditManual = useMemo(() => (data: any) => setManualEditData(data), []);
+
+    // ─── Sub-module data untuk filter ────────────────────────────────────────
+    const { data: typeList, isLoading: typesLoading, isRefetching: typesRefetching } = useType();
+    const { data: sizeList, isLoading: sizesLoading, isRefetching: sizesRefetching } = useSizes();
 
     // Business Logic Hooks
     const table = useForecastTableState(is_display);
@@ -136,14 +145,64 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
 
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1">
-                        <div className="relative w-full lg:max-w-sm group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <Input
-                                placeholder="Cari material..."
-                                value={table.search}
-                                onChange={(e) => table.setSearch(e.target.value)}
-                                className="pl-10 h-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all"
-                            />
+                        <div className="flex flex-col md:flex-row gap-2 w-full">
+                            <div className="relative w-full lg:max-w-sm group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    placeholder="Cari produk..."
+                                    value={table.search}
+                                    onChange={(e) => table.setSearch(e.target.value)}
+                                    className="pl-10 h-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all shadow-sm"
+                                />
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <SelectFilter
+                                    size={"sm"}
+                                    placeholder="Tipe Produk"
+                                    value={table.type_id ?? null}
+                                    options={
+                                        typeList?.map((t) => ({
+                                            value: t.id,
+                                            label: t.name.toUpperCase(),
+                                        })) ?? []
+                                    }
+                                    onChange={(val) => table.setType(Number(val))}
+                                    onReset={() => table.setType(undefined)}
+                                    isLoading={typesLoading || typesRefetching}
+                                    canSearching={true}
+                                    className="w-full md:w-auto min-w-[160px] h-10 border-transparent bg-muted/30 focus:bg-white focus:border-primary/20"
+                                />
+
+                                <SelectFilter
+                                    size={"sm"}
+                                    placeholder="Ukuran"
+                                    value={table.size_id ?? null}
+                                    options={
+                                        sizeList?.map((s) => ({
+                                            value: s.id,
+                                            label: String(s.size) + "ML",
+                                        })) ?? []
+                                    }
+                                    onChange={(val) => table.setSize(Number(val))}
+                                    onReset={() => table.setSize(undefined)}
+                                    isLoading={sizesLoading || sizesRefetching}
+                                    canSearching={true}
+                                    className="w-full md:w-auto min-w-[120px] h-10 border-transparent bg-muted/30 focus:bg-white focus:border-primary/20"
+                                />
+
+                                {(table.type_id || table.size_id || table.search) && (
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={table.resetFilters}
+                                        className="h-10 px-3 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 transition-all rounded-lg font-bold"
+                                    >
+                                        <X className="mr-1.5 h-3.5 w-3.5" />
+                                        Clear Filter
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-3">
