@@ -170,7 +170,7 @@ export function Navbar() {
                                 </AvatarFallback>
                             </Avatar>
                             <div className="hidden md:flex flex-col items-start text-left leading-tight">
-                                <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                                <span className="text-xs max-w-20 truncate font-medium text-foreground group-hover:text-primary transition-colors">
                                     {displayName}
                                 </span>
                                 {account?.role && (

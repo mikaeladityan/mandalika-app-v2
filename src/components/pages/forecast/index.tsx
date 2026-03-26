@@ -144,8 +144,8 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                     </div>
 
                     {/* ROW 2: SEARCH & FILTERS */}
-                    <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1">
-                        <div className="flex flex-col md:flex-row gap-2 w-full">
+                    <div className="flex flex-col lg:flex-row gap-3 items-end justify-between pt-1">
+                        <div className="flex flex-col md:flex-row gap-2 w-full items-end">
                             <div className="relative w-full lg:max-w-sm group">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <Input
@@ -156,7 +156,7 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                                 />
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-start gap-2">
                                 <SelectFilter
                                     size={"sm"}
                                     placeholder="Tipe Produk"
@@ -196,13 +196,8 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                                 />
 
                                 {(table.type_id || table.size_id || table.search) && (
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={table.resetFilters}
-                                        className="h-10 px-3 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 transition-all rounded-lg font-bold"
-                                    >
-                                        <X className="mr-1.5 h-3.5 w-3.5" />
+                                    <Button size="sm" variant="rose" onClick={table.resetFilters}>
+                                        <X />
                                         Clear Filter
                                     </Button>
                                 )}
