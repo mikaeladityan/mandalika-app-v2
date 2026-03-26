@@ -59,9 +59,11 @@ export const ForecastColumns = ({
     periods,
     horizon,
     onEditManual,
+    is_display,
 }: {
     periods: any[];
     horizon?: number;
+    is_display?: boolean;
     onEditManual?: (data: {
         product_id: number;
         product_name: string;
@@ -69,6 +71,8 @@ export const ForecastColumns = ({
         year: number;
         period: string;
         current_value: number;
+        current_ratio?: number;
+        is_display?: boolean;
     }) => void;
 }): ColumnDef<ResponseForecastDTO>[] => {
     const now = new Date();
@@ -131,6 +135,7 @@ export const ForecastColumns = ({
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={(e) => {
+                                                if (!is_display) return;
                                                 e.stopPropagation();
                                                 console.log("Manual edit triggered:", p);
                                                 onEditManual?.({
@@ -139,21 +144,21 @@ export const ForecastColumns = ({
                                                     month: p.month,
                                                     year: p.year,
                                                     period: formatMonthYear(p.year, p.month),
-                                                    current_value: found
-                                                        ? Number(
-                                                              found.final_forecast ??
-                                                                  found.base_forecast,
-                                                          )
-                                                        : 0,
+                                                    current_value: Number(found?.base_forecast ?? 0),
+                                                    current_ratio: Number(found?.ratio ?? 0),
+                                                    is_display: is_display,
                                                 });
                                             }}
                                             className={cn(
-                                                "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[72px] cursor-pointer",
+                                                "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[72px]",
+                                                is_display ? "cursor-pointer" : "cursor-default select-none",
                                                 isAdjusted
                                                     ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
                                                     : isCurrent
-                                                      ? "bg-slate-50 border-primary/30 hover:bg-white"
-                                                      : "bg-white border-transparent hover:border-slate-200 hover:bg-slate-50",
+                                                      ? "bg-slate-50 border-primary/30"
+                                                      : "bg-white border-transparent",
+                                                is_display && !isAdjusted && !isCurrent && "hover:border-slate-200 hover:bg-slate-50",
+                                                is_display && isCurrent && "hover:bg-white"
                                             )}
                                         >
                                             <div className="flex items-center justify-between w-full gap-1">
@@ -191,23 +196,25 @@ export const ForecastColumns = ({
                                                 )}
                                             </div>
 
-                                            {found?.percentage_value != null && (
-                                                <div className="flex items-center gap-0.5 mt-0.5">
-                                                    <span
-                                                        className={cn(
-                                                            "text-[9px] font-bold px-1 rounded-sm",
-                                                            Number(found.percentage_value) > 0
-                                                                ? "text-emerald-700 bg-emerald-50"
-                                                                : "text-slate-500 bg-slate-50",
-                                                        )}
-                                                    >
-                                                        {Number(found.percentage_value) > 0
-                                                            ? "+"
-                                                            : ""}
-                                                        {found.percentage_value}%
-                                                    </span>
-                                                </div>
-                                            )}
+                                            {found?.percentage_value != null &&
+                                                row.original.product_type?.toLowerCase() !==
+                                                    "atomizer" && (
+                                                    <div className="flex items-center gap-0.5 mt-0.5">
+                                                        <span
+                                                            className={cn(
+                                                                "text-[9px] font-bold px-1 rounded-sm",
+                                                                Number(found.percentage_value) > 0
+                                                                    ? "text-emerald-700 bg-emerald-50"
+                                                                    : "text-slate-500 bg-slate-50",
+                                                            )}
+                                                        >
+                                                            {Number(found.percentage_value) > 0
+                                                                ? "+"
+                                                                : ""}
+                                                            {found.percentage_value}%
+                                                        </span>
+                                                    </div>
+                                                )}
                                             {!found && (
                                                 <div className="text-[8px] text-slate-400 mt-1 font-medium">
                                                     Klik untuk isi
@@ -235,17 +242,21 @@ export const ForecastColumns = ({
                                                             ).toLocaleString()}
                                                         </span>
                                                     </div>
-                                                    {found.percentage_value != null && (
-                                                        <div className="flex justify-between text-[10px] text-emerald-600 font-bold bg-emerald-50/50 px-1 rounded">
-                                                            <span>Growth Factor:</span>
-                                                            <span>
-                                                                {Number(found.percentage_value) > 0
-                                                                    ? "+"
-                                                                    : ""}
-                                                                {found.percentage_value}%
-                                                            </span>
-                                                        </div>
-                                                    )}
+                                                    {found.percentage_value != null &&
+                                                        row.original.product_type?.toLowerCase() !==
+                                                            "atomizer" && (
+                                                            <div className="flex justify-between text-[10px] text-emerald-600 font-bold bg-emerald-50/50 px-1 rounded">
+                                                                <span>Persentase:</span>
+                                                                <span>
+                                                                    {Number(
+                                                                        found.percentage_value,
+                                                                    ) > 0
+                                                                        ? "+"
+                                                                        : ""}
+                                                                    {found.percentage_value}%
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                 </div>
 
                                                 <div className="mt-1 space-y-1 bg-primary/5 p-1.5 rounded-md border border-primary/10">

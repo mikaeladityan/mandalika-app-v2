@@ -34,7 +34,8 @@ export type UpdateManualForecastDTO = {
     product_id: number;
     month: number;
     year: number;
-    final_forecast: number;
+    final_forecast?: number;
+    ratio?: number;
 };
 
 export type ResponseForecastDTO = {
@@ -58,6 +59,7 @@ export type ResponseForecastDTO = {
         status: string | null;
         is_current_month: boolean;
         is_actionable: boolean;
+        ratio: number;
         percentage_value: number | null;
     }>;
     safety_stock_summary: {

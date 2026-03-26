@@ -80,8 +80,9 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                 periods,
                 horizon: table.horizon,
                 onEditManual: handleEditManual,
+                is_display,
             }),
-        [periods, table.horizon, handleEditManual],
+        [periods, table.horizon, handleEditManual, is_display],
     );
 
     return (
@@ -106,15 +107,17 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Link href="/forecasts/percentages">
-                                <Button
-                                    variant="outline"
-                                    className="rounded-lg font-semibold h-9 px-4"
-                                >
-                                    <Percent className="mr-1.5 size-4 text-primary" />
-                                    Percentages
-                                </Button>
-                            </Link>
+                            {!is_display && (
+                                <Link href="/forecasts/percentages">
+                                    <Button
+                                        variant="outline"
+                                        className="rounded-lg font-semibold h-9 px-4"
+                                    >
+                                        <Percent className="mr-1.5 size-4 text-primary" />
+                                        Percentages
+                                    </Button>
+                                </Link>
+                            )}
 
                             <Button
                                 onClick={() => setOpenForecastDialog(true)}
