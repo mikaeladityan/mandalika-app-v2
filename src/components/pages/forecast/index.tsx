@@ -162,10 +162,14 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                                     placeholder="Tipe Produk"
                                     value={table.type_id ?? null}
                                     options={
-                                        typeList?.map((t) => ({
-                                            value: t.id,
-                                            label: t.name.toUpperCase(),
-                                        })) ?? []
+                                        typeList
+                                            ?.filter(
+                                                (t) => !t.name.toLowerCase().includes("display"),
+                                            )
+                                            .map((t) => ({
+                                                value: t.id,
+                                                label: t.name.toUpperCase(),
+                                            })) ?? []
                                     }
                                     onChange={(val) => table.setType(Number(val))}
                                     onReset={() => table.setType(undefined)}
@@ -208,7 +212,7 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg border border-transparent focus-within:border-primary/10 transition-all">
                                 <CalendarRange className="size-4 text-primary/60" />
-                                <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-tight">
+                                <Label className="text-[10px] font-bold text-nowrap uppercase text-muted-foreground tracking-tight">
                                     Horizon SS
                                 </Label>
                                 <Select
