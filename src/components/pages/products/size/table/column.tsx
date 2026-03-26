@@ -1,0 +1,120 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+import { SortableHeader } from "@/components/ui/table/sortable";
+import { ResponseSizeDTO } from "@/app/(application)/products/(component)/size/server/size.schema";
+import { useActionSize } from "@/app/(application)/products/(component)/size/server/use.size";
+import { useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, Trash2 } from "lucide-react";
+
+type Props = {
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    onSort: (key: string) => void;
+};
+
+export const SizeColumns = ({
+    sortBy,
+    sortOrder,
+    onSort,
+}: Props): ColumnDef<ResponseSizeDTO>[] => [
+    {
+        accessorKey: "size",
+        enableHiding: false,
+        header: () => (
+            <SortableHeader
+                label="Ukuran (ML)"
+                sortKey="size"
+                activeSortBy={sortBy}
+                activeSortOrder={sortOrder}
+                onSort={onSort}
+            />
+        ),
+        cell: ({ row }) => (
+            <span className="font-bold text-slate-800">{row.original.size} ML</span>
+        ),
+    },
+    {
+        id: "actions",
+        enableHiding: false,
+        cell: ({ row }) => {
+            return <DialogDelete data={row.original} />;
+        },
+    },
+];
+
+function DialogDelete({ data }: { data: ResponseSizeDTO }) {
+    const [confirm, setConfirm] = useState<string>("");
+    const [err, setErr] = useState<string>("");
+    const { remove } = useActionSize();
+    
+    const onConfirm = async (id: number) => {
+        setErr("");
+
+        if (!confirm) {
+            setErr("Konfirmasi tidak boleh kosong");
+            return;
+        }
+
+        if (confirm !== String(data.size)) {
+            setErr("Konfirmasi tidak valid");
+            return;
+        }
+
+        await remove.mutateAsync(id);
+    };
+
+    return (
+        <Dialog>
+            <DialogTrigger className="text-rose-500 cursor-pointer">
+                {remove.isPending ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className="font-semibold text-lg">
+                        Hapus Ukuran Produk
+                    </DialogTitle>
+                    <DialogDescription>
+                        Apakah anda yakin untuk menghapus ukuran produk{" "}
+                        <span className="px-1 rounded bg-gray-100 font-bold">{data.size} ML</span>?
+                        Tindakan ini permanen.
+                    </DialogDescription>
+                </DialogHeader>
+                <div>
+                    <label htmlFor="confirm" className="text-sm font-medium text-gray-700">
+                        Konfirmasi (Tulis angka ukuran)
+                    </label>
+                    <Input
+                        name="confirm"
+                        onChange={(e) => setConfirm(e.target.value)}
+                        value={confirm}
+                        placeholder={String(data.size)}
+                        disabled={remove.isPending}
+                    />
+                    {err && <small className="text-rose-500">{err}</small>}
+                </div>
+                <DialogFooter>
+                    <Button size="sm"  variant={"destructive"}
+                        type="button"
+                        
+                        onClick={() => onConfirm(data.id)}
+                        disabled={remove.isPending}
+                    >
+                        {remove.isPending ? <Loader2 className="animate-spin" /> : "Yakin, Hapus"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
