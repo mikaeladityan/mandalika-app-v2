@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
     Dialog,
@@ -20,24 +21,22 @@ interface CreateProductDialogProps {
     children: React.ReactNode;
 }
 
-export function CreateProductDialog({
-    open,
-    onOpenChange,
-    children,
-}: CreateProductDialogProps) {
+export function CreateProductDialog({ open, onOpenChange, children }: CreateProductDialogProps) {
     const isMobile = useIsMobile();
     const router = useRouter();
 
-    if (isMobile) {
-        // Navigasi ke page biasa di mobile
-        if (open) router.push("/products/create");
-        return null;
-    }
+    useEffect(() => {
+        if (isMobile && open) {
+            router.push("/products/create");
+        }
+    }, [isMobile, open, router]);
+
+    if (isMobile) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
+            <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+                <DialogHeader className="shrink-0">
                     <DialogTitle className="flex items-center gap-2 text-xl font-black">
                         <Box className="h-5 w-5 text-muted-foreground" />
                         Tambah Produk Baru
@@ -46,7 +45,7 @@ export function CreateProductDialog({
                         Lengkapi informasi dasar, atribut, dan parameter stok produk.
                     </DialogDescription>
                 </DialogHeader>
-                {children}
+                <div className="overflow-y-auto flex-1 pr-1">{children}</div>
             </DialogContent>
         </Dialog>
     );
@@ -71,15 +70,18 @@ export function EditProductDialog({
     const isMobile = useIsMobile();
     const router = useRouter();
 
-    if (isMobile) {
-        if (open && productId) router.push(`/products/${productId}/edit`);
-        return null;
-    }
+    useEffect(() => {
+        if (isMobile && open && productId) {
+            router.push(`/products/${productId}/edit`);
+        }
+    }, [isMobile, open, productId, router]);
+
+    if (isMobile) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
+            <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+                <DialogHeader className="shrink-0">
                     <DialogTitle className="flex items-center gap-2 text-xl font-black">
                         <Box className="h-5 w-5 text-muted-foreground" />
                         Edit Produk
@@ -88,7 +90,7 @@ export function EditProductDialog({
                         Perbarui rincian produk dan parameter forecasting.
                     </DialogDescription>
                 </DialogHeader>
-                {children}
+                <div className="overflow-y-auto flex-1 pr-1">{children}</div>
             </DialogContent>
         </Dialog>
     );

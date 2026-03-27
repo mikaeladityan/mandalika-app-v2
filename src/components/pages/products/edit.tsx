@@ -5,6 +5,7 @@ import { useType } from "@/app/(application)/products/(component)/type/server/us
 import {
     RequestProductDTO,
     RequestProductSchema,
+    ResponseProductDTO,
 } from "@/app/(application)/products/server/products.schema";
 import { useFormProduct, useProduct } from "@/app/(application)/products/server/use.products";
 import { useUnit } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
@@ -21,6 +22,8 @@ import { ArrowLeft, Save, Box, RotateCcw } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+
+import { cn } from "@/lib/utils";
 
 const GENDER_OPTIONS = [
     { value: "UNISEX", label: "Unisex" },
@@ -40,13 +43,17 @@ const Z_LEVEL_OPTIONS = [
 
 interface EditProductBodyProps {
     id: number;
-    /** Called after successful submit */
-    onSuccess?: () => void;
-    /** Show sticky header + back button (standalone page mode) */
+    onSuccess?: (item: ResponseProductDTO) => void;
+    onCancel?: () => void;
     pageMode?: boolean;
 }
 
-export function EditProductBody({ id, onSuccess, pageMode = false }: EditProductBodyProps) {
+export function EditProductBody({
+    id,
+    onSuccess,
+    onCancel,
+    pageMode = false,
+}: EditProductBodyProps) {
     const router = useRouter();
     const { product } = useProduct(undefined, id);
     const { update } = useFormProduct();
@@ -115,12 +122,72 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
     }, [product, form]);
 
     const onSubmit = async (body: Partial<RequestProductDTO>) => {
-        await update.mutateAsync({ body, id });
-        form.reset();
+        const res = await update.mutateAsync({ body, id });
         if (onSuccess) {
-            onSuccess();
+            onSuccess(res as ResponseProductDTO);
+        } else {
+            router.push("/products");
         }
     };
+
+    const renderCard = (title: string, description: string, children: React.ReactNode, className?: string) => {
+        if (!pageMode) {
+            return (
+                <div className={cn("space-y-4", className)}>
+                    <div>
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                            {title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">{description}</p>
+                    </div>
+                    {children}
+                </div>
+            );
+        }
+        return (
+            <Card className={cn("shadow-sm", className)}>
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-medium">{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <Separator />
+                <CardContent className="pt-6">{children}</CardContent>
+            </Card>
+        );
+    };
+
+    const Actions = (
+        <div className={cn("flex items-center gap-3", !pageMode ? "justify-end pt-6 border-t mt-4" : "w-full sm:w-auto")}>
+            <Button
+                size="sm"
+                type="button"
+                variant="ghost"
+                onClick={onCancel || (() => router.back())}
+                className={cn(!pageMode ? "flex" : "hidden")}
+            >
+                Batal
+            </Button>
+            <Button
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                className="flex-1 sm:flex-none"
+            >
+                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+            </Button>
+            <Button
+                size="sm"
+                type="submit"
+                variant="default"
+                className="flex-1 sm:flex-none"
+                disabled={update.isPending}
+            >
+                <Save className="mr-2 h-4 w-4" />
+                {update.isPending ? "Menyimpan..." : "Update Produk"}
+            </Button>
+        </div>
+    );
 
     return (
         <div className="w-full relative">
@@ -149,44 +216,19 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex flex-col md:flex-row items-center gap-3 w-full sm:w-auto">
-                                <Button
-                                    size="sm"
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => form.reset()}
-                                    className="w-full md:w-auto"
-                                >
-                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    type="submit"
-                                    variant="default"
-                                    className="w-full md:w-auto"
-                                    disabled={update.isPending}
-                                >
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {update.isPending ? "Menyimpan..." : "Update Produk"}
-                                </Button>
-                            </div>
+                            {Actions}
                         </div>
                     </div>
                 )}
 
                 {/* ── MAIN LAYOUT ── */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 px-1">
+                <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-8", !pageMode ? "px-1" : "px-1 pb-12")}>
                     {/* Kolom Kiri — 2/3 layar */}
-                    <div className="xl:col-span-2 space-y-6">
-                        <Card className="shadow-sm">
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-medium">Informasi Dasar</CardTitle>
-                                <CardDescription>
-                                    Identitas utama produk untuk pencatatan sistem.
-                                </CardDescription>
-                            </CardHeader>
-                            <Separator />
-                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2 space-y-8">
+                        {renderCard(
+                            "Informasi Dasar",
+                            "Identitas utama produk untuk pencatatan sistem.",
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InputForm
                                     required
                                     control={form.control}
@@ -206,20 +248,13 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
                                     type="text"
                                     error={form.formState.errors.name}
                                 />
-                            </CardContent>
-                        </Card>
+                            </div>
+                        )}
 
-                        <Card className="shadow-sm">
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-medium">
-                                    Manajemen Stok (ROP)
-                                </CardTitle>
-                                <CardDescription>
-                                    Parameter otomatisasi Reorder Point.
-                                </CardDescription>
-                            </CardHeader>
-                            <Separator />
-                            <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        {renderCard(
+                            "Manajemen Stok (ROP)",
+                            "Parameter otomatisasi Reorder Point.",
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 <SelectForm
                                     name="z_value"
                                     control={form.control}
@@ -264,22 +299,16 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
                                     step="0.01"
                                     error={form.formState.errors.safety_percentage}
                                 />
-                            </CardContent>
-                        </Card>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Kolom Kanan — 1/3 layar: Atribut Produk */}
-                    <div className="xl:col-span-1 space-y-6">
-                        <Card className="shadow-sm bg-muted/30">
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-medium">Atribut Produk</CardTitle>
-                                <CardDescription>
-                                    Spesifikasi dan varian fisik material. Ketik untuk mencari
-                                    langsung ke database.
-                                </CardDescription>
-                            </CardHeader>
-                            <Separator />
-                            <CardContent className="pt-6 space-y-5">
+                    {/* Kolom Kanan — 1/3 layar */}
+                    <div className="md:col-span-1 space-y-8">
+                        {renderCard(
+                            "Atribut Produk",
+                            "Spesifikasi dan varian fisik material.",
+                            <div className="space-y-5">
                                 <EnhancedCreatableCombobox
                                     required
                                     name="product_type"
@@ -297,7 +326,7 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
                                     refetch={typeRefetch}
                                     onSearchChange={setTypeSearch}
                                 />
-                                <div className="flex flex-col md:flex-row gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <EnhancedCreatableCombobox
                                         name="size"
                                         label="Ukuran"
@@ -339,31 +368,9 @@ export function EditProductBody({ id, onSuccess, pageMode = false }: EditProduct
                                     placeholder="Pilih gender..."
                                     error={form.formState.errors.gender}
                                 />
-                            </CardContent>
-                        </Card>
-
-                        {/* Dialog footer actions (non-page mode) */}
-                        {!pageMode && (
-                            <div className="flex justify-end gap-3 pt-2">
-                                <Button
-                                    size="sm"
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => form.reset()}
-                                >
-                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    type="submit"
-                                    variant="default"
-                                    disabled={update.isPending}
-                                >
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {update.isPending ? "Menyimpan..." : "Update Produk"}
-                                </Button>
                             </div>
                         )}
+                        {!pageMode && Actions}
                     </div>
                 </div>
             </Form>

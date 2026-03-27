@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SortableHeader } from "@/components/ui/table/sortable";
 import { ParseDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Pencil } from "lucide-react";
 import { useFormCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { StatusEnumDTO } from "@/shared/types";
 import { ResponseRawMaterialUnitDTO } from "@/app/(application)/rawmat/(component)/units/server/unit.schema";
@@ -19,12 +19,14 @@ type Props = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     onSort: (key: string) => void;
+    onEdit?: (id: number) => void;
 };
 
 export const UnitColumns = ({
     sortBy,
     sortOrder,
     onSort,
+    onEdit,
 }: Props): ColumnDef<ResponseRawMaterialUnitDTO>[] => [
     {
         accessorKey: "name",
@@ -49,7 +51,19 @@ export const UnitColumns = ({
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-            return <DialogDelete data={row.original} />;
+            return (
+                <div className="flex items-center gap-2">
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                        onClick={() => onEdit?.(row.original.id)}
+                    >
+                        <Pencil size={16} />
+                    </Button>
+                    <DialogDelete data={row.original} />
+                </div>
+            );
         },
     },
 ];
@@ -76,8 +90,14 @@ function DialogDelete({ data }: { data: ResponseRawMaterialUnitDTO }) {
 
     return (
         <Dialog>
-            <DialogTrigger className="text-rose-500 cursor-pointer">
-                {deleted.isPending ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
+            <DialogTrigger asChild>
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+                >
+                    {deleted.isPending ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
+                </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

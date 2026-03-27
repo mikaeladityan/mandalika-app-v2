@@ -15,9 +15,14 @@ import {
     useCategoryTableState,
 } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { CategoryColumns } from "./table/column";
+import { CreateCategoryDialog, EditCategoryDialog } from "./category-form-dialog";
 
 export function Categories() {
     const table = useCategoryTableState();
+
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | undefined>();
 
     const defaultColumnVisibility = useMemo(
         () => ({
@@ -37,6 +42,10 @@ export function Categories() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                onEdit: (id) => {
+                    setSelectedId(id);
+                    setEditOpen(true);
+                },
                 status: table.status,
             }),
         [table.sortBy, table.sortOrder, table.onSort, table.status],
@@ -75,11 +84,9 @@ export function Categories() {
                         </InputGroupAddon>
                     </InputGroup>
                     <div className="flex gap-2">
-                        <Link href="/rawmat/categories/create">
-                            <Button size={"sm"}>
-                                <Plus size={16} /> Category
-                            </Button>
-                        </Link>
+                        <Button size={"sm"} onClick={() => setCreateOpen(true)}>
+                            <Plus size={16} /> Category
+                        </Button>
 
                         <Button
                             size={"sm"}
@@ -111,6 +118,9 @@ export function Categories() {
                     />
                 </CardContent>
             )}
+
+            <CreateCategoryDialog open={createOpen} setOpen={setCreateOpen} />
+            <EditCategoryDialog open={editOpen} setOpen={setEditOpen} id={selectedId} />
         </Card>
     );
 }

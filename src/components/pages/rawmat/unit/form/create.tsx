@@ -15,10 +15,20 @@ import { STATUS } from "@/shared/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, RefreshCcw, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-export function CreateUnit() {
+interface CreateUnitBodyProps {
+    onSuccess?: () => void;
+    onCancel?: () => void;
+    pageMode?: boolean;
+}
+
+export function CreateUnitBody({ onSuccess, onCancel, pageMode = false }: CreateUnitBodyProps) {
     const { account } = useAuth();
     const { create } = useFormUnit();
+    const router = useRouter();
+
     const form = useForm<RequestRawMaterialUnitDTO>({
         resolver: zodResolver(RequestRawMaterialUnitSchema),
         defaultValues: {
@@ -28,55 +38,110 @@ export function CreateUnit() {
 
     const onSubmit = async (body: RequestRawMaterialUnitDTO) => {
         await create.mutateAsync(body);
-        form.reset();
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            form.reset();
+            router.push("/rawmat/units");
+        }
     };
 
-    return (
-        <>
-            <Form
-                methods={form}
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="grid gap-3 xl:grid-cols-4 2xl:w-8/12"
+    const Content = (
+        <div className="grid grid-cols-1 gap-5">
+            <InputForm
+                control={form.control}
+                disabled={create.isPending}
+                name="name"
+                label="Nama Satuan"
+                placeholder="Ketik nama satuan (cth: Kg, Ltr)..."
+                type="text"
+                error={form.formState.errors.name}
+            />
+        </div>
+    );
+
+    const Actions = (
+        <div className={cn("flex flex-col gap-2", !pageMode && "pt-4")}>
+            {!pageMode && (
+                <Button
+                    variant="ghost"
+                    className="w-full"
+                    size="sm"
+                    type="button"
+                    onClick={onCancel}
+                >
+                    Batal
+                </Button>
+            )}
+            <Button
+                className="w-full"
+                disabled={create.isPending}
+                size={pageMode ? "default" : "sm"}
             >
-                {/* LEFT */}
-                <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle className="text-xl">Tambah Unit Raw Material</CardTitle>
-                    </CardHeader>
+                {create.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                )}
+                Simpan Unit
+            </Button>
+        </div>
+    );
 
-                    <CardContent className="grid grid-cols-2 gap-5">
-                        <InputForm
-                            control={form.control}
-                            disabled={create.isPending}
-                            name="name"
-                            label="Nama Satuan"
-                            placeholder="Satuan..."
-                            type="text"
-                            error={form.formState.errors.name}
-                        />
-                    </CardContent>
-                </Card>
+    return (
+        <Form
+            methods={form}
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={cn("grid gap-5", pageMode ? "xl:grid-cols-4" : "grid-cols-1")}
+        >
+            {pageMode ? (
+                <>
+                    <Card className="col-span-3 shadow-sm">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold">
+                                Tambah Unit Raw Material
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">{Content}</CardContent>
+                    </Card>
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row justify-between items-center gap-2 space-y-0">
+                            <Button
+                                size="sm"
+                                type="button"
+                                variant="outline"
+                                onClick={() => router.back()}
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="button"
+                                variant="warning"
+                                onClick={() => form.reset()}
+                            >
+                                <RefreshCcw className="mr-2 h-4 w-4" /> Reset
+                            </Button>
+                        </CardHeader>
+                        <CardFooter>{Actions}</CardFooter>
+                    </Card>
+                </>
+            ) : (
+                <div className="space-y-4">
+                    {Content}
+                    {Actions}
+                </div>
+            )}
+        </Form>
+    );
+}
 
-                {/* RIGHT */}
-                <Card>
-                    <CardHeader className="flex justify-between items-center gap-2">
-                        <Button type="button" onClick={() => window.history.back()}>
-                            <ArrowLeft /> Kembali
-                        </Button>
+// ─── Standalone Page Wrapper ───────────────────────────────────────────────
 
-                        <Button type="button" variant="warning" onClick={() => form.reset()}>
-                            Reset <RefreshCcw />
-                        </Button>
-                    </CardHeader>
-
-                    <CardFooter>
-                        <Button className="w-full" disabled={create.isPending}>
-                            {create.isPending ? <Loader2 className="animate-spin" /> : <Save />}
-                            Simpan
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </Form>
-        </>
+export function CreateUnit() {
+    return (
+        <div className="container mx-auto py-6">
+            <CreateUnitBody pageMode />
+        </div>
     );
 }

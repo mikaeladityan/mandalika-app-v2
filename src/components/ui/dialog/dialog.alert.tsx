@@ -55,7 +55,7 @@ export function DialogAlert({ children, label, title, onClick, asChild }: Dialog
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     {children}

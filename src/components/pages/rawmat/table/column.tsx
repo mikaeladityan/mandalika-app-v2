@@ -16,10 +16,10 @@ import {
     Package,
     Tag,
     Truck,
-    Info,
     AlertCircle,
     Calendar,
     Clock,
+    Pencil,
 } from "lucide-react";
 import { useActionRawMat } from "@/app/(application)/rawmat/server/use.rawmat";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,7 @@ type Props = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     onSort: (key: string) => void;
+    onEdit?: (id: number) => void;
     status?: QueryRawMaterialDTO["status"];
 };
 
@@ -49,6 +50,7 @@ export const RawMaterialColumns = ({
     sortBy,
     sortOrder,
     onSort,
+    onEdit,
     status,
 }: Props): ColumnDef<ResponseRawMaterialDTO>[] => [
     {
@@ -307,7 +309,17 @@ export const RawMaterialColumns = ({
                     )}
                 </Button>
             ) : (
-                <DialogDelete data={row.original} />
+                <div className="flex items-center gap-2">
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                        onClick={() => onEdit?.(row.original.id)}
+                    >
+                        <Pencil size={16} />
+                    </Button>
+                    <DialogDelete data={row.original} />
+                </div>
             );
         },
     },

@@ -98,7 +98,7 @@ export function Products() {
     const isTableLoading = isLoading || isFetching || isRefetching || exportCsv.isPending;
 
     return (
-        <>
+        <div className="flex flex-col gap-5">
             <Card>
                 <CardHeader className="space-y-4">
                     <div>
@@ -360,8 +360,16 @@ export function Products() {
             </Card>
 
             {/* ── Create Dialog ── */}
-            <CreateProductDialog open={createOpen} onOpenChange={setCreateOpen}>
-                <CreateProductBody onSuccess={() => setCreateOpen(false)} />
+            <CreateProductDialog
+                open={createOpen}
+                onOpenChange={setCreateOpen}
+            >
+                <CreateProductBody
+                    onSuccess={(item) => {
+                        setCreateOpen(false);
+                    }}
+                    onCancel={() => setCreateOpen(false)}
+                />
             </CreateProductDialog>
 
             {/* ── Edit Dialog ── */}
@@ -373,10 +381,13 @@ export function Products() {
                 {editProductId !== null && (
                     <EditProductBody
                         id={editProductId}
-                        onSuccess={() => setEditProductId(null)}
+                        onSuccess={(item) => {
+                            setEditProductId(null);
+                        }}
+                        onCancel={() => setEditProductId(null)}
                     />
                 )}
             </EditProductDialog>
-        </>
+        </div>
     );
 }

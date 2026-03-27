@@ -10,6 +10,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
 import { UnitColumns } from "./table/column";
+import { CreateUnitDialog, EditUnitDialog } from "./unit-form-dialog";
 import {
     useUnitsQuery,
     useUnitTableState,
@@ -17,6 +18,10 @@ import {
 
 export function Units() {
     const table = useUnitTableState();
+
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | undefined>();
 
     const { data, meta } = useUnitsQuery(table.queryParams);
 
@@ -26,6 +31,10 @@ export function Units() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                onEdit: (id) => {
+                    setSelectedId(id);
+                    setEditOpen(true);
+                },
             }),
         [table.sortBy, table.sortOrder, table.onSort],
     );
@@ -58,11 +67,9 @@ export function Units() {
                             )}
                         </InputGroupAddon>
                     </InputGroup>
-                    <Link href="/rawmat/units/create">
-                        <Button size={"sm"}>
-                            <Plus size={16} /> Unit/Satuan
-                        </Button>
-                    </Link>
+                    <Button size={"sm"} onClick={() => setCreateOpen(true)}>
+                        <Plus size={16} /> Unit/Satuan
+                    </Button>
                 </div>
             </CardHeader>
 
@@ -84,6 +91,9 @@ export function Units() {
                     />
                 </CardContent>
             )}
+
+            <CreateUnitDialog open={createOpen} setOpen={setCreateOpen} />
+            <EditUnitDialog open={editOpen} setOpen={setEditOpen} id={selectedId} />
         </Card>
     );
 }

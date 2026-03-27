@@ -41,12 +41,18 @@ import { useRouter } from "next/navigation";
 import { useCategory } from "@/app/(application)/rawmat/(component)/categories/server/use.category";
 import { useSupplier } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 import { useUnit } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
+import { CreateRawMaterialDialog, EditRawMaterialDialog } from "./rawmat-form-dialog";
 
 export function RawMaterials() {
     const router = useRouter();
     const table = useRawMaterialTableState();
     const { countUtils } = useRawMaterialUtils(true);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | undefined>();
+
     const defaultColumnVisibility = useMemo(
         () => ({
             unit: true,
@@ -86,6 +92,10 @@ export function RawMaterials() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                onEdit: (id) => {
+                    setSelectedId(id);
+                    setEditOpen(true);
+                },
                 status: table.status,
             }),
         [table.sortBy, table.sortOrder, table.onSort, table.status],
@@ -292,11 +302,9 @@ export function RawMaterials() {
                     {/* ===== Actions ===== */}
                     <div className="flex flex-col md:flex-row justify-end gap-2">
                         <div className="flex gap-2"></div>
-                        <Link href="/rawmat/create">
-                            <Button size={"sm"}>
-                                <Plus size={16} /> Raw Material
-                            </Button>
-                        </Link>
+                        <Button size={"sm"} onClick={() => setCreateOpen(true)}>
+                            <Plus size={16} /> Raw Material
+                        </Button>
 
                         <Button
                             size={"sm"}
@@ -428,6 +436,9 @@ export function RawMaterials() {
                     </CardContent>
                 )}
             </Card>
+
+            <CreateRawMaterialDialog open={createOpen} setOpen={setCreateOpen} />
+            <EditRawMaterialDialog open={editOpen} setOpen={setEditOpen} id={selectedId} />
         </section>
     );
 }

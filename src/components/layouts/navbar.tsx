@@ -31,14 +31,12 @@ export function Navbar() {
 
         for (const group of sidebarData) {
             for (const item of group.items) {
-                // Direct match
                 if (item.url && isPathActive(pathname, item.url)) {
                     workspace = `${group.label || "System"} Workspace`;
                     parent = group.label || "System";
                     child = item.title;
                     return { workspace, parent, child };
                 }
-                // Nested match
                 if (item.items) {
                     for (const sub of item.items) {
                         if (sub.url && isPathActive(pathname, sub.url)) {
@@ -112,23 +110,29 @@ export function Navbar() {
         : (account?.email ?? "");
 
     return (
-        <nav className="flex items-center justify-between bg-white/88 backdrop-blur-md px-5 h-[60px] border-b border-[#E2E8F0] sticky top-0 z-30 shadow-[0_8px_22px_rgba(15,23,42,0.05)] gap-3">
-            <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-primary/10 text-[#64748B] hover:text-primary transition-colors size-9 rounded-lg" />
-                <div className="flex flex-col gap-1 leading-none">
-                    <small className="text-[10px] text-[#64748B] uppercase tracking-[0.12em] font-extrabold">
+        <nav className="flex items-center justify-between bg-white/88 backdrop-blur-md px-3 sm:px-5 h-[60px] border-b border-[#E2E8F0] sticky top-0 z-30 shadow-[0_8px_22px_rgba(15,23,42,0.05)] gap-2 overflow-hidden">
+            {/* ── LEFT: Sidebar trigger + breadcrumb ── */}
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+                <SidebarTrigger className="hover:bg-primary/10 text-[#64748B] hover:text-primary transition-colors size-9 rounded-lg shrink-0" />
+                <div className="flex flex-col gap-0.5 leading-none min-w-0">
+                    <small className="hidden sm:block text-[10px] text-[#64748B] uppercase tracking-[0.12em] font-extrabold truncate">
                         {workspace}
                     </small>
-                    <div className="flex items-center gap-1.5 text-[14px]">
-                        <b className="text-[#0F172A] font-light tracking-wide">{parent}</b>
-                        <span className="text-[#64748B]/40 -translate-y-px">/</span>
-                        <b className="text-[#0F172A] font-light tracking-wide">{child}</b>
+                    <div className="flex items-center gap-1 text-[13px] sm:text-[14px] min-w-0">
+                        <b className="hidden sm:block text-[#0F172A] font-light tracking-wide truncate max-w-[100px] lg:max-w-none">
+                            {parent}
+                        </b>
+                        <span className="hidden sm:inline text-[#64748B]/40 -translate-y-px shrink-0">/</span>
+                        <b className="text-[#0F172A] font-light tracking-wide truncate max-w-[130px] sm:max-w-[200px] lg:max-w-none">
+                            {child}
+                        </b>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
-                {/* Flow Navigation */}
+            {/* ── RIGHT: Actions ── */}
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                {/* Flow Navigation — lg+ only */}
                 <div className="hidden lg:flex items-center gap-2 mr-2">
                     <Button
                         variant="ghost"
@@ -136,7 +140,6 @@ export function Navbar() {
                         className="h-8 text-[11.5px] font-bold text-muted-foreground hover:text-primary transition-colors border border-transparent hover:border-border rounded-[10px]"
                         asChild
                     >
-                        {/* Point back to dashboard as temporary Roadmap substitute */}
                         <Link href="/">Roadmap</Link>
                     </Button>
                     <Button
@@ -150,27 +153,30 @@ export function Navbar() {
 
                 <div className="h-6 w-px bg-border/50 hidden lg:block" />
 
+                {/* Bell */}
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground relative hover:bg-primary/10 hover:text-primary transition-colors"
+                    className="text-muted-foreground relative hover:bg-primary/10 hover:text-primary transition-colors size-8 sm:size-9"
                 >
-                    <Bell className="size-5" />
-                    <span className="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full border-2 border-white dark:border-zinc-950" />
+                    <Bell className="size-4 sm:size-5" />
+                    <span className="absolute top-2 right-2 size-1.5 sm:size-2 bg-primary rounded-full border-2 border-white" />
                 </Button>
 
                 <div className="h-6 w-px bg-border/50" />
 
+                {/* User dropdown */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-primary/10 transition-all cursor-pointer outline-none group border border-transparent hover:border-primary/10">
-                            <Avatar className="size-8 rounded-lg">
+                        <button className="flex items-center gap-2 p-1 sm:p-1.5 rounded-lg hover:bg-primary/10 transition-all cursor-pointer outline-none group border border-transparent hover:border-primary/10">
+                            <Avatar className="size-7 sm:size-8 rounded-lg shrink-0">
                                 <AvatarFallback className="bg-sidebar text-primary text-xs font-black rounded-lg border border-primary/20 uppercase tracking-tighter">
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
+                            {/* Name + role — hidden on mobile */}
                             <div className="hidden md:flex flex-col items-start text-left leading-tight">
-                                <span className="text-xs max-w-20 truncate font-medium text-foreground group-hover:text-primary transition-colors">
+                                <span className="text-xs max-w-[80px] lg:max-w-[120px] truncate font-medium text-foreground group-hover:text-primary transition-colors">
                                     {displayName}
                                 </span>
                                 {account?.role && (
@@ -179,7 +185,7 @@ export function Navbar() {
                                     </span>
                                 )}
                             </div>
-                            <ChevronDown className="size-4 text-muted-foreground group-hover:text-primary transition-colors hidden md:block" />
+                            <ChevronDown className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors hidden md:block" />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 mt-2">

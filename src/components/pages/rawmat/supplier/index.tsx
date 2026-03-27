@@ -14,9 +14,14 @@ import {
     useSupplierTableState,
 } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 import { SupplierColumns } from "./table/column";
+import { CreateSupplierDialog, EditSupplierDialog } from "./supplier-form-dialog";
 
 export function Suppliers() {
     const table = useSupplierTableState();
+
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | undefined>();
 
     const defaultColumnVisibility = useMemo(
         () => ({
@@ -34,6 +39,10 @@ export function Suppliers() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                onEdit: (id) => {
+                    setSelectedId(id);
+                    setEditOpen(true);
+                },
             }),
         [table.sortBy, table.sortOrder, table.onSort],
     );
@@ -67,11 +76,9 @@ export function Suppliers() {
                         </InputGroupAddon>
                     </InputGroup>
 
-                    <Link href="/rawmat/suppliers/create">
-                        <Button size={"sm"}>
-                            <Plus size={16} /> Supplier
-                        </Button>
-                    </Link>
+                    <Button size={"sm"} onClick={() => setCreateOpen(true)}>
+                        <Plus size={16} /> Supplier
+                    </Button>
                 </div>
             </CardHeader>
 
@@ -94,6 +101,9 @@ export function Suppliers() {
                     />
                 </CardContent>
             )}
+
+            <CreateSupplierDialog open={createOpen} setOpen={setCreateOpen} />
+            <EditSupplierDialog open={editOpen} setOpen={setEditOpen} id={selectedId} />
         </Card>
     );
 }

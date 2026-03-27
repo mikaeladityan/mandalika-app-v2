@@ -16,18 +16,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Pencil } from "lucide-react";
 
 type Props = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     onSort: (key: string) => void;
+    onEdit: (data: ResponseSizeDTO) => void;
 };
 
 export const SizeColumns = ({
     sortBy,
     sortOrder,
     onSort,
+    onEdit,
 }: Props): ColumnDef<ResponseSizeDTO>[] => [
     {
         accessorKey: "size",
@@ -49,7 +51,19 @@ export const SizeColumns = ({
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-            return <DialogDelete data={row.original} />;
+            return (
+                <div className="flex items-center gap-2">
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => onEdit(row.original)}
+                    >
+                        <Pencil size={15} />
+                    </Button>
+                    <DialogDelete data={row.original} />
+                </div>
+            );
         },
     },
 ];

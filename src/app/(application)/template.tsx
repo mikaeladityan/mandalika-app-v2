@@ -14,7 +14,7 @@ export default function ApplicationTemplate({ children }: { children: React.Reac
                     <AppSidebar />
                     <div className="flex flex-col flex-1 min-w-0 bg-[#F8FAFC]">
                         <Navbar />
-                        <main className="flex-1 min-w-0 p-[18px_20px_22px] overflow-y-auto no-scrollbar">
+                        <main className="flex-1 min-w-0 p-4 overflow-y-auto no-scrollbar">
                             {children}
                         </main>
                     </div>
