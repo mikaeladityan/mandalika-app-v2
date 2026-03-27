@@ -13,7 +13,7 @@ export interface Errors {
 export const STATUS = ["PENDING", "ACTIVE", "FAVOURITE", "BLOCK", "DELETE"] as const;
 export const ROLE = ["STAFF", "SUPER_ADMIN", "OWNER", "DEVELOPER"] as const;
 export const GENDER = ["WOMEN", "MEN", "UNISEX"] as const;
-export const SALES_TYPE = ["ALL", "OFFLINE", "ONLINE", "SPIN_WHEEL", "GARANSI_OUT"] as const;
+export const ISSUANCE_TYPE = ["ALL", "OFFLINE", "ONLINE", "SPIN_WHEEL", "GARANSI_OUT"] as const;
 export const TRANSFER_STATUS = [
     "PENDING",
     "APPROVED",
@@ -44,14 +44,14 @@ export const MOVEMENT_REF_TYPE = [
     "PURCHASE_ORDER",
     "STOCK_TRANSFER",
     "STOCK_ADJUSTMENT",
-    "SALES_TRANSACTION",
+    "ISSUANCE_TRANSACTION",
     "MANUAL",
 ] as const;
 
 export const RoleEnumSchema = z.enum(ROLE);
 export const StatusEnumSchema = z.enum(STATUS);
 export const GenderEnumSchema = z.enum(GENDER);
-export const SalesTypeEnumSchema = z.enum(SALES_TYPE);
+export const IssuanceTypeEnumSchema = z.enum(ISSUANCE_TYPE);
 export const TransferStatusEnumSchema = z.enum(TRANSFER_STATUS);
 export const TransferLocationTypeEnumSchema = z.enum(TRANSFER_LOCATION_TYPE);
 export const MovementTypeEnumSchema = z.enum(MOVEMENT_TYPE);
@@ -62,7 +62,7 @@ export const MovementRefTypeEnumSchema = z.enum(MOVEMENT_REF_TYPE);
 export type RoleEnumDTO = z.infer<typeof RoleEnumSchema>;
 export type StatusEnumDTO = z.infer<typeof StatusEnumSchema>;
 export type GenderEnumDTO = z.infer<typeof GenderEnumSchema>;
-export type SalesTypeEnumDTO = z.infer<typeof SalesTypeEnumSchema>;
+export type IssuanceTypeEnumDTO = z.infer<typeof IssuanceTypeEnumSchema>;
 
 export type ImportPreviewResponseDTO = {
     total: number;

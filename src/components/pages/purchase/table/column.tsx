@@ -8,10 +8,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
 import { Check, Trash2 } from "lucide-react";
-import {
-    useApproveRecomendation,
-    useDeleteRecomendation,
-} from "@/app/(application)/recomendation/server/use.recomendation";
+import { useRecomendationV2Mutations } from "@/app/(application)/recomendation-v2/server/use.recomendation-v2";
 import { Button } from "@/components/ui/button";
 import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 
@@ -116,8 +113,9 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             id: "actions",
             header: "AKSI",
             cell: ({ row }) => {
-                const { mutate: approve, isPending: isApproving } = useApproveRecomendation();
-                const { mutate: del, isPending: isDeleting } = useDeleteRecomendation();
+                const { approveOrder, deleteOrder } = useRecomendationV2Mutations();
+                const { mutate: approve, isPending: isApproving } = approveOrder;
+                const { mutate: del, isPending: isDeleting } = deleteOrder;
                 const isAcc = row.original.status === "ACC";
 
                 if (isAcc) return null;
@@ -131,7 +129,6 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                             onClick={() =>
                                 approve({
                                     id: row.original.recommendation_id as number,
-                                    status: "ACC",
                                 })
                             }
                             disabled={isApproving || isDeleting}

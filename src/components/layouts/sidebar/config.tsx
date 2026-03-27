@@ -136,12 +136,12 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     ],
                 },
                 {
-                    title: "POS",
-                    icon: Store,
+                    title: "Pengeluaran FG",
+                    icon: ShoppingBag,
                     items: [
-                        { title: "Penjualan", url: "/sales", icon: ShoppingBag },
-                        { title: "Rekap Sales", url: "/sales/rekap", icon: Boxes },
-                        { title: "Analitik Sales", url: "/sales/analytics", icon: BarChart },
+                        { title: "List Pengeluaran", url: "/product-issuance", icon: ShoppingBag },
+                        { title: "Rekap Pengeluaran", url: "/product-issuance/rekap", icon: Boxes },
+                        { title: "Analitik Pengeluaran", url: "/product-issuance/analytics", icon: BarChart },
                     ],
                 },
             ],
