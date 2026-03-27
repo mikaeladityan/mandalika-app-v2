@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { Ban, Clock, Heart, LucideCircleFadingPlus, Trash2 } from "lucide-react";
+import { Ban, Clock, Heart, LucideCircleFadingPlus, Pencil, Trash2 } from "lucide-react";
 
 import { ResponseProductDTO } from "@/app/(application)/products/server/products.schema";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,14 @@ type ProductColumnsProps = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     onSort: (key: string) => void;
+    onEdit?: (id: number) => void;
 };
 
 export const ProductColumns = ({
     sortBy,
     sortOrder,
     onSort,
+    onEdit,
 }: ProductColumnsProps): ColumnDef<ResponseProductDTO>[] => [
     {
         id: "code",
@@ -111,13 +113,15 @@ export const ProductColumns = ({
                 >
                     <Link href={`/products/${row.original.id}`}>Detail</Link>
                 </Button>
-                {/* <Button
+                <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px] py-0 px-2 font-bold text-red-500 hover:text-red-600 hover:bg-red-50 border-zinc-200 cursor-pointer"
+                    className="h-7 text-[10px] py-0 px-2 font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 cursor-pointer"
+                    onClick={() => onEdit?.(row.original.id)}
                 >
-                    Hapus
-                </Button> */}
+                    <Pencil className="h-3 w-3 mr-1" />
+                    Edit
+                </Button>
             </div>
         ),
     },

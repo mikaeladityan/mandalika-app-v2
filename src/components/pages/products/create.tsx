@@ -36,7 +36,17 @@ const Z_LEVEL_OPTIONS = [
     { value: "3.09", label: "99.9% (3.09)" },
 ];
 
-export function CreateProduct() {
+// ─── Reusable Form Body ────────────────────────────────────────────────────
+// Used both inside Dialog (desktop) and in the standalone Page (mobile).
+
+interface CreateProductBodyProps {
+    /** Called after successful submit */
+    onSuccess?: () => void;
+    /** Show sticky header + back button (standalone page mode) */
+    pageMode?: boolean;
+}
+
+export function CreateProductBody({ onSuccess, pageMode = false }: CreateProductBodyProps) {
     const router = useRouter();
     const { create } = useFormProduct();
 
@@ -91,54 +101,65 @@ export function CreateProduct() {
 
     const onSubmit = async (body: RequestProductDTO) => {
         await create.mutateAsync(body);
-        router.push("/products");
+        form.reset();
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            router.push("/products");
+        }
     };
 
     return (
-        <div className="w-full relative pb-12">
+        <div className="w-full relative">
             <Form methods={form} onSubmit={form.handleSubmit(onSubmit)}>
-                {/* ── STICKY HEADER ── */}
-                <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b mb-8 rounded-xl">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5">
-                        <div className="flex items-center gap-3">
-                            <Button size="sm"  type="button"
-                                variant="outline"
-                                
-                                onClick={() => router.back()}
-                                className="h-9 w-9 shrink-0"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                            <div>
-                                <h1 className="text-xl font-black flex items-center gap-2">
-                                    <Box className="h-6 w-6 text-muted-foreground" />
-                                    Tambah Produk Baru
-                                </h1>
-                                <p className="text-sm text-muted-foreground hidden sm:block">
-                                    Lengkapi informasi dasar, atribut, dan parameter stok produk.
-                                </p>
+                {/* ── STICKY HEADER — page mode only ── */}
+                {pageMode && (
+                    <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b mb-8 rounded-xl">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5">
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    size="sm"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => router.back()}
+                                    className="h-9 w-9 shrink-0"
+                                >
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                                <div>
+                                    <h1 className="text-xl font-black flex items-center gap-2">
+                                        <Box className="h-6 w-6 text-muted-foreground" />
+                                        Tambah Produk Baru
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground hidden sm:block">
+                                        Lengkapi informasi dasar, atribut, dan parameter stok produk.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col md:flex-row items-center gap-3 w-full sm:w-auto">
+                                <Button
+                                    size="sm"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => form.reset()}
+                                    className="w-full md:w-auto"
+                                >
+                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    type="submit"
+                                    variant="default"
+                                    className="w-full md:w-auto"
+                                    disabled={create.isPending}
+                                >
+                                    <Save className="mr-2 h-4 w-4" />
+                                    {create.isPending ? "Menyimpan..." : "Simpan Produk"}
+                                </Button>
                             </div>
                         </div>
-
-                        <div className="flex flex-col md:flex-row items-center gap-3 w-full sm:w-auto">
-                            <Button size="sm"   type="button"
-                                variant="outline"
-                                onClick={() => form.reset()}
-                                className="w-full md:w-auto"
-                            >
-                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                            </Button>
-                            <Button size="sm"   type="submit"
-                                variant="default"
-                                className="w-full md:w-auto"
-                                disabled={create.isPending}
-                            >
-                                <Save className="mr-2 h-4 w-4" />
-                                {create.isPending ? "Menyimpan..." : "Simpan Produk"}
-                            </Button>
-                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* ── MAIN LAYOUT ── */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 px-1">
@@ -147,9 +168,7 @@ export function CreateProduct() {
                         {/* Card: Informasi Dasar */}
                         <Card className="shadow-sm">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-medium">
-                                    Informasi Dasar
-                                </CardTitle>
+                                <CardTitle className="text-lg font-medium">Informasi Dasar</CardTitle>
                                 <CardDescription>
                                     Identitas utama produk untuk pencatatan sistem.
                                 </CardDescription>
@@ -242,9 +261,7 @@ export function CreateProduct() {
                     <div className="xl:col-span-1 space-y-6">
                         <Card className="shadow-sm bg-muted/30">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-medium">
-                                    Atribut Produk
-                                </CardTitle>
+                                <CardTitle className="text-lg font-medium">Atribut Produk</CardTitle>
                                 <CardDescription>
                                     Spesifikasi dan varian fisik material. Ketik untuk mencari
                                     langsung ke database.
@@ -252,7 +269,6 @@ export function CreateProduct() {
                             </CardHeader>
                             <Separator />
                             <CardContent className="pt-6 space-y-5">
-                                {/* Tipe Material — server-side search */}
                                 <EnhancedCreatableCombobox
                                     required
                                     name="product_type"
@@ -271,7 +287,6 @@ export function CreateProduct() {
                                     onSearchChange={setTypeSearch}
                                 />
                                 <div className="flex flex-col md:flex-row gap-4">
-                                    {/* Ukuran — server-side search (angka) */}
                                     <EnhancedCreatableCombobox
                                         name="size"
                                         label="Ukuran"
@@ -288,8 +303,6 @@ export function CreateProduct() {
                                         refetch={sizeRefetch}
                                         onSearchChange={setSizeSearch}
                                     />
-
-                                    {/* Unit of Material — server-side search */}
                                     <EnhancedCreatableCombobox
                                         name="unit"
                                         label="Unit (UoM)"
@@ -307,8 +320,6 @@ export function CreateProduct() {
                                         onSearchChange={setUnitSearch}
                                     />
                                 </div>
-
-                                {/* Gender */}
                                 <SelectForm
                                     name="gender"
                                     control={form.control}
@@ -319,9 +330,42 @@ export function CreateProduct() {
                                 />
                             </CardContent>
                         </Card>
+
+                        {/* Dialog footer actions (non-page mode) */}
+                        {!pageMode && (
+                            <div className="flex justify-end gap-3 pt-2">
+                                <Button
+                                    size="sm"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => form.reset()}
+                                >
+                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    type="submit"
+                                    variant="default"
+                                    disabled={create.isPending}
+                                >
+                                    <Save className="mr-2 h-4 w-4" />
+                                    {create.isPending ? "Menyimpan..." : "Simpan Produk"}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Form>
+        </div>
+    );
+}
+
+// ─── Standalone Page Component (still used for mobile) ─────────────────────
+
+export function CreateProduct() {
+    return (
+        <div className="w-full relative pb-12">
+            <CreateProductBody pageMode />
         </div>
     );
 }

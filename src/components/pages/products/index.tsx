@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RowSelectionState } from "@tanstack/react-table";
 import { getSelectedIds } from "@/components/ui/table/export";
+import { CreateProductDialog, EditProductDialog } from "./product-form-dialog";
+import { CreateProductBody } from "./create";
+import { EditProductBody } from "./edit";
 import {
     Package,
     Plus,
@@ -47,6 +50,8 @@ import { useSizes } from "@/app/(application)/products/(component)/size/server/u
 export function Products() {
     const table = useProductTableState();
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editProductId, setEditProductId] = useState<number | null>(null);
     const defaultColumnVisibility = useMemo(
         () => ({
             gender: false,
@@ -79,6 +84,7 @@ export function Products() {
                 sortBy: table.sortBy,
                 sortOrder: table.sortOrder,
                 onSort: table.onSort,
+                onEdit: (id) => setEditProductId(id),
             }),
         [table.sortBy, table.sortOrder, table.onSort],
     );
@@ -213,12 +219,10 @@ export function Products() {
                     {/* ===== Actions ===== */}
                     <div className="flex flex-col md:flex-row justify-end gap-2">
                         <div className="flex gap-2">
-                            <Link href="/products/create">
-                                <Button size="sm">
-                                    <Plus className="h-4 w-4" />
-                                    Produk
-                                </Button>
-                            </Link>
+                            <Button size="sm" onClick={() => setCreateOpen(true)}>
+                                <Plus className="h-4 w-4" />
+                                Produk
+                            </Button>
 
                             <Button
                                 size="sm"
@@ -354,6 +358,25 @@ export function Products() {
                     </CardContent>
                 )}
             </Card>
+
+            {/* ── Create Dialog ── */}
+            <CreateProductDialog open={createOpen} onOpenChange={setCreateOpen}>
+                <CreateProductBody onSuccess={() => setCreateOpen(false)} />
+            </CreateProductDialog>
+
+            {/* ── Edit Dialog ── */}
+            <EditProductDialog
+                open={editProductId !== null}
+                onOpenChange={(o) => !o && setEditProductId(null)}
+                productId={editProductId}
+            >
+                {editProductId !== null && (
+                    <EditProductBody
+                        id={editProductId}
+                        onSuccess={() => setEditProductId(null)}
+                    />
+                )}
+            </EditProductDialog>
         </>
     );
 }
