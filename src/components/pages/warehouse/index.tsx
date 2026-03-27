@@ -23,16 +23,37 @@ import { ResponseWarehouseDTO } from "@/app/(application)/warehouses/server/ware
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { CreateWarehouseDialog, EditWarehouseDialog } from "./warehouse-form-dialog";
+
 export function Warehouse() {
     const table = useWarehouseTableState();
-
     const { data: warehouses = [], isLoading } = useWarehouseStatic(table.queryParams);
+    
+    const [openCreate, setOpenCreate] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
+    const [editId, setEditId] = useState<number | null>(null);
+
+    const handleEdit = (id: number) => {
+        setEditId(id);
+        setOpenEdit(true);
+    };
 
     return (
         <section className="space-y-6">
             <header className="flex justify-between items-center">
                 <h1 className="font-bold text-2xl">Gudang Perusahaan</h1>
+                <Button 
+                    size="sm" 
+                    onClick={() => setOpenCreate(true)}
+                    className="rounded-xl shadow-md hover:shadow-lg transition-all"
+                >
+                    <Plus size={16} className="mr-2" />
+                    Tambah Gudang
+                </Button>
             </header>
+
+            <CreateWarehouseDialog open={openCreate} setOpen={setOpenCreate} />
+            <EditWarehouseDialog open={openEdit} setOpen={setOpenEdit} id={editId} />
 
             {/* CARD GUDANG */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -59,28 +80,27 @@ export function Warehouse() {
                         {warehouses.map((w) => (
                             <Card
                                 key={w.id}
-                                className="hover:border-primary transition-all shadow-sm"
+                                className="hover:border-primary transition-all shadow-sm group relative"
                             >
                                 <CardHeader className="flex flex-row justify-between p-4 pb-2">
                                     <span className="font-bold">{w.name}</span>
                                     <div className="flex items-center justify-end gap-2">
                                         <DeletedWarehouse data={w} />
-                                        <Link href={`/warehouses/${w.id}/edit`}>
-                                            <Button
-                                                variant={"outline"}
-                                                size={"icon"}
-                                                className="h-8 w-8"
-                                            >
-                                                <Settings2
-                                                    size={14}
-                                                    className="text-muted-foreground"
-                                                />
-                                            </Button>
-                                        </Link>
+                                        <Button
+                                            variant={"outline"}
+                                            size={"icon"}
+                                            className="h-8 w-8"
+                                            onClick={() => handleEdit(w.id)}
+                                        >
+                                            <Settings2
+                                                size={14}
+                                                className="text-muted-foreground"
+                                            />
+                                        </Button>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex justify-center py-4">
-                                    <WarehouseIcon size={60} className="text-slate-200" />
+                                    <WarehouseIcon size={60} className="text-slate-200 group-hover:text-primary/20 transition-colors" />
                                 </CardContent>
                                 <CardFooter className="p-2 border-t flex gap-2">
                                     <Button
@@ -94,18 +114,19 @@ export function Warehouse() {
                                 </CardFooter>
                             </Card>
                         ))}
-                        <Link
-                            href="/warehouses/create"
-                            className="border-2 border-dashed rounded-xl flex items-center justify-center hover:bg-slate-50 min-h-45"
+                        <button
+                            onClick={() => setOpenCreate(true)}
+                            className="border-2 border-dashed rounded-xl flex items-center justify-center hover:bg-slate-50 min-h-45 transition-colors group"
                         >
-                            <Plus size={30} className="text-slate-400" />
-                        </Link>
+                            <Plus size={30} className="text-slate-400 group-hover:text-primary transition-colors" />
+                        </button>
                     </>
                 )}
             </div>
         </section>
     );
 }
+
 
 export function DeletedWarehouse({ data }: { data: ResponseWarehouseDTO }) {
     const { deleted } = useFormWarehouse(data.id);

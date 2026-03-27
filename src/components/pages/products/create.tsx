@@ -18,7 +18,7 @@ import { SelectForm } from "@/components/ui/form/select";
 import { Separator } from "@/components/ui/separator";
 import { useDebounce } from "@/shared/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Box, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, Box, Loader2, RotateCcw, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -117,57 +117,63 @@ export function CreateProductBody({
         if (!pageMode) {
             return (
                 <div className={cn("space-y-4", className)}>
-                    <div>
-                        <h3 className="text-lg font-bold flex items-center gap-2">
+                    <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 mb-2 italic">
+                        <h3 className="text-sm font-bold flex items-center gap-2 italic">
                             {title}
                         </h3>
-                        <p className="text-sm text-muted-foreground">{description}</p>
+                        <p className="text-xs text-muted-foreground italic">{description}</p>
                     </div>
                     {children}
                 </div>
             );
         }
         return (
-            <Card className={cn("shadow-sm", className)}>
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-medium">{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
+            <Card className={cn("shadow-sm border-none rounded-xl overflow-hidden", className)}>
+                <CardHeader className="pb-4 bg-slate-50/50 border-b">
+                    <CardTitle className="text-lg font-bold">{title}</CardTitle>
+                    <CardDescription className="italic">{description}</CardDescription>
                 </CardHeader>
-                <Separator />
                 <CardContent className="pt-6">{children}</CardContent>
             </Card>
         );
     };
 
     const Actions = (
-        <div className={cn("flex items-center gap-3", !pageMode ? "justify-end pt-6 border-t mt-4" : "w-full sm:w-auto")}>
+        <div className={cn("flex gap-2", !pageMode ? "pt-4 justify-end border-t" : "w-full sm:w-auto")}>
+            {!pageMode && (
+                <Button
+                    variant="ghost"
+                    className="w-1/4 font-medium"
+                    size="sm"
+                    type="button"
+                    onClick={onCancel}
+                >
+                    Batal
+                </Button>
+            )}
+            {pageMode && (
+                <Button
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => form.reset()}
+                    className="hidden sm:flex"
+                >
+                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                </Button>
+            )}
             <Button
-                size="sm"
-                type="button"
-                variant="ghost"
-                onClick={onCancel || (() => router.back())}
-                className={cn(!pageMode ? "flex" : "hidden")}
-            >
-                Batal
-            </Button>
-            <Button
-                size="sm"
-                type="button"
-                variant="outline"
-                onClick={() => form.reset()}
-                className="flex-1 sm:flex-none"
-            >
-                <RotateCcw className="mr-2 h-4 w-4" /> Reset
-            </Button>
-            <Button
-                size="sm"
+                size={pageMode ? "default" : "sm"}
                 type="submit"
-                variant="default"
-                className="flex-1 sm:flex-none"
+                className={cn("font-bold shadow-lg shadow-primary/20", pageMode ? "w-full h-11" : "w-1/2")}
                 disabled={create.isPending}
             >
-                <Save className="mr-2 h-4 w-4" />
-                {create.isPending ? "Menyimpan..." : "Simpan Produk"}
+                {create.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                )}
+                {pageMode ? "Simpan Data Produk" : "Simpan"}
             </Button>
         </div>
     );

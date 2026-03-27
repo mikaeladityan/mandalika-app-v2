@@ -163,6 +163,9 @@ function PaginationControls({
     );
 }
 
+import { useState } from "react";
+import { CreateOutletDialog, EditOutletDialog } from "./outlet-form-dialog";
+
 export function Outlets() {
     const table = useOutletTableState();
     const { outlets, isLoading, isFetching } = useOutlets(table.queryParams);
@@ -173,6 +176,17 @@ export function Outlets() {
         take: 100,
     });
     const { clean, toggleStatus, deleteOutlet } = useActionOutlet();
+
+    const [openCreate, setOpenCreate] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
+    const [editId, setEditId] = useState<number | null>(null);
+    const [editData, setEditData] = useState<any>(null);
+
+    const handleEdit = (outlet: any) => {
+        setEditId(outlet.id);
+        setEditData(outlet);
+        setOpenEdit(true);
+    };
 
     const isDataLoading = isLoading || isFetching;
 
@@ -192,13 +206,17 @@ export function Outlets() {
                         </p>
                     </div>
                 </div>
-                <Link href="/outlets/create">
-                    <Button className="rounded-xl shadow-md hover:shadow-lg transition-all px-6">
-                        <Plus size={16} className="mr-2" />
-                        Tambah Outlet Baru
-                    </Button>
-                </Link>
+                <Button 
+                    onClick={() => setOpenCreate(true)}
+                    className="rounded-xl shadow-md hover:shadow-lg transition-all px-6"
+                >
+                    <Plus size={16} className="mr-2" />
+                    Tambah Outlet Baru
+                </Button>
             </div>
+
+            <CreateOutletDialog open={openCreate} setOpen={setOpenCreate} />
+            <EditOutletDialog open={openEdit} setOpen={setOpenEdit} id={editId} initialData={editData} />
 
             <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="space-y-4 border-b bg-white">
@@ -367,13 +385,11 @@ export function Outlets() {
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
-                                                    asChild
                                                     className="cursor-pointer"
+                                                    onClick={() => handleEdit(outlet)}
                                                 >
-                                                    <Link href={`/outlets/${outlet.id}/edit`}>
-                                                        <Settings2 className="mr-2 h-4 w-4" />
-                                                        Edit Outlet
-                                                    </Link>
+                                                    <Settings2 className="mr-2 h-4 w-4" />
+                                                    Edit Outlet
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="cursor-pointer"

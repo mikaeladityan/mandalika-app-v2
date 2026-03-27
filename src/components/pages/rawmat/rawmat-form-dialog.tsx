@@ -36,7 +36,9 @@ export function CreateRawMaterialDialog({ open, setOpen }: CreateRawMaterialDial
             <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0 border-none bg-transparent shadow-none">
                 <div className="bg-background rounded-xl shadow-2xl border overflow-hidden relative">
                     <DialogHeader className="p-6 pb-0">
-                        <DialogTitle className="text-2xl font-bold">Tambah Raw Material</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold">
+                            Tambah Raw Material
+                        </DialogTitle>
                         <DialogDescription>
                             Lengkapi informasi dasar, detail pembelian, stok, dan klasifikasi.
                         </DialogDescription>
