@@ -13,7 +13,11 @@ type Props = {
     onSort: (key: string) => void;
 };
 
-export function RekapColumns({ sortBy, sortOrder, onSort }: Props): ColumnDef<IssuanceRekapListItemDTO>[] {
+export function RekapColumns({
+    sortBy,
+    sortOrder,
+    onSort,
+}: Props): ColumnDef<IssuanceRekapListItemDTO>[] {
     const renderSortHeader = (label: string, key: string) => (
         <div
             className="flex items-center gap-1 cursor-pointer hover:text-slate-900 group transition-colors"
@@ -23,7 +27,9 @@ export function RekapColumns({ sortBy, sortOrder, onSort }: Props): ColumnDef<Is
             <ArrowUpDown
                 className={cn(
                     "h-3 w-3 transition-opacity",
-                    sortBy === key ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-100",
+                    sortBy === key
+                        ? "opacity-100 text-primary"
+                        : "opacity-0 group-hover:opacity-100",
                 )}
             />
         </div>
@@ -48,7 +54,10 @@ export function RekapColumns({ sortBy, sortOrder, onSort }: Props): ColumnDef<Is
                         {row.original.product.name}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                        <Badge variant="outline" className="text-[9px] px-1 h-3.5 bg-slate-50 border-slate-200 text-slate-500 font-medium">
+                        <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 h-3.5 bg-slate-50 border-slate-200 text-slate-500 font-medium"
+                        >
                             {row.original.product.product_type}
                         </Badge>
                         <span className="text-[9px] text-slate-400 font-medium">
@@ -60,45 +69,51 @@ export function RekapColumns({ sortBy, sortOrder, onSort }: Props): ColumnDef<Is
         },
         {
             accessorKey: "offline",
-            header: () => <div className="text-right">{renderSortHeader("Offline", "offline")}</div>,
+            header: () => (
+                <div className="text-start">{renderSortHeader("Offline", "offline")}</div>
+            ),
             cell: ({ row }) => (
-                <div className="text-right font-semibold text-slate-700">
+                <div className="text-start font-semibold text-slate-700">
                     {formatNumber(row.original.offline)}
                 </div>
             ),
         },
         {
             accessorKey: "online",
-            header: () => <div className="text-right">{renderSortHeader("Online", "online")}</div>,
+            header: () => <div className="text-start">{renderSortHeader("Online", "online")}</div>,
             cell: ({ row }) => (
-                <div className="text-right font-semibold text-slate-700">
+                <div className="text-start font-semibold text-slate-700">
                     {formatNumber(row.original.online)}
                 </div>
             ),
         },
         {
             accessorKey: "spin_wheel",
-            header: () => <div className="text-right">{renderSortHeader("Spin Wheel", "spin_wheel")}</div>,
+            header: () => (
+                <div className="text-start">{renderSortHeader("Spin Wheel", "spin_wheel")}</div>
+            ),
             cell: ({ row }) => (
-                <div className="text-right font-semibold text-slate-700">
+                <div className="text-start font-semibold text-slate-700">
                     {formatNumber(row.original.spin_wheel)}
                 </div>
             ),
         },
         {
             accessorKey: "garansi_out",
-            header: () => <div className="text-right">{renderSortHeader("Garansi Out", "garansi_out")}</div>,
+            header: () => (
+                <div className="text-start">{renderSortHeader("Garansi Out", "garansi_out")}</div>
+            ),
             cell: ({ row }) => (
-                <div className="text-right font-semibold text-slate-700">
+                <div className="text-start font-semibold text-slate-700">
                     {formatNumber(row.original.garansi_out)}
                 </div>
             ),
         },
         {
             accessorKey: "all_qty",
-            header: () => <div className="text-right">{renderSortHeader("ALL", "all_qty")}</div>,
+            header: () => <div className="text-start">{renderSortHeader("ALL", "all_qty")}</div>,
             cell: ({ row }) => (
-                <div className="text-right">
+                <div className="text-start">
                     <span className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-slate-50 text-slate-700 font-black text-xs border border-slate-100 min-w-[50px]">
                         {formatNumber(row.original.all_qty)}
                     </span>
@@ -107,9 +122,11 @@ export function RekapColumns({ sortBy, sortOrder, onSort }: Props): ColumnDef<Is
         },
         {
             accessorKey: "total_qty",
-            header: () => <div className="text-right">{renderSortHeader("TOTAL", "total_qty")}</div>,
+            header: () => (
+                <div className="text-start">{renderSortHeader("TOTAL", "total_qty")}</div>
+            ),
             cell: ({ row }) => (
-                <div className="text-right">
+                <div className="text-start">
                     <span className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 font-black text-xs border border-indigo-100 min-w-[50px]">
                         {formatNumber(row.original.total_qty)}
                     </span>

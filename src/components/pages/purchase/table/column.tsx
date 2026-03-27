@@ -74,7 +74,11 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             header: "TOTAL HARGA",
             cell: ({ row }) => {
                 const total = (row.original.price || 0) * (row.original.quantity || 0);
-                return <span className="font-bold text-xs text-amber-600">Rp {formatNumber(total)}</span>;
+                return (
+                    <span className="font-bold text-xs text-amber-600">
+                        Rp {formatNumber(total)}
+                    </span>
+                );
             },
         },
         {
@@ -83,11 +87,17 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
             cell: ({ row }) => {
                 const isAcc = row.original.status === "ACC";
                 return isAcc ? (
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200">
+                    <Badge
+                        variant="outline"
+                        className="bg-emerald-50 text-emerald-600 border-emerald-200"
+                    >
                         Ordered
                     </Badge>
                 ) : (
-                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
+                    <Badge
+                        variant="outline"
+                        className="bg-amber-50 text-amber-600 border-amber-200"
+                    >
                         Draft
                     </Badge>
                 );

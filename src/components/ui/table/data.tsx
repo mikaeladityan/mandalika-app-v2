@@ -83,7 +83,7 @@ export function DataTable<TData, TValue>({
     const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
 
     const fallbackId = useRef(Math.random().toString(36).substring(7)).current;
-    
+
     // Persistence
     const [persistedVisibility, setPersistedVisibility] = useLocalStorage<VisibilityState>(
         tableId ? `${tableId}-visibility` : `unpersisted-vis-${fallbackId}`,
@@ -343,12 +343,12 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* MAIN TABLE CONTAINER */}
-            <div className="rounded border border-border bg-white shadow-xs overflow-hidden">
+            <div className="rounded border bg-white shadow-xs overflow-hidden">
                 <div
                     ref={containerRef}
                     className="overflow-auto max-h-[600px] scrollbar-thin scrollbar-thumb-border"
                 >
-                    <table className="w-full border-separate border-spacing-0">
+                    <table className="w-full border border-border border-spacing-0">
                         <thead className="sticky top-0 z-1">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <Reorder.Group
@@ -369,6 +369,9 @@ export function DataTable<TData, TValue>({
                                                 "transition-colors duration-200 cursor-grab active:cursor-grabbing",
                                                 header.column.id === "select" &&
                                                     "w-10 px-2 text-center",
+                                                index === 0 && "rounded-tl-lg",
+                                                index === headerGroup.headers.length - 1 &&
+                                                    "rounded-tr-lg",
                                             )}
                                         >
                                             {header.isPlaceholder
@@ -475,7 +478,7 @@ export function DataTable<TData, TValue>({
 
                     {/* Navigation Buttons */}
                     <div className="flex items-center gap-1.5">
-                        <div className="flex items-center justify-center px-4 py-2 bg-muted/50 text-foreground rounded-lg text-xs font-bold tabular-nums border border-border/50">
+                        <div className="flex items-center justify-center px-4 py-2 bg-muted/50 text-foreground rounded-lg text-xs font-bold tabular-nums/50">
                             {page} <span className="mx-2 text-muted-foreground font-normal">/</span>{" "}
                             {totalPages}
                         </div>
