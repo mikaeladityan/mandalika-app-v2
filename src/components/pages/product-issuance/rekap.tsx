@@ -193,48 +193,6 @@ export function RekapIssuance() {
                         </div>
 
                         <div className="flex items-center justify-end gap-2 border-t xl:border-t-0 pt-3 xl:pt-0">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 px-3 text-[11px] font-bold border-slate-200 text-slate-600"
-                                    >
-                                        Columns{" "}
-                                        <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-[180px]">
-                                    {columns
-                                        .filter(
-                                            (column) =>
-                                                "accessorKey" in column &&
-                                                typeof column.accessorKey === "string",
-                                        )
-                                        .map((column: any) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={column.id || column.accessorKey}
-                                                className="text-[11px] capitalize"
-                                                checked={
-                                                    columnVisibility[
-                                                        column.id || column.accessorKey
-                                                    ] !== false
-                                                }
-                                                onCheckedChange={(value) =>
-                                                    setColumnVisibility((prev) => ({
-                                                        ...prev,
-                                                        [column.id || column.accessorKey]: !!value,
-                                                    }))
-                                                }
-                                            >
-                                                {(column.id || column.accessorKey)
-                                                    .replace("product.", "")
-                                                    .replace("_", " ")}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
                             <Button
                                 variant="outline"
                                 size="sm"

@@ -1,25 +1,36 @@
 "use client";
 
-import { usePurchaseSummary } from "@/app/(application)/purchase/server/use.purchase";
-import { QueryPurchaseDTO, PurchaseSummaryResponse } from "@/app/(application)/purchase/server/purchase.schema";
+import { useConsolidationSummary } from "@/app/(application)/consolidation/server/use.consolidation";
+import { QueryConsolidationDTO, ConsolidationSummaryResponse } from "@/app/(application)/consolidation/server/consolidation.schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
-import { Store, Download, Package, ChevronRight, Calculator, FileText } from "lucide-react";
+import { Store, Download, Package, ChevronRight, Calculator, FileText, Printer } from "lucide-react";
 import dayjs from "dayjs";
-import { PurchaseService } from "@/app/(application)/purchase/server/purchase.service";
+import { useState } from "react";
+import { ConsolidationService } from "@/app/(application)/consolidation/server/consolidation.service";
+import { PrintSupplierReport } from "../print-supplier-report";
 
 interface SupplierSummaryGridProps {
-    queryParams: QueryPurchaseDTO;
+    queryParams: QueryConsolidationDTO;
 }
 
 export function SupplierSummaryGrid({ queryParams }: SupplierSummaryGridProps) {
-    const { summary } = usePurchaseSummary(queryParams);
+    const { summary } = useConsolidationSummary(queryParams);
+    const [printData, setPrintData] = useState<ConsolidationSummaryResponse | null>(null);
 
-    const exportSingleSupplier = async (supplier: PurchaseSummaryResponse) => {
+    const handlePrint = (supplier: ConsolidationSummaryResponse) => {
+        setPrintData(supplier);
+        // Small timeout to ensure state is updated and DOM is rendered before printing
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    };
+
+    const exportSingleSupplier = async (supplier: ConsolidationSummaryResponse) => {
         try {
-            const data = await PurchaseService.export({
+            const data = await ConsolidationService.export({
                 ...queryParams,
                 supplier_id: supplier.supplier_id,
             });
@@ -77,7 +88,7 @@ export function SupplierSummaryGrid({ queryParams }: SupplierSummaryGridProps) {
                                     </span>
                                     <ChevronRight className="size-3 text-slate-300" />
                                     <span className="text-[10px] font-black text-amber-500 tracking-widest uppercase">
-                                        Payable Approved
+                                        Consolidated Approved
                                     </span>
                                 </div>
                             </div>
@@ -94,7 +105,7 @@ export function SupplierSummaryGrid({ queryParams }: SupplierSummaryGridProps) {
                     <div className="mx-8 mb-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
                         <div className="flex items-center gap-2">
                             <FileText className="size-3 text-amber-400" />
-                            Status: <span className="text-amber-600">Active Procurement</span>
+                            Status: <span className="text-amber-600">Active Consolidation</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Calculator className="size-3 text-slate-400" />
@@ -150,16 +161,28 @@ export function SupplierSummaryGrid({ queryParams }: SupplierSummaryGridProps) {
                         >
                             View All Items
                         </Button>
-                        <Button
-                            onClick={() => exportSingleSupplier(supplier)}
-                            className="h-12 rounded-[1.25rem] bg-white border border-amber-200 text-amber-600 hover:bg-amber-600 hover:text-white transition-all duration-300 font-black text-xs px-6 shadow-sm flex items-center gap-2 group/btn"
-                        >
-                            <Download className="size-4 group-hover/btn:rotate-12 transition-transform" />
-                            Export {supplier.supplier_name}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => handlePrint(supplier)}
+                                variant="outline"
+                                className="h-12 w-12 rounded-[1.25rem] border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 p-0 shadow-sm flex items-center justify-center group/print"
+                            >
+                                <Printer className="size-4 group-hover/print:scale-110 transition-transform" />
+                            </Button>
+                            <Button
+                                onClick={() => exportSingleSupplier(supplier)}
+                                className="h-12 rounded-[1.25rem] bg-white border-amber-200 text-amber-600 hover:bg-amber-600 hover:text-white transition-all duration-300 font-black text-xs px-6 shadow-sm flex items-center gap-2 group/btn"
+                            >
+                                <Download className="size-4 group-hover/btn:rotate-12 transition-transform" />
+                                Export Excel
+                            </Button>
+                        </div>
                     </div>
                 </div>
             ))}
+
+            {/* Hidden Printable Version */}
+            <PrintSupplierReport supplier={printData} />
         </div>
     );
 }

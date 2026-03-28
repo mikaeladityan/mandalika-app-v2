@@ -164,7 +164,7 @@ export function useProductTableState() {
     }, [debouncedSearch]);
 
     // Sort
-    const sortBy = get("sortBy") ?? "updated_at";
+    const sortBy = get("sortBy") ?? "forecast_default";
     const sortOrder = (get("sortOrder") as "asc" | "desc") ?? "desc";
 
     const onSort = useCallback(
@@ -221,6 +221,8 @@ export function useProductTableState() {
             gender: undefined,
             type_id: undefined,
             size_id: undefined,
+            sortBy: undefined,
+            sortOrder: undefined,
             page: "1",
         });
     };

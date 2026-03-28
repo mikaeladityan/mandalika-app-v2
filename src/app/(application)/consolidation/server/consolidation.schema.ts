@@ -1,17 +1,21 @@
 import { z } from "zod";
 
-export const QueryPurchaseSchema = z.object({
+export const QueryConsolidationSchema = z.object({
     page: z.number().min(1).optional().default(1),
     take: z.number().min(1).optional().default(20),
     search: z.string().optional(),
     month: z.number().optional(),
     year: z.number().optional(),
     supplier_id: z.number().optional(),
+    sortBy: z.string().optional(),
+    order: z.enum(["asc", "desc"]).optional(),
+    visibleColumns: z.string().optional(),
+    columnOrder: z.string().optional(),
 });
 
-export type QueryPurchaseDTO = z.infer<typeof QueryPurchaseSchema>;
+export type QueryConsolidationDTO = z.infer<typeof QueryConsolidationSchema>;
 
-export type PurchaseResponse = {
+export type ConsolidationResponse = {
     recommendation_id: number;
     material_id: number;
     barcode: string;
@@ -26,9 +30,12 @@ export type PurchaseResponse = {
     created_at: Date | string;
 };
 
-export type PurchaseSummaryResponse = {
+export type ConsolidationSummaryResponse = {
     supplier_id: number;
     supplier_name: string;
+    supplier_address?: string;
+    supplier_phone?: string;
+    supplier_country?: string;
     total_amount: number;
     total_items: number;
     items: Array<{

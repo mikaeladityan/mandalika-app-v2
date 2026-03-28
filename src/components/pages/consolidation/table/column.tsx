@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { PurchaseResponse } from "@/app/(application)/purchase/server/purchase.schema";
+import { ConsolidationResponse } from "@/app/(application)/consolidation/server/consolidation.schema";
 import { formatNumber } from "@/lib/utils";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { useRecomendationV2Mutations } from "@/app/(application)/recomendation-v
 import { Button } from "@/components/ui/button";
 import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 
-export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
+export const ConsolidationColumns = (): ColumnDef<ConsolidationResponse>[] => {
     return [
         {
             accessorKey: "material_name",
@@ -32,6 +32,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                     </div>
                 );
             },
+            enableSorting: true,
         },
         {
             accessorKey: "supplier_name",
@@ -41,6 +42,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                     {row.original.supplier_name || "-"}
                 </span>
             ),
+            enableSorting: true,
         },
         {
             accessorKey: "quantity",
@@ -50,6 +52,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                     {formatNumber(row.original.quantity)} {row.original.uom?.toUpperCase()}
                 </span>
             ),
+            enableSorting: true,
         },
         {
             accessorKey: "moq",
@@ -68,6 +71,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                     Rp {formatNumber(row.original.price || 0)}
                 </span>
             ),
+            enableSorting: true,
         },
         {
             id: "total_price",
@@ -91,7 +95,7 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                         variant="outline"
                         className="bg-emerald-50 text-emerald-600 border-emerald-200"
                     >
-                        Ordered
+                        Posted
                     </Badge>
                 ) : (
                     <Badge
@@ -142,20 +146,20 @@ export const PurchaseColumns = (): ColumnDef<PurchaseResponse>[] => {
                                 })
                             }
                             disabled={isApproving || isDeleting}
-                            title="Setujui & Push ke PO Open"
+                            title="Setujui & Buat Pengajuan Resmi"
                         >
                             <Check className="h-4 w-4" />
                         </Button>
 
                         <DialogAlert
                             label={<Trash2 className="h-4 w-4" />}
-                            title="Hapus Draft Pengajuan"
+                            title="Hapus Draft Konsolidasi"
                             onClick={async () => {
                                 del(row.original.recommendation_id as number);
                             }}
                         >
                             <p className="text-sm text-slate-600 mt-1">
-                                Apakah Anda yakin ingin menghapus draft pengajuan{" "}
+                                Apakah Anda yakin ingin menghapus draft konsolidasi{" "}
                                 <span className="font-bold text-slate-900">
                                     {row.original.material_name}
                                 </span>

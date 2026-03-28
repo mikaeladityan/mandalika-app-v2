@@ -139,6 +139,7 @@ export const RecomendationV2Columns = (
             );
         },
         enableHiding: false,
+        enableSorting: true,
     },
     {
         accessorKey: "supplier",
@@ -228,6 +229,7 @@ export const RecomendationV2Columns = (
             );
         },
         size: 100,
+        enableSorting: true,
     },
     {
         id: "available_stock",
@@ -274,19 +276,24 @@ export const RecomendationV2Columns = (
 
             return (
                 <div className="flex flex-col min-w-[120px] py-2">
-                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 w-fit">
-                        {formatNumber(available)}{" "}
-                        <span className="text-[10px] text-indigo-400">{row.original.uom}</span>
-                    </span>
-                    {/* <span
-                        className={`text-[9px] mt-1 font-semibold uppercase tracking-wider ${
-                            isSufficient ? "text-emerald-600" : "text-red-500"
-                        }`}
+                    <span
+                        className={cn(
+                            available > 0
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "text-red-600 bg-red-50",
+                            "text-[10px] font-bold  px-2 py-0.5 rounded border w-fit",
+                        )}
                     >
-                        {needed > 0
-                            ? `${isSufficient ? "✓ Cukup" : "⚠ Defisit"} • ${coverage.toFixed(1)}m`
-                            : "–"}
-                    </span> */}
+                        {formatNumber(available)}{" "}
+                        <span
+                            className={cn(
+                                available > 0 ? "text-indigo-400" : "text-red-400",
+                                "text-[10px]",
+                            )}
+                        >
+                            {row.original.uom}
+                        </span>
+                    </span>
                 </div>
             );
         },
@@ -441,7 +448,7 @@ export const RecomendationV2Columns = (
         enableHiding: false,
     },
     {
-        id: "recommendation",
+        id: "recommendation_quantity",
         header: () => (
             <div className="flex flex-col items-center gap-0.5 py-1 min-w-[140px]">
                 <div className="flex items-center font-black uppercase text-indigo-600 tracking-widest leading-none">
@@ -494,6 +501,7 @@ export const RecomendationV2Columns = (
             );
         },
         size: 150,
+        enableSorting: true,
     },
 
     // ─── Kolom Open PO (Consolidated) ──────────────────────────────────────────

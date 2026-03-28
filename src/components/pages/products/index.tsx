@@ -19,6 +19,7 @@ import {
     X,
     ArchiveRestore,
     Trash2,
+    Printer,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,22 +47,20 @@ import { DialogAlert } from "@/components/ui/dialog/dialog.alert";
 import { DialogDescription } from "@/components/ui/dialog";
 import { BrushCleaning } from "lucide-react";
 import { useSizes } from "@/app/(application)/products/(component)/size/server/use.size";
+import { PrintReport } from "./print-report";
 
 export function Products() {
     const table = useProductTableState();
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [createOpen, setCreateOpen] = useState(false);
     const [editProductId, setEditProductId] = useState<number | null>(null);
-    const defaultColumnVisibility = useMemo(
-        () => ({
-            gender: false,
-            created_at: false,
-            updated_at: false,
-            distribution_percentage: false,
-            safety_percentage: false,
-        }),
-        [],
-    );
+    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
+        gender: false,
+        created_at: false,
+        updated_at: false,
+        distribution_percentage: false,
+        safety_percentage: false,
+    });
 
     const {
         data: products,
@@ -92,7 +91,21 @@ export function Products() {
     const selectedIds = getSelectedIds(rowSelection).map(Number);
 
     const handleExportAll = () => {
-        exportCsv.mutate(table.queryParams);
+        const visibleCols = Object.entries(columnVisibility)
+            .filter(([_, visible]) => visible)
+            .map(([id]) => id);
+
+        // Include default visible columns not in the state or set to true
+        // But better: since columnVisibility tracks overrides, we should get exactly what the table sees.
+        // Actually, the easiest way is to get all keys from columns that aren't false in visibility.
+        const currentVisible = columns
+            .map((c) => (c as any).id)
+            .filter((id) => columnVisibility[id] !== false);
+
+        exportCsv.mutate({
+            ...table.queryParams,
+            visibleColumns: currentVisible.join(","),
+        } as any);
     };
 
     const isTableLoading = isLoading || isFetching || isRefetching || exportCsv.isPending;
@@ -204,7 +217,11 @@ export function Products() {
                         />
 
                         {/* Reset All Filters */}
-                        {(table.gender || table.type_id || table.size_id || table.search) && (
+                        {(table.gender ||
+                            table.type_id ||
+                            table.size_id ||
+                            table.search ||
+                            table.sortBy !== "forecast_default") && (
                             <Button
                                 size="sm"
                                 variant="ghost"
@@ -328,7 +345,17 @@ export function Products() {
                                 ) : (
                                     <Download className="h-4 w-4" />
                                 )}
-                                Export Excel
+                                Excel
+                            </Button>
+
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200 font-bold gap-1.5 transition-all"
+                                onClick={() => window.print()}
+                            >
+                                <Printer className="h-4 w-4" />
+                                Print PDF
                             </Button>
                         </div>
                     </div>
@@ -349,7 +376,8 @@ export function Products() {
                             total={meta?.len ?? 0}
                             onPageChange={(page) => table.setPage(page)}
                             onPageSizeChange={(size) => table.setPageSize(size)}
-                            state={{ columnVisibility: defaultColumnVisibility }}
+                            state={{ columnVisibility }}
+                            onColumnVisibilityChange={setColumnVisibility}
                             enableMultiSelect={true}
                             rowSelection={rowSelection}
                             onRowSelectionChange={setRowSelection}
@@ -360,10 +388,7 @@ export function Products() {
             </Card>
 
             {/* ── Create Dialog ── */}
-            <CreateProductDialog
-                open={createOpen}
-                onOpenChange={setCreateOpen}
-            >
+            <CreateProductDialog open={createOpen} onOpenChange={setCreateOpen}>
                 <CreateProductBody
                     onSuccess={(item) => {
                         setCreateOpen(false);
@@ -388,6 +413,17 @@ export function Products() {
                     />
                 )}
             </EditProductDialog>
+
+            {/* Hidden Printable Version */}
+            {products && (
+                <PrintReport
+                    data={products}
+                    visibleColumns={columns
+                        .map((c) => (c as any).id)
+                        .filter((id) => columnVisibility[id] !== false)}
+                    title="Laporan Master Produk"
+                />
+            )}
         </div>
     );
 }

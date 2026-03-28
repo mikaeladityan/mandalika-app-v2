@@ -144,21 +144,28 @@ export const ForecastColumns = ({
                                                     month: p.month,
                                                     year: p.year,
                                                     period: formatMonthYear(p.year, p.month),
-                                                    current_value: Number(found?.base_forecast ?? 0),
+                                                    current_value: Number(
+                                                        found?.base_forecast ?? 0,
+                                                    ),
                                                     current_ratio: Number(found?.ratio ?? 0),
                                                     is_display: is_display,
                                                 });
                                             }}
                                             className={cn(
                                                 "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[72px]",
-                                                is_display ? "cursor-pointer" : "cursor-default select-none",
+                                                is_display
+                                                    ? "cursor-pointer"
+                                                    : "cursor-default select-none",
                                                 isAdjusted
                                                     ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
                                                     : isCurrent
                                                       ? "bg-slate-50 border-primary/30"
                                                       : "bg-white border-transparent",
-                                                is_display && !isAdjusted && !isCurrent && "hover:border-slate-200 hover:bg-slate-50",
-                                                is_display && isCurrent && "hover:bg-white"
+                                                is_display &&
+                                                    !isAdjusted &&
+                                                    !isCurrent &&
+                                                    "hover:border-slate-200 hover:bg-slate-50",
+                                                is_display && isCurrent && "hover:bg-white",
                                             )}
                                         >
                                             <div className="flex items-center justify-between w-full gap-1">
@@ -291,23 +298,23 @@ export const ForecastColumns = ({
 
     return [
         {
-            id: "product",
-            header: "Produk",
+            id: "code",
+            header: "SKU",
             size: 300,
+
             cell: ({ row }) => {
                 const [open, setOpen] = useState(false);
-
                 return (
                     <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
                         <div className="flex flex-col gap-1">
                             <Button
                                 size="icon"
-                                className="h-6 w-6 rounded-md cursor-pointer hover:scale-110 transition-transform bg-primary/5 hover:bg-primary/10 border-primary/20"
+                                className="rounded-md cursor-pointer hover:scale-110 transition-transform bg-primary/5 hover:bg-primary/10 border-primary/20"
                                 variant="outline"
                                 title="Run Forecast"
                                 onClick={() => setOpen(true)}
                             >
-                                <TrendingUpDown className="size-2.5 text-primary" />
+                                <TrendingUpDown className="text-primary" />
                             </Button>
                             <ForecastRunDialog
                                 open={open}
@@ -316,20 +323,45 @@ export const ForecastColumns = ({
                                 productName={row.original.product_name}
                             />
                         </div>
-
-                        {/* Detail Produk */}
+                        <p className="text-xs text-muted-foreground font-bold truncate">
+                            {row.original.product_code}
+                        </p>
+                    </div>
+                );
+            },
+        },
+        {
+            id: "product",
+            header: "product",
+            size: 300,
+            cell: ({ row }) => {
+                return (
+                    <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
                         <Link
                             href={`/products/${row.original.product_id}`}
                             className="overflow-hidden"
                         >
-                            <p className="text-[10px] text-muted-foreground font-mono truncate">
-                                {row.original.product_code}
-                            </p>
-
                             <p className="font-bold text-[11px] truncate leading-tight text-primary">
                                 {row.original.product_name}{" "}
-                                {row.original.product_type.toLocaleUpperCase()}{" "}
-                                {row.original.product_size.toLocaleUpperCase()}
+                            </p>
+                        </Link>
+                    </div>
+                );
+            },
+        },
+        {
+            id: "product_type",
+            header: "type",
+            size: 300,
+            cell: ({ row }) => {
+                return (
+                    <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
+                        <Link
+                            href={`/products/${row.original.product_id}`}
+                            className="overflow-hidden"
+                        >
+                            <p className="font-bold text-[11px] truncate leading-tight text-primary">
+                                {row.original.product_type.toLocaleUpperCase()}
                             </p>
                         </Link>
                     </div>
@@ -354,6 +386,18 @@ export const ForecastColumns = ({
                 return (
                     <div className="text-[10px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded inline-block border border-primary/10 min-w-10 text-center shadow-xs">
                         {edar}%
+                    </div>
+                );
+            },
+            size: 80,
+        },
+        {
+            id: "size",
+            header: "size",
+            cell: ({ row }) => {
+                return (
+                    <div className="text-[10px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded inline-block border border-primary/10 min-w-10 text-center shadow-xs">
+                        {row.original.product_size.toLocaleUpperCase()}
                     </div>
                 );
             },
@@ -424,7 +468,7 @@ export const ForecastColumns = ({
             size: 140,
         },
         {
-            id: "safety_p",
+            id: "safety_percentage",
             header: () => (
                 <div className="flex items-center font-black text-[10px] uppercase text-slate-500 whitespace-nowrap">
                     % SAFETY

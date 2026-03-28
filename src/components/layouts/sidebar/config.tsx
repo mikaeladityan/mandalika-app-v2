@@ -22,6 +22,7 @@ import {
     ArrowLeftRight,
     History,
     UploadCloud,
+    Layers,
 } from "lucide-react";
 
 export type SidebarItemConfig = {
@@ -90,7 +91,6 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     title: "Purchasing",
                     icon: BanknoteArrowUp,
                     items: [
-                        { title: "Master Purchase", url: "/purchase", icon: BanknoteArrowUp },
                         { title: "PO Tracking", url: "/po/open", icon: TruckElectric },
                     ],
                 },
@@ -165,6 +165,8 @@ export function useSidebarData(): SidebarGroupConfig[] {
                         { title: "FFO", url: "/recomendation-v2/ffo", icon: Replace },
                         { title: "FP Inter", url: "/recomendation-v2/fp-inter", icon: Replace },
                         { title: "FP Local", url: "/recomendation-v2/fp-local", icon: Replace },
+                        { title: "Konsolidasi Pesanan", url: "/consolidation", icon: Layers },
+                        { title: "Per Supplier", url: "/consolidation/supplier", icon: Store },
                     ],
                 },
             ],

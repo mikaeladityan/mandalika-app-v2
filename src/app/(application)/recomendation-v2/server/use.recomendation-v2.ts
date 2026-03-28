@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useDebounce } from "@/shared/hooks";
+import { useEffect, useState } from "react";
+import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { FORECAST_HORIZON_KEY } from "@/app/(application)/forecasts/server/use.forecast";
 import {
@@ -142,33 +142,65 @@ export function useRecomendationV2Mutations() {
 export function useRecomendationV2TableState(initial?: {
     defaultType?: "ffo" | "lokal" | "impor";
 }) {
-    const [page, setPage] = useState(1);
-    const [take, setTake] = useState(50);
-    const [search, setSearch] = useState("");
-    const [debouncedSearch] = useDebounce(search, 500);
-    const [month, setMonth] = useState(new Date().getMonth() + 1);
-    const [year, setYear] = useState(new Date().getFullYear());
-    const [type, setType] = useState<"ffo" | "lokal" | "impor" | undefined>(initial?.defaultType);
-    const [salesMonths, setSalesMonths] = useState(3);
+    const { get, batchSet, searchParams } = useQueryParams();
+
+    // Local state for immediate input feedback
+    // Search input (local state)
+    const [search, setSearch] = useState(get("search") ?? "");
+    const debouncedSearch = useDebounce(search, 500);
+
+    const page = Number(get("page") ?? 1);
+    const take = Number(get("take") ?? 50);
+    const month = Number(get("month") ?? new Date().getMonth() + 1);
+    const year = Number(get("year") ?? new Date().getFullYear());
+    const type = (get("type") as any) || initial?.defaultType;
+    const sales_months = Number(get("sales_months") ?? 3);
+    const sortBy = get("sortBy") || undefined;
+    const order = (get("order") as "asc" | "desc") || undefined;
+
     const [forecastMonths, setForecastMonths] = useLocalStorage<number>(FORECAST_HORIZON_KEY, 4);
+
+    // Sync URL when debouncedSearch change
+    useEffect(() => {
+        batchSet({
+            search: debouncedSearch || undefined,
+            page: "1",
+        });
+    }, [debouncedSearch]);
+
+    const setPage = (p: number) => batchSet({ page: String(p) });
+    const setTake = (t: number) => batchSet({ take: String(t), page: "1" });
+    const setMonth = (m: number) => batchSet({ month: String(m), page: "1" });
+    const setYear = (y: number) => batchSet({ year: String(y), page: "1" });
+    const setType = (t: string) => batchSet({ type: t, page: "1" });
+    const setSalesMonths = (s: number) => batchSet({ sales_months: String(s), page: "1" });
+    const setSorting = (s?: string, o?: "asc" | "desc") => 
+        batchSet({ sortBy: s || undefined, order: o || undefined, page: "1" });
 
     const queryParams: QueryRecomendationV2DTO = {
         page,
         take,
-        search: debouncedSearch,
+        search: get("search") ?? undefined,
         month,
         year,
         type,
-        sales_months: salesMonths,
+        sales_months,
         forecast_months: forecastMonths,
+        sortBy,
+        order,
     };
 
     const reset = () => {
-        setPage(1);
         setSearch("");
-        setMonth(new Date().getMonth() + 1);
-        setYear(new Date().getFullYear());
-        setSalesMonths(3);
+        batchSet({
+            search: undefined,
+            page: "1",
+            month: String(new Date().getMonth() + 1),
+            year: String(new Date().getFullYear()),
+            sales_months: "3",
+            sortBy: undefined,
+            order: undefined,
+        });
     };
 
     return {
@@ -184,10 +216,13 @@ export function useRecomendationV2TableState(initial?: {
         setYear,
         type,
         setType,
-        salesMonths,
+        salesMonths: sales_months,
         setSalesMonths,
         forecastMonths,
         setForecastMonths,
+        sortBy,
+        order,
+        setSorting,
         queryParams,
         reset,
     };

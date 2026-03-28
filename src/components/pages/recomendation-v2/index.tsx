@@ -1,15 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
     useRecomendationV2,
     useRecomendationV2TableState,
 } from "@/app/(application)/recomendation-v2/server/use.recomendation-v2";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { DataTable } from "@/components/ui/table/data";
-import { Search, TrendingUp, CalendarDays, Zap, Download, CalendarRange } from "lucide-react";
+import { Search, TrendingUp, CalendarDays, Download, Printer } from "lucide-react";
 import { RecomendationV2Columns } from "./table/column";
 import {
     Select,
@@ -19,17 +18,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { OnChangeFn, VisibilityState } from "@tanstack/react-table";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Loader2, X } from "lucide-react";
+import { OnChangeFn, VisibilityState, ColumnOrderState } from "@tanstack/react-table";
 
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { PrintReport } from "./print-report";
 
 interface RecomendationV2Props {
     title: string;
@@ -39,12 +33,12 @@ interface RecomendationV2Props {
 
 export function RecomendationV2({ title, description, type }: RecomendationV2Props) {
     const tableState = useRecomendationV2TableState({ defaultType: type });
-    const { list, bulkSaveHorizon, exportData } = useRecomendationV2(tableState.queryParams);
-    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+    const { list, exportData } = useRecomendationV2(tableState.queryParams);
 
-    // Persistence key for column visibility based on type
+    // Persistence keys for column state based on type
     const tableId = `rec-v2-main-table-${type}`;
     const visibilityKey = `${tableId}-visibility`;
+    const orderKey = `${tableId}-order`;
 
     const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
         visibilityKey,
@@ -55,35 +49,42 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
         },
     );
 
-    const periods = useMemo(() => {
-        if (!list.data?.periods) {
-            return {
-                sales_periods: [],
-                forecast_periods: [],
-                po_periods: [],
-            };
-        }
-        return {
-            sales_periods: list.data.periods.sales_periods ?? [],
-            forecast_periods: list.data.periods.forecast_periods ?? [],
-            po_periods: list.data.periods.po_periods ?? [],
-        };
-    }, [list.data?.periods]);
+    const [columnOrder, setColumnOrder] = useLocalStorage<ColumnOrderState>(orderKey, []);
 
     const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = (updater: any) => {
         const next = typeof updater === "function" ? updater(columnVisibility) : updater;
         setColumnVisibility(next);
     };
 
-    const columns = useMemo(
-        () =>
-            RecomendationV2Columns({
-                ...periods,
+    const handleColumnOrderChange: OnChangeFn<ColumnOrderState> = (updater: any) => {
+        const next = typeof updater === "function" ? updater(columnOrder) : updater;
+        setColumnOrder(next);
+    };
+
+    const periods = useMemo(() => {
+        if (!list.data?.periods) {
+            return {
+                sales_periods: [],
+                forecast_periods: [],
+                po_periods: [],
                 month: tableState.month,
                 year: tableState.year,
                 forecastMonths: tableState.forecastMonths,
-            }),
-        [periods, tableState.month, tableState.year, tableState.forecastMonths],
+            };
+        }
+        return {
+            sales_periods: list.data.periods.sales_periods ?? [],
+            forecast_periods: list.data.periods.forecast_periods ?? [],
+            po_periods: list.data.periods.po_periods ?? [],
+            month: tableState.month,
+            year: tableState.year,
+            forecastMonths: tableState.forecastMonths,
+        };
+    }, [list.data?.periods, tableState.month, tableState.year, tableState.forecastMonths]);
+
+    const columns = useMemo(
+        () => RecomendationV2Columns(periods),
+        [periods],
     );
 
     const months = [
@@ -113,7 +114,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-foreground tracking-tight">
-                                    {title} <span className="text-primary">V2</span>
+                                    {title}
                                 </h1>
                                 <p className="text-xs text-muted-foreground font-medium">
                                     {description}
@@ -123,7 +124,22 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
 
                         <div className="flex flex-wrap items-center gap-1 self-end md:self-auto">
                             <Button
-                                onClick={() => exportData.mutate(tableState.queryParams)}
+                                onClick={() => {
+                                    // Get visible column IDs from state
+                                    // Identify all columns from definition first
+                                    const allColIds = columns.map((c: any) => c.id || c.accessorKey);
+
+                                    // Filter based on visibility state
+                                    const visibleKeys = allColIds.filter(
+                                        (id) => columnVisibility[id] !== false,
+                                    );
+
+                                    exportData.mutate({
+                                        ...tableState.queryParams,
+                                        visibleColumns: visibleKeys.join(","),
+                                        columnOrder: columnOrder.join(","),
+                                    });
+                                }}
                                 disabled={exportData.isPending || list.isLoading}
                                 variant="outline"
                                 className="h-8 bg-emerald-50 text-emerald-700 border-emerald-100 rounded-xl font-bold shadow-sm hover:bg-emerald-100 transition-all px-3 text-[11px] flex items-center gap-1.5 group"
@@ -133,20 +149,55 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 />
                                 {exportData.isPending ? "..." : "Excel"}
                             </Button>
+
+                            <Button
+                                onClick={() => window.print()}
+                                disabled={list.isLoading}
+                                variant="outline"
+                                className="h-8 bg-blue-50 text-blue-700 border-blue-100 rounded-xl font-bold shadow-sm hover:bg-blue-100 transition-all px-3 text-[11px] flex items-center gap-1.5 group"
+                            >
+                                <Printer className="size-3.5 group-hover:scale-110 transition-transform" />
+                                Print PDF
+                            </Button>
                         </div>
                     </div>
 
                     {/* ROW 2: SEARCH & FILTERS */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                        {/* Search */}
-                        <div className="relative group w-full lg:max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <Input
-                                placeholder="Cari material..."
-                                value={tableState.search}
-                                onChange={(e) => tableState.setSearch(e.target.value)}
-                                className="pl-10 h-10 bg-muted/30 border-transparent focus-visible:bg-white focus-visible:border-primary/20 transition-all"
-                            />
+                        {/* Search and Results Count */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-2 w-full lg:max-w-2xl">
+                            <InputGroup className="w-full md:max-w-sm rounded-xl">
+                                <InputGroupInput
+                                    placeholder="Cari material, barcode, atau supplier..."
+                                    value={tableState.search}
+                                    onChange={(e) => tableState.setSearch(e.target.value)}
+                                    className="pl-3 h-10 border-none bg-transparent"
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    {list.isFetching ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                    ) : (
+                                        <Search className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </InputGroupAddon>
+                                <InputGroupAddon align="inline-end" className="pr-3">
+                                    <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap bg-muted/50 px-1.5 py-0.5 rounded">
+                                        {list.data?.len ?? 0} Item
+                                    </span>
+                                </InputGroupAddon>
+                            </InputGroup>
+
+                            {/* Reset Button */}
+                            {(tableState.search || tableState.queryParams.page !== 1) && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={tableState.reset}
+                                    className="h-10 px-3 text-muted-foreground hover:text-foreground font-bold text-xs"
+                                >
+                                    Reset Filter <X className="ml-1.5 h-3.5 w-3.5" />
+                                </Button>
+                            )}
                         </div>
 
                         {/* Date & Horizon Selectors */}
@@ -220,140 +271,33 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                 onPageSizeChange={tableState.setTake}
                                 state={{ columnVisibility }}
                                 onColumnVisibilityChange={handleColumnVisibilityChange}
+                                columnOrder={columnOrder}
+                                onColumnOrderChange={handleColumnOrderChange}
+                                sorting={
+                                    tableState.sortBy
+                                        ? { id: tableState.sortBy, desc: tableState.order === "desc" }
+                                        : null
+                                }
+                                onSortingChange={(id, desc) =>
+                                    tableState.setSorting(id, desc ? "desc" : "asc")
+                                }
                             />
                         </div>
                     )}
                 </CardContent>
             </Card>
+
+            {/* Hidden Printable Version */}
+            {list.data?.data && (
+                <PrintReport
+                    data={list.data.data}
+                    visibleColumns={columns
+                        .map((c: any) => c.id || c.accessorKey)
+                        .filter((id) => columnVisibility[id] !== false)}
+                    title={title}
+                    periods={periods}
+                />
+            )}
         </div>
     );
 }
-//  <DropdownMenu>
-//      <DropdownMenuTrigger asChild>
-//          <Button
-//              variant="outline"
-//              className="h-14 bg-white border-indigo-100 rounded-3xl font-black text-slate-600 hover:bg-slate-50 transition-all border-dashed shadow-sm px-6"
-//          >
-//              <Settings2 className="mr-2 h-5 w-5 text-indigo-500" />
-//              Kolom <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-//          </Button>
-//      </DropdownMenuTrigger>
-//      <DropdownMenuContent
-//          align="end"
-//          className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-indigo-50"
-//      >
-//          <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-//              Konfigurasi Kolom
-//          </div>
-//          <div className="space-y-1 mt-2">
-//              {/* Sales Group Toggle */}
-//              {periods.sales_periods.length > 0 && (
-//                  <DropdownMenuCheckboxItem
-//                      className="rounded-xl capitalize font-bold text-indigo-600 py-3 bg-indigo-50/50 cursor-pointer"
-//                      checked={periods.sales_periods.every(
-//                          (p: any) => columnVisibility[`sales_${p.key}`] !== false,
-//                      )}
-//                      onCheckedChange={(value) => {
-//                          handleColumnVisibilityChange((prev: any) => {
-//                              const updates: VisibilityState = {};
-//                              periods.sales_periods.forEach((p: any) => {
-//                                  updates[`sales_${p.key}`] = !!value;
-//                              });
-//                              return { ...prev, ...updates };
-//                          });
-//                      }}
-//                  >
-//                      Sales History ({periods.sales_periods.length})
-//                  </DropdownMenuCheckboxItem>
-//              )}
-
-//              {/* Needs Group Toggle */}
-//              {periods.forecast_periods.length > 0 && (
-//                  <DropdownMenuCheckboxItem
-//                      className="rounded-xl capitalize font-bold text-orange-600 py-3 bg-orange-50/50 cursor-pointer"
-//                      checked={periods.forecast_periods.every(
-//                          (p: any) => columnVisibility[`need_${p.key}`] !== false,
-//                      )}
-//                      onCheckedChange={(value) => {
-//                          handleColumnVisibilityChange((prev: any) => {
-//                              const updates: VisibilityState = {};
-//                              periods.forecast_periods.forEach((p: any) => {
-//                                  updates[`need_${p.key}`] = !!value;
-//                              });
-//                              return { ...prev, ...updates };
-//                          });
-//                      }}
-//                  >
-//                      Needs Buy ({periods.forecast_periods.length})
-//                  </DropdownMenuCheckboxItem>
-//              )}
-
-//              {/* PO Group Toggle */}
-//              {periods.po_periods?.length > 0 && (
-//                  <DropdownMenuCheckboxItem
-//                      className="rounded-xl capitalize font-bold text-emerald-600 py-3 bg-emerald-50/50 cursor-pointer"
-//                      checked={periods.po_periods.every(
-//                          (p: any) => columnVisibility[`po_${p.key}`] !== false,
-//                      )}
-//                      onCheckedChange={(value) => {
-//                          handleColumnVisibilityChange((prev: any) => {
-//                              const updates: VisibilityState = {};
-//                              periods.po_periods.forEach((p: any) => {
-//                                  updates[`po_${p.key}`] = !!value;
-//                              });
-//                              return { ...prev, ...updates };
-//                          });
-//                      }}
-//                  >
-//                      Open PO Partial ({periods.po_periods.length})
-//                  </DropdownMenuCheckboxItem>
-//              )}
-
-//              {/* Total Open PO XOR Toggle */}
-//              <DropdownMenuCheckboxItem
-//                  className="rounded-xl capitalize font-bold text-emerald-700 py-3 border border-emerald-100 bg-emerald-50/30 cursor-pointer"
-//                  checked={columnVisibility["total_open_po"] !== false}
-//                  onCheckedChange={(value) => {
-//                      handleColumnVisibilityChange((prev: any) => ({
-//                          ...prev,
-//                          total_open_po: !!value,
-//                      }));
-//                  }}
-//              >
-//                  Ringkasan Total PO
-//              </DropdownMenuCheckboxItem>
-
-//              {columns.map((column: any) => {
-//                  const columnId = column.accessorKey || column.id;
-//                  const header = column.header;
-
-//                  if (!columnId || typeof header !== "string") return null;
-
-//                  // Skip individual dynamic columns to keep selector clean
-//                  if (
-//                      columnId.startsWith("sales_") ||
-//                      columnId.startsWith("need_") ||
-//                      columnId.startsWith("po_") ||
-//                      columnId === "total_open_po"
-//                  )
-//                      return null;
-
-//                  return (
-//                      <DropdownMenuCheckboxItem
-//                          key={columnId}
-//                          className="rounded-xl capitalize font-bold text-slate-600 py-3 data-[state=checked]:bg-indigo-50 data-[state=checked]:text-indigo-600 cursor-pointer"
-//                          checked={columnVisibility[columnId] !== false}
-//                          onCheckedChange={(value) => {
-//                              setColumnVisibility((prev) => ({
-//                                  ...prev,
-//                                  [columnId]: !!value,
-//                              }));
-//                          }}
-//                      >
-//                          {header.toLowerCase()}
-//                      </DropdownMenuCheckboxItem>
-//                  );
-//              })}
-//          </div>
-//      </DropdownMenuContent>
-//  </DropdownMenu>;

@@ -18,6 +18,8 @@ import {
     GripVertical,
     Settings2,
     ChevronDown,
+    ArrowUp,
+    ArrowDown,
 } from "lucide-react";
 import { ArrowRightLeft as SwipeIcon, MoreHorizontal } from "lucide-react";
 import { Reorder } from "framer-motion";
@@ -59,6 +61,10 @@ interface DataTableProps<TData, TValue> {
     getRowId?: (row: TData, index: number, parent?: any) => string;
     rowSelection?: RowSelectionState;
     onRowSelectionChange?: (updater: Updater<RowSelectionState>) => void;
+    sorting?: { id: string; desc: boolean } | null;
+    onSortingChange?: (id: string, desc: boolean) => void;
+    columnOrder?: ColumnOrderState;
+    onColumnOrderChange?: (order: ColumnOrderState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -77,6 +83,10 @@ export function DataTable<TData, TValue>({
     getRowId,
     rowSelection: controlledRowSelection,
     onRowSelectionChange,
+    sorting,
+    onSortingChange,
+    columnOrder: externalColumnOrder,
+    onColumnOrderChange: externalOnColumnOrderChange,
 }: DataTableProps<TData, TValue>) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
@@ -161,15 +171,26 @@ export function DataTable<TData, TValue>({
         data,
         columns,
         manualPagination: true,
+        manualSorting: true,
         pageCount: totalPages,
         state: {
             pagination: { pageIndex: page - 1, pageSize },
             columnVisibility,
             columnOrder,
             rowSelection,
+            sorting: sorting ? [{ id: sorting.id, desc: sorting.desc }] : [],
         },
         enableRowSelection: enableMultiSelect,
         onRowSelectionChange: setRowSelection,
+        onSortingChange: (updater) => {
+            const next = typeof updater === "function" ? updater(sorting ? [{ id: sorting.id, desc: sorting.desc }] : []) : updater;
+            if (next.length > 0) {
+                onSortingChange?.(next[0].id, next[0].desc);
+            } else {
+                // If sorting cleared
+                onSortingChange?.("", false);
+            }
+        },
         onColumnVisibilityChange: (updater) => {
             const next = typeof updater === "function" ? updater(columnVisibility) : updater;
             setColumnVisibility(next);
@@ -259,7 +280,7 @@ export function DataTable<TData, TValue>({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 ml-auto z-1 bg-white border-border/50 text-muted-foreground hover:text-primary transition-all rounded"
+                            className="h-9 ml-auto z-1 bg-white border-border text-muted-foreground hover:text-primary transition-all rounded"
                         >
                             <Settings2 className="mr-2 h-4 w-4" />
                             Kolom
@@ -268,9 +289,9 @@ export function DataTable<TData, TValue>({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="end"
-                        className="w-64 p-2 z-1 rounded-xl shadow-lg border-border/50"
+                        className="w-64 p-2 z-1 rounded-xl shadow-lg border-border"
                     >
-                        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/50 mb-1">
+                        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border mb-1">
                             Urutan & Visibilitas
                         </div>
                         <Reorder.Group
@@ -313,7 +334,7 @@ export function DataTable<TData, TValue>({
                                                     column.toggleVisibility(!!val)
                                                 }
                                                 disabled={!isHidable}
-                                                className="size-4 rounded border-border/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                                className="size-4 rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                             />
                                             <label
                                                 htmlFor={`col-vis-${columnId}`}
@@ -343,12 +364,12 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* MAIN TABLE CONTAINER */}
-            <div className="rounded border bg-white shadow-xs overflow-hidden">
+            <div className="rounded-md border border-x-0 bg-white shadow-xs overflow-hidden">
                 <div
                     ref={containerRef}
                     className="overflow-auto max-h-[600px] scrollbar-thin scrollbar-thumb-border"
                 >
-                    <table className="w-full border border-border border-spacing-0">
+                    <table className="w-full border-collapse border-spacing-0">
                         <thead className="sticky top-0 z-1">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <Reorder.Group
@@ -365,21 +386,35 @@ export function DataTable<TData, TValue>({
                                             as="th"
                                             className={cn(
                                                 "sticky top-0 z-1 px-4 py-4 text-left text-[10px] font-black uppercase tracking-wider",
-                                                "bg-slate-50 border-b border-border text-slate-500",
+                                                "bg-slate-50/80 backdrop-blur-sm border-b border-r border-border text-slate-500",
                                                 "transition-colors duration-200 cursor-grab active:cursor-grabbing",
                                                 header.column.id === "select" &&
                                                     "w-10 px-2 text-center",
-                                                index === 0 && "rounded-tl-lg",
+                                                index === 0 && "border-l rounded-tl-lg",
                                                 index === headerGroup.headers.length - 1 &&
                                                     "rounded-tr-lg",
                                             )}
                                         >
                                             {header.isPlaceholder
                                                 ? null
-                                                : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext(),
-                                                  )}
+                                                : (
+                                                    <div 
+                                                        className={cn(
+                                                            "flex items-center gap-1",
+                                                            header.column.getCanSort() && "cursor-pointer select-none"
+                                                        )}
+                                                        onClick={header.column.getToggleSortingHandler()}
+                                                    >
+                                                        {flexRender(
+                                                            header.column.columnDef.header,
+                                                            header.getContext(),
+                                                        )}
+                                                        {{
+                                                            asc: <ArrowUp className="size-3" />,
+                                                            desc: <ArrowDown className="size-3" />,
+                                                        }[header.column.getIsSorted() as string] ?? null}
+                                                    </div>
+                                                )}
                                         </Reorder.Item>
                                     ))}
                                 </Reorder.Group>
@@ -396,8 +431,8 @@ export function DataTable<TData, TValue>({
                                             <td
                                                 key={cell.id}
                                                 className={cn(
-                                                    "px-4 py-3 text-[11px] whitespace-nowrap text-foreground/80 border-b border-border",
-                                                    "group-last:border-b-0",
+                                                    "px-4 py-3 text-[11px] whitespace-nowrap text-foreground/80 border-b border-r border-border",
+                                                    index === 0 && "border-l",
                                                     cell.column.id === "select" &&
                                                         "w-10 px-2 text-center",
                                                     (
