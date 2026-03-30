@@ -23,6 +23,8 @@ import {
     History,
     UploadCloud,
     Layers,
+    MapPin,
+    Container,
 } from "lucide-react";
 
 export type SidebarItemConfig = {
@@ -90,9 +92,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
                 {
                     title: "Purchasing",
                     icon: BanknoteArrowUp,
-                    items: [
-                        { title: "PO Tracking", url: "/po/open", icon: TruckElectric },
-                    ],
+                    items: [{ title: "PO Tracking", url: "/po/open", icon: TruckElectric }],
                 },
                 {
                     title: "Manufacturing",
@@ -113,7 +113,16 @@ export function useSidebarData(): SidebarGroupConfig[] {
                             title: "Stock Finished Good",
                             icon: Boxes,
                             items: [
-                                { title: "Rekap Stok", url: "/products/stocks", icon: Database },
+                                {
+                                    title: "Rekap Stok Gundang",
+                                    url: "/products/stocks",
+                                    icon: Container,
+                                },
+                                {
+                                    title: "Stok per Lokasi",
+                                    url: "/products/stock-locations",
+                                    icon: MapPin,
+                                },
                                 ...fg.map((warehouse) => ({
                                     title: `${warehouse.name.charAt(0).toUpperCase() + warehouse.name.slice(1).toLowerCase()}`,
                                     url: `/products/stocks/${warehouse.id}`,
@@ -141,7 +150,11 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     items: [
                         { title: "List Pengeluaran", url: "/product-issuance", icon: ShoppingBag },
                         { title: "Rekap Pengeluaran", url: "/product-issuance/rekap", icon: Boxes },
-                        { title: "Analitik Pengeluaran", url: "/product-issuance/analytics", icon: BarChart },
+                        {
+                            title: "Analitik Pengeluaran",
+                            url: "/product-issuance/analytics",
+                            icon: BarChart,
+                        },
                     ],
                 },
             ],

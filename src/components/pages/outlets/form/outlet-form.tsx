@@ -12,8 +12,16 @@ import { useRouter } from "next/navigation";
 import { Form } from "@/components/ui/form/main";
 import { InputForm } from "@/components/ui/form/input";
 import { SelectForm } from "@/components/ui/form/select";
+import { MultiSelectForm } from "@/components/ui/form/multi.select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardFooter,
+    CardDescription,
+} from "@/components/ui/card";
 import { Store, MapPin, Save, ArrowLeft, Loader2, Globe } from "lucide-react";
 import { useWarehouseStatic } from "@/app/(application)/warehouses/server/use.warehouse";
 import { useEffect } from "react";
@@ -60,7 +68,8 @@ export function OutletForm({
             name: "",
             code: "",
             phone: "",
-            warehouse_id: undefined as any,
+            type: "RETAIL",
+            warehouse_ids: [],
             address: {
                 street: "",
                 district: "",
@@ -81,10 +90,17 @@ export function OutletForm({
                 name: initialData.name,
                 code: initialData.code,
                 phone: initialData.phone ?? "",
-                warehouse_id: initialData.warehouse_id,
+                type: initialData.type ?? "RETAIL",
+                warehouse_ids: initialData.warehouses?.map((w) => w.warehouse.id) ?? [],
                 address: initialData.address
                     ? {
-                          ...initialData.address,
+                          street: initialData.address.street ?? "",
+                          district: initialData.address.district ?? "",
+                          sub_district: initialData.address.sub_district ?? "",
+                          city: initialData.address.city ?? "",
+                          province: initialData.address.province ?? "",
+                          country: initialData.address.country ?? "Indonesia",
+                          postal_code: initialData.address.postal_code ?? "",
                           notes: initialData.address.notes ?? "",
                           url_google_maps: initialData.address.url_google_maps ?? "",
                       }
@@ -94,6 +110,26 @@ export function OutletForm({
     }, [initialData, form]);
 
     const onSubmit = async (data: RequestOutletDTO) => {
+        // Clean up address: if all fields are empty, remove the object
+        // If some fields have values, convert empty strings to undefined for Prisma
+        if (data.address) {
+            const address = data.address as any;
+            const hasValue = Object.keys(address).some(
+                (key) => address[key] !== "" && address[key] !== null && address[key] !== undefined,
+            );
+
+            if (!hasValue) {
+                delete data.address;
+            } else {
+                // Convert empty strings to null for the database
+                Object.keys(address).forEach((key) => {
+                    if (address[key] === "") {
+                        address[key] = null;
+                    }
+                });
+            }
+        }
+
         if (id) {
             await update.mutateAsync(data);
         } else {
@@ -107,7 +143,12 @@ export function OutletForm({
 
     const isSubmitting = create.isPending || update.isPending;
 
-    const renderCard = (title: string, description: string, children: React.ReactNode, icon?: React.ReactNode) => {
+    const renderCard = (
+        title: string,
+        description: string,
+        children: React.ReactNode,
+        icon?: React.ReactNode,
+    ) => {
         if (!pageMode) {
             return (
                 <div className="space-y-4 pb-6 border-b last:border-0">
@@ -170,23 +211,52 @@ export function OutletForm({
                         />
                         <SelectForm
                             control={form.control}
-                            name="warehouse_id"
-                            label="Gudang Barang Jadi"
-                            placeholder="Pilih gudang FG..."
-                            options={
-                                warehouseList?.map((w) => ({
-                                    value: w.id,
-                                    label: w.name,
-                                })) ?? []
-                            }
-                            isLoading={isWHLoading}
-                            canSearching={true}
-                            description="Hanya gudang bertipe Barang Jadi yang dapat dipilih."
-                            error={form.formState.errors.warehouse_id as any}
+                            name="type"
+                            label="Tipe Outlet"
+                            options={[
+                                { value: "RETAIL", label: "Toko Retail Fisik" },
+                                { value: "MARKETPLACE", label: "Toko Online / Marketplace" },
+                            ]}
+                            error={form.formState.errors.type as any}
                         />
+                        <div className="md:col-span-2">
+                            <MultiSelectForm
+                                control={form.control}
+                                name="warehouse_ids"
+                                label="Sumber Gudang Stok"
+                                placeholder="Pilih 1 atau lebih gudang FG..."
+                                options={(() => {
+                                    const baseOptions =
+                                        warehouseList?.map((w) => ({
+                                            value: w.id,
+                                            label: `[${w.code}] ${w.name}`,
+                                        })) ?? [];
+
+                                    // Ensure current selected warehouses are in the options list
+                                    // even if they are not in the first 100 results of warehouseList
+                                    const initialOptions =
+                                        initialData?.warehouses?.map((w) => ({
+                                            value: w.warehouse.id,
+                                            label: `[${w.warehouse.code}] ${w.warehouse.name}`,
+                                        })) ?? [];
+
+                                    const merged = [...baseOptions];
+                                    for (const opt of initialOptions) {
+                                        if (!merged.find((m) => m.value === opt.value)) {
+                                            merged.push(opt);
+                                        }
+                                    }
+                                    return merged;
+                                })()}
+                                isLoading={isWHLoading}
+                                canSearching={true}
+                                description="Hubungkan dengan satu atau lebih gudang Barang Jadi yang mensupply outlet ini."
+                                error={form.formState.errors.warehouse_ids as any}
+                            />
+                        </div>
                     </div>
                 </div>,
-                <Store className="text-primary h-5 w-5" />
+                <Store className="text-primary h-5 w-5" />,
             )}
 
             {renderCard(
@@ -268,7 +338,7 @@ export function OutletForm({
                         />
                     </div>
                 </div>,
-                <MapPin className="text-rose-500 h-5 w-5" />
+                <MapPin className="text-rose-500 h-5 w-5" />,
             )}
         </div>
     );
@@ -305,8 +375,8 @@ export function OutletForm({
                         ? "Simpan Perubahan"
                         : "Update"
                     : pageMode
-                    ? "Daftarkan Outlet"
-                    : "Simpan"}
+                      ? "Daftarkan Outlet"
+                      : "Simpan"}
             </Button>
         </div>
     );

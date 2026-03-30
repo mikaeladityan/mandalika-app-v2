@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RowSelectionState } from "@tanstack/react-table";
 import { getSelectedIds } from "@/components/ui/table/export";
-import { CreateProductDialog, EditProductDialog } from "./product-form-dialog";
-import { CreateProductBody } from "./create";
-import { EditProductBody } from "./edit";
+import { CreateProductDialog, EditProductDialog } from "./form/product-form-dialog";
+import { CreateProductBody } from "./form/create";
+import { EditProductBody } from "./form/edit";
 import {
     Package,
     Plus,

@@ -13,7 +13,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
 
     return (
         <div className="print-supplier-only hidden print:block px-8 py-4 bg-white min-h-screen font-sans text-xs text-black leading-normal">
-            {/* ===== Header ===== */}
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h1 className="text-[14px] font-black mb-1">MANDALIKA PERFUMERY</h1>
@@ -34,7 +33,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </div>
             </div>
 
-            {/* ===== Form Fields ===== */}
             <div className="flex justify-between mb-2 text-[11px]">
                 {/* Left Form */}
                 <div className="w-1/2">
@@ -80,9 +78,8 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </div>
             </div>
 
-            {/* ===== Supplier Info ===== */}
             <div className="mb-2 text-[11px] border border-black p-2">
-                <p className="font-bold mb-1 text-[11px]">Informasi Supplier :</p>
+                <p className="font-bold mb-1">Informasi Supplier :</p>
                 <table className="w-full">
                     <tbody>
                         <tr>
@@ -111,7 +108,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </table>
             </div>
 
-            {/* ===== Detail Permintaan Barang Table ===== */}
             <table className="w-full border-collapse border border-black mb-1">
                 <thead>
                     <tr>
@@ -145,7 +141,7 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </thead>
                 <tbody>
                     {supplier.items.map((item, idx) => (
-                        <tr key={idx} className="text-[9px]">
+                        <tr key={item.barcode ?? idx} className="text-[9px]">
                             <td className="border border-black px-2 py-1 text-center">
                                 {idx + 1}
                             </td>
@@ -167,7 +163,7 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                         </tr>
                     ))}
                     {/* Numbered empty rows up to 5 */}
-                    {Array.from({ length: Math.max(0, 5 - (supplier.items?.length || 0)) }).map(
+                    {Array.from({ length: Math.max(0, 5 - supplier.items.length) }).map(
                         (_, i) => (
                             <tr key={`empty-${i}`} className="text-[9px] h-6">
                                 <td className="border border-black px-2 py-1 text-center">
@@ -193,7 +189,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </tbody>
             </table>
 
-            {/* ===== Signatures ===== */}
             <table className="w-full border-collapse border border-black text-center text-[10px] mt-4">
                 <thead>
                     <tr className="bg-[#002f6c] text-white">
@@ -219,7 +214,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </tbody>
             </table>
 
-            {/* ===== Print Styles ===== */}
             <style jsx global>{`
                 @media print {
                     @page {
@@ -250,8 +244,6 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                     }
                     table {
                         border-collapse: collapse;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
                     }
                     th,
                     td,

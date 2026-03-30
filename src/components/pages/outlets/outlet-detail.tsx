@@ -113,7 +113,7 @@ export function OutletDetail({ id }: OutletDetailProps) {
                                     Gudang Utama (Parent)
                                 </h3>
                                 <p className="font-bold text-slate-800 text-sm sm:text-base">
-                                    {data.warehouse?.name || "-"}
+                                    {data.warehouses?.length ? data.warehouses.map(w => w.name).join(", ") : "-"}
                                 </p>
                             </div>
                             <div className="flex flex-col gap-1.5">

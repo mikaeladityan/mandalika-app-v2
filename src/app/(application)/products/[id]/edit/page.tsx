@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { EditProduct } from "@/components/pages/products/edit";
+import { EditProduct } from "@/components/pages/products/form/edit";
 
 export default function EditProductPage() {
     return (

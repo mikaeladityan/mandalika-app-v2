@@ -30,7 +30,7 @@ export default function EditOutletPage({ params }: PageProps) {
             </div>
             
             <div className="mt-6">
-                <OutletForm id={Number(id)} initialData={data} />
+                <OutletForm id={Number(id)} initialData={data} pageMode={true} />
             </div>
         </div>
     );

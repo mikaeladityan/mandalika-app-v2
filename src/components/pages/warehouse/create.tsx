@@ -33,6 +33,7 @@ export function CreateWarehouseBody({
     const form = useForm<RequestWarehouseDTO>({
         resolver: zodResolver(RequestWarehouseSchema),
         defaultValues: {
+            code: "",
             name: "",
             type: "FINISH_GOODS",
             warehouse_address: {
@@ -107,7 +108,16 @@ export function CreateWarehouseBody({
                 "Informasi Gudang",
                 "Identitas dan tipe operasional gudang perusahaan.",
                 <div className="grid gap-6">
-                    <div className="grid md:grid-cols-2 gap-5 text-slate-800">
+                    <div className="grid md:grid-cols-3 gap-5 text-slate-800">
+                        <InputForm
+                            required
+                            control={form.control}
+                            name="code"
+                            label="Kode Gudang"
+                            placeholder="Contoh: WH-01"
+                            disabled={isPending}
+                            error={form.formState.errors.code}
+                        />
                         <InputForm
                             required
                             control={form.control}

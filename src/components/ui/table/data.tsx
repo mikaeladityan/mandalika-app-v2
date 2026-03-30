@@ -183,7 +183,10 @@ export function DataTable<TData, TValue>({
         enableRowSelection: enableMultiSelect,
         onRowSelectionChange: setRowSelection,
         onSortingChange: (updater) => {
-            const next = typeof updater === "function" ? updater(sorting ? [{ id: sorting.id, desc: sorting.desc }] : []) : updater;
+            const next =
+                typeof updater === "function"
+                    ? updater(sorting ? [{ id: sorting.id, desc: sorting.desc }] : [])
+                    : updater;
             if (next.length > 0) {
                 onSortingChange?.(next[0].id, next[0].desc);
             } else {
@@ -280,7 +283,7 @@ export function DataTable<TData, TValue>({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 ml-auto z-1 bg-white border-border text-muted-foreground hover:text-primary transition-all rounded"
+                            className="z-1 bg-white border-border text-muted-foreground hover:text-primary transition-all rounded"
                         >
                             <Settings2 className="mr-2 h-4 w-4" />
                             Kolom
@@ -289,7 +292,7 @@ export function DataTable<TData, TValue>({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="end"
-                        className="w-64 p-2 z-1 rounded-xl shadow-lg border-border"
+                        className="w-64 p-2 z-1 rounded shadow-md border-border bg-white"
                     >
                         <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border mb-1">
                             Urutan & Visibilitas
@@ -364,13 +367,13 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* MAIN TABLE CONTAINER */}
-            <div className="rounded-md border border-x-0 bg-white shadow-xs overflow-hidden">
+            <div className="rounded border border-x-0 bg-white shadow-sm overflow-hidden">
                 <div
                     ref={containerRef}
                     className="overflow-auto max-h-[600px] scrollbar-thin scrollbar-thumb-border"
                 >
                     <table className="w-full border-collapse border-spacing-0">
-                        <thead className="sticky top-0 z-1">
+                        <thead className="sticky top-0 z-1 bg-white border-b shadow-sm">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <Reorder.Group
                                     key={headerGroup.id}
@@ -385,36 +388,36 @@ export function DataTable<TData, TValue>({
                                             value={header.column.id}
                                             as="th"
                                             className={cn(
-                                                "sticky top-0 z-1 px-4 py-4 text-left text-[10px] font-black uppercase tracking-wider",
-                                                "bg-slate-50/80 backdrop-blur-sm border-b border-r border-border text-slate-500",
+                                                "sticky top-0 z-1 px-4 py-3 text-left text-[10px] font-black uppercase tracking-wider",
+                                                "bg-slate-50 border-b border-r border-border text-slate-500",
                                                 "transition-colors duration-200 cursor-grab active:cursor-grabbing",
                                                 header.column.id === "select" &&
                                                     "w-10 px-2 text-center",
-                                                index === 0 && "border-l rounded-tl-lg",
+                                                index === 0 && "border-l rounded-tl",
                                                 index === headerGroup.headers.length - 1 &&
-                                                    "rounded-tr-lg",
+                                                    "rounded-tr",
                                             )}
                                         >
-                                            {header.isPlaceholder
-                                                ? null
-                                                : (
-                                                    <div 
-                                                        className={cn(
-                                                            "flex items-center gap-1",
-                                                            header.column.getCanSort() && "cursor-pointer select-none"
-                                                        )}
-                                                        onClick={header.column.getToggleSortingHandler()}
-                                                    >
-                                                        {flexRender(
-                                                            header.column.columnDef.header,
-                                                            header.getContext(),
-                                                        )}
-                                                        {{
-                                                            asc: <ArrowUp className="size-3" />,
-                                                            desc: <ArrowDown className="size-3" />,
-                                                        }[header.column.getIsSorted() as string] ?? null}
-                                                    </div>
-                                                )}
+                                            {header.isPlaceholder ? null : (
+                                                <div
+                                                    className={cn(
+                                                        "flex items-center gap-1",
+                                                        header.column.getCanSort() &&
+                                                            "cursor-pointer select-none",
+                                                    )}
+                                                    onClick={header.column.getToggleSortingHandler()}
+                                                >
+                                                    {flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext(),
+                                                    )}
+                                                    {{
+                                                        asc: <ArrowUp className="size-3" />,
+                                                        desc: <ArrowDown className="size-3" />,
+                                                    }[header.column.getIsSorted() as string] ??
+                                                        null}
+                                                </div>
+                                            )}
                                         </Reorder.Item>
                                     ))}
                                 </Reorder.Group>
@@ -483,7 +486,7 @@ export function DataTable<TData, TValue>({
 
                 <div className="flex flex-wrap items-center gap-4 lg:gap-8">
                     {/* Rows per page selection */}
-                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded border border-border">
                         <span className="text-[11px] font-black uppercase text-slate-400">
                             Baris:
                         </span>
@@ -494,10 +497,7 @@ export function DataTable<TData, TValue>({
                             <SelectTrigger className="h-7 w-16 border-none bg-transparent shadow-none focus:ring-0 font-bold p-0">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent
-                                align="end"
-                                className="rounded-2xl border-indigo-50 shadow-xl"
-                            >
+                            <SelectContent align="end" className="rounded border-border shadow-md">
                                 {(pageLength || [10, 25, 50, 100, 250, 500, 1000]).map((s) => (
                                     <SelectItem
                                         key={s}
@@ -522,38 +522,38 @@ export function DataTable<TData, TValue>({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-9 w-9 border-slate-200 shadow-none hover:bg-slate-50 hover:text-indigo-600 transition-all rounded-xl"
+                                className="h-8 w-8 border-border shadow-none hover:bg-slate-50 hover:text-primary transition-all rounded"
                                 onClick={() => onPageChange(1)}
                                 disabled={page === 1}
                             >
-                                <ChevronsLeft size={16} />
+                                <ChevronsLeft size={14} />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-9 w-9 border-slate-200 shadow-none hover:bg-slate-50 hover:text-indigo-600 transition-all rounded-xl"
+                                className="h-8 w-8 border-border shadow-none hover:bg-slate-50 hover:text-primary transition-all rounded"
                                 onClick={() => onPageChange(page - 1)}
                                 disabled={page === 1}
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={14} />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-9 w-9 border-slate-200 shadow-none hover:bg-slate-50 hover:text-indigo-600 transition-all rounded-xl"
+                                className="h-8 w-8 border-border shadow-none hover:bg-slate-50 hover:text-primary transition-all rounded"
                                 onClick={() => onPageChange(page + 1)}
                                 disabled={page >= totalPages}
                             >
-                                <ChevronRight size={16} />
+                                <ChevronRight size={14} />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-9 w-9 border-slate-200 shadow-none hover:bg-slate-50 hover:text-indigo-600 transition-all rounded-xl"
+                                className="h-8 w-8 border-border shadow-none hover:bg-slate-50 hover:text-primary transition-all rounded"
                                 onClick={() => onPageChange(totalPages)}
                                 disabled={page >= totalPages}
                             >
-                                <ChevronsRight size={16} />
+                                <ChevronsRight size={14} />
                             </Button>
                         </div>
                     </div>

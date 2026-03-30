@@ -144,10 +144,10 @@ export function StockTransferForm() {
     const filteredOutlets = useMemo(() => {
         if (!outlets?.data) return [];
         if (fromType === "WAREHOUSE" && fromId) {
-            return outlets.data.filter((o: any) => o.warehouse_id === fromId || o.warehouse?.id === fromId);
+            return outlets.data.filter((o: any) => o.warehouses?.some((w: any) => w.warehouse.id === fromId));
         }
         if (toType === "WAREHOUSE" && toId) {
-            return outlets.data.filter((o: any) => o.warehouse_id === toId || o.warehouse?.id === toId);
+            return outlets.data.filter((o: any) => o.warehouses?.some((w: any) => w.warehouse.id === toId));
         }
         return outlets.data;
     }, [outlets?.data, fromType, fromId, toType, toId]);
@@ -156,12 +156,12 @@ export function StockTransferForm() {
         if (!warehouses) return [];
         if (fromType === "OUTLET" && fromId) {
             const selectedOutlet = outlets?.data?.find((o: any) => o.id === fromId);
-            const wId = selectedOutlet?.warehouse_id || selectedOutlet?.warehouse?.id;
+            const wId = selectedOutlet?.warehouses?.[0]?.warehouse.id;
             if (wId) return warehouses.filter((w: any) => w.id === wId);
         }
         if (toType === "OUTLET" && toId) {
             const selectedOutlet = outlets?.data?.find((o: any) => o.id === toId);
-            const wId = selectedOutlet?.warehouse_id || selectedOutlet?.warehouse?.id;
+            const wId = selectedOutlet?.warehouses?.[0]?.warehouse.id;
             if (wId) return warehouses.filter((w: any) => w.id === wId);
         }
         return warehouses;

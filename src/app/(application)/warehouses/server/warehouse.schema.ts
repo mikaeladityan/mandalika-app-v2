@@ -25,12 +25,14 @@ const ResponseWarehouseAddressSchema = RequestWarehouseAddressSchema.extend({
 });
 
 export const RequestWarehouseSchema = z.object({
+    code: z.string().min(1, "Kode gudang tidak boleh kosong").max(50, "Maksimal 50 karakter"),
     name: z.string(),
     type: z.enum(["RAW_MATERIAL", "FINISH_GOODS"]),
     warehouse_address: RequestWarehouseAddressSchema.optional(),
 });
 
 export const ResponseWarehouseSchema = RequestWarehouseSchema.pick({
+    code: true,
     name: true,
     type: true,
 }).extend({

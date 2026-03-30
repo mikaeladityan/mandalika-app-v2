@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { CreateProduct } from "@/components/pages/products/create";
+import { CreateProduct } from "@/components/pages/products/form/create";
 
 export default function CreateProductPage() {
     return (

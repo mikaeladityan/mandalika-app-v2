@@ -57,9 +57,9 @@ export function useFormWarehouse(id?: number) {
         },
     });
 
-    const deleted = useMutation<unknown, ResponseError>({
+    const deleted = useMutation<unknown, ResponseError, { force?: boolean }>({
         mutationKey: ["warehouse", "delete", id],
-        mutationFn: () => WarehouseService.deleted(Number(id)),
+        mutationFn: ({ force }) => WarehouseService.deleted(Number(id), force),
         onError: (err) => FetchError(err, setErr),
         onSuccess: () => {
             setNotif({

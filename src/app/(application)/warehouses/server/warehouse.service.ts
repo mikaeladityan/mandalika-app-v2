@@ -70,10 +70,10 @@ export class WarehouseService {
         }
     }
 
-    static async deleted(id: number) {
+    static async deleted(id: number, force: boolean = false) {
         try {
             await setupCSRFToken();
-            await api.delete(`${API}/${id}`);
+            await api.delete(`${API}/${id}`, { params: { force } });
         } catch (error) {
             throw error;
         }

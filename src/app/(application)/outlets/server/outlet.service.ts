@@ -1,5 +1,7 @@
 import { api, setupCSRFToken } from "@/lib/api";
 import {
+    BulkDeleteDTO,
+    BulkStatusDTO,
     QueryOutletDTO,
     RequestOutletDTO,
     ResponseOutletDTO,
@@ -36,19 +38,10 @@ export class OutletService {
     static async toggleStatus(id: number) {
         try {
             await setupCSRFToken();
-            const { data } = await api.patch<ApiSuccessResponse<{ id: number; is_active: boolean }>>(
-                `${API}/${id}/status`,
-            );
+            const { data } = await api.patch<
+                ApiSuccessResponse<{ id: number; is_active: boolean }>
+            >(`${API}/${id}/status`);
             return data.data;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    static async delete(id: number) {
-        try {
-            await setupCSRFToken();
-            await api.delete(`${API}/${id}`);
         } catch (error) {
             throw error;
         }
@@ -78,6 +71,26 @@ export class OutletService {
         try {
             await setupCSRFToken();
             const { data } = await api.delete(`${API}/clean`);
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async bulkStatus(body: BulkStatusDTO) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.post<ApiSuccessResponse<any>>(`${API}/bulk-status`, body);
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async bulkDelete(body: BulkDeleteDTO) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.post<ApiSuccessResponse<any>>(`${API}/bulk-delete`, body);
             return data.data;
         } catch (error) {
             throw error;

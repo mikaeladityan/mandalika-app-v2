@@ -81,7 +81,7 @@ export const ForecastColumns = ({
 
     const forecastColumn: ColumnDef<ResponseForecastDTO> = {
         id: "forecast-values",
-        header: () => {
+        header: ({ table }) => {
             const first = periods[0];
             const last = periods[periods.length - 1];
             const rangeText =
@@ -89,23 +89,64 @@ export const ForecastColumns = ({
                     ? `${formatMonthYear(first.year, first.month)} — ${formatMonthYear(last.year, last.month)}`
                     : "";
 
+            const firstRow = table.getFilteredRowModel().rows[0]?.original;
+
             return (
-                <div className="flex flex-col items-start gap-0 min-w-[200px]">
-                    <span className="font-black text-[10px] uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                        Forecast Value
-                        <div className="h-1 w-1 rounded-full bg-primary" />
-                        <span className="text-primary font-bold">{rangeText}</span>
-                    </span>
-                    <span className="text-[8px] text-slate-400 font-medium italic">
-                        Trend & Analysis Data Bulanan
-                    </span>
+                <div className="flex flex-col items-start justify-center gap-1.5 py-1">
+                    {/* <span className="font-black text-[9px] uppercase tracking-tighter text-slate-800 flex items-center gap-1.5 whitespace-nowrap">
+                        <TrendingUpDown className="size-3 text-primary" />
+                        Forecast Analytics
+                        <span className="text-slate-400 font-bold ml-1">{rangeText}</span>
+                    </span> */}
+
+                    <div className="flex items-center gap-1">
+                        {periods.map((p, idx) => {
+                            const isCurrent = p.year === currentYear && p.month === currentMonth;
+                            const monthData = firstRow?.monthly_data.find(
+                                (m) => m.year === p.year && m.month === p.month,
+                            );
+                            const pct = monthData?.percentage_value;
+
+                            return (
+                                <div
+                                    key={`head-${p.year}-${p.month}-${idx}`}
+                                    className={cn(
+                                        "min-w-[64px] flex flex-col items-center justify-center px-2 py-0.5 rounded border transition-all relative",
+                                        isCurrent
+                                            ? "bg-primary/5 border-primary/20"
+                                            : "bg-slate-50 border-slate-100",
+                                    )}
+                                >
+                                    <span className="text-[8px] font-black text-nowrap text-slate-500 uppercase tracking-tighter">
+                                        {formatMonthYear(p.year, p.month)}
+                                    </span>
+                                    {pct != null && (
+                                        <span
+                                            className={cn(
+                                                "text-[9px] font-black tracking-tighter",
+                                                Number(pct) < 0
+                                                    ? "text-rose-600"
+                                                    : "text-emerald-600",
+                                            )}
+                                        >
+                                            {Number(pct) > 0 ? "+" : ""}
+                                            {pct}%
+                                        </span>
+                                    )}
+                                    {isCurrent && (
+                                        <div className="absolute -top-0.5 -right-0.5 size-1 rounded-full bg-primary" />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             );
         },
         size: Math.max(300, Number(horizon) * 90),
         cell: ({ row }) => {
             return (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     {periods.map((p, idx) => {
                         const found = row.original.monthly_data.find(
                             (m) => m.year === p.year && m.month === p.month,
@@ -152,14 +193,14 @@ export const ForecastColumns = ({
                                                 });
                                             }}
                                             className={cn(
-                                                "group flex flex-col items-start gap-0 p-1.5 rounded-lg border transition-all min-w-[72px]",
+                                                "group flex items-center justify-center gap-1.5 p-1 rounded-md border transition-all min-w-[64px] h-9",
                                                 is_display
                                                     ? "cursor-pointer"
                                                     : "cursor-default select-none",
                                                 isAdjusted
                                                     ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
                                                     : isCurrent
-                                                      ? "bg-slate-50 border-primary/30"
+                                                      ? "bg-slate-50 border-primary/10"
                                                       : "bg-white border-transparent",
                                                 is_display &&
                                                     !isAdjusted &&
@@ -168,63 +209,28 @@ export const ForecastColumns = ({
                                                 is_display && isCurrent && "hover:bg-white",
                                             )}
                                         >
-                                            <div className="flex items-center justify-between w-full gap-1">
-                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
-                                                    {formatMonthYear(p.year, p.month)}
-                                                </span>
-                                                {isCurrent && (
-                                                    <div className="size-1 rounded-full bg-primary shadow-[0_0_8px_rgba(0,174,239,0.5)]" />
+                                            <span
+                                                className={cn(
+                                                    "text-[10px] font-bold tabular-nums tracking-tight",
+                                                    isAdjusted ? "text-primary" : "text-slate-900",
+                                                    !found && "text-slate-300 italic",
                                                 )}
-                                            </div>
-
-                                            <div className="flex items-center gap-1">
-                                                <span
-                                                    className={cn(
-                                                        "text-[11px] font-bold tabular-nums tracking-tight",
-                                                        isAdjusted
-                                                            ? "text-primary"
-                                                            : "text-slate-900",
-                                                        !found && "text-slate-300 italic",
-                                                    )}
-                                                >
-                                                    {found
-                                                        ? Math.round(
-                                                              Number(
-                                                                  found.final_forecast ??
-                                                                      found.base_forecast,
-                                                              ),
-                                                          ).toLocaleString("id-ID")
-                                                        : "0"}
-                                                </span>
-                                                {found && (
-                                                    <TrendIcon
-                                                        className={cn("size-3", trendColor)}
-                                                    />
-                                                )}
-                                            </div>
-
-                                            {found?.percentage_value != null &&
-                                                row.original.product_type?.toLowerCase() !==
-                                                    "atomizer" && (
-                                                    <div className="flex items-center gap-0.5 mt-0.5">
-                                                        <span
-                                                            className={cn(
-                                                                "text-[9px] font-bold px-1 rounded-sm",
-                                                                Number(found.percentage_value) > 0
-                                                                    ? "text-emerald-700 bg-emerald-50"
-                                                                    : "text-slate-500 bg-slate-50",
-                                                            )}
-                                                        >
-                                                            {Number(found.percentage_value) > 0
-                                                                ? "+"
-                                                                : ""}
-                                                            {found.percentage_value}%
-                                                        </span>
-                                                    </div>
-                                                )}
+                                            >
+                                                {found
+                                                    ? Math.round(
+                                                          Number(
+                                                              found.final_forecast ??
+                                                                  found.base_forecast,
+                                                          ),
+                                                      ).toLocaleString("id-ID")
+                                                    : "0"}
+                                            </span>
+                                            {found && (
+                                                <TrendIcon className={cn("size-3", trendColor)} />
+                                            )}
                                             {!found && (
-                                                <div className="text-[8px] text-slate-400 mt-1 font-medium">
-                                                    Klik untuk isi
+                                                <div className="text-[14px] text-slate-300">
+                                                    <Minus className="size-3" />
                                                 </div>
                                             )}
                                         </div>
@@ -273,8 +279,10 @@ export const ForecastColumns = ({
                                                         </span>
                                                         <span className="font-mono font-black text-sm">
                                                             {Number(
-                                                                found.final_forecast ||
-                                                                    found.base_forecast,
+                                                                Math.round(
+                                                                    found.final_forecast ||
+                                                                        found.base_forecast,
+                                                                ),
                                                             ).toLocaleString()}
                                                         </span>
                                                     </div>
@@ -305,25 +313,22 @@ export const ForecastColumns = ({
             cell: ({ row }) => {
                 const [open, setOpen] = useState(false);
                 return (
-                    <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
-                        <div className="flex flex-col gap-1">
-                            <Button
-                                size="icon"
-                                className="rounded-md cursor-pointer hover:scale-110 transition-transform bg-primary/5 hover:bg-primary/10 border-primary/20"
-                                variant="outline"
-                                title="Run Forecast"
-                                onClick={() => setOpen(true)}
-                            >
-                                <TrendingUpDown className="text-primary" />
-                            </Button>
-                            <ForecastRunDialog
-                                open={open}
-                                onOpenChange={setOpen}
-                                productId={row.original.product_id}
-                                productName={row.original.product_name}
-                            />
-                        </div>
-                        <p className="text-xs text-muted-foreground font-bold truncate">
+                    <div className="flex flex-row items-center py-1 group/row gap-2">
+                        <Button
+                            className="h-7 w-7 rounded-md cursor-pointer hover:scale-110 transition-transform bg-primary/5 hover:bg-primary/10 border-primary/20 p-0"
+                            variant="outline"
+                            title="Run Forecast"
+                            onClick={() => setOpen(true)}
+                        >
+                            <TrendingUpDown className="text-primary size-3.5" />
+                        </Button>
+                        <ForecastRunDialog
+                            open={open}
+                            onOpenChange={setOpen}
+                            productId={row.original.product_id}
+                            productName={row.original.product_name}
+                        />
+                        <p className="text-[10px] text-muted-foreground font-bold truncate">
                             {row.original.product_code}
                         </p>
                     </div>
@@ -336,12 +341,12 @@ export const ForecastColumns = ({
             size: 300,
             cell: ({ row }) => {
                 return (
-                    <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
+                    <div className="flex flex-row space-x-2 items-center py-1 group/row">
                         <Link
                             href={`/products/${row.original.product_id}`}
                             className="overflow-hidden"
                         >
-                            <p className="font-bold text-[11px] truncate leading-tight text-primary">
+                            <p className="font-bold text-[10px] truncate leading-tight text-primary">
                                 {row.original.product_name}{" "}
                             </p>
                         </Link>
@@ -355,12 +360,12 @@ export const ForecastColumns = ({
             size: 300,
             cell: ({ row }) => {
                 return (
-                    <div className="flex flex-row space-x-2 items-center py-1.5 group/row">
+                    <div className="flex flex-row space-x-2 items-center py-1 group/row">
                         <Link
                             href={`/products/${row.original.product_id}`}
                             className="overflow-hidden"
                         >
-                            <p className="font-bold text-[11px] truncate leading-tight text-primary">
+                            <p className="font-bold text-[10px] truncate leading-tight text-primary">
                                 {row.original.product_type.toLocaleUpperCase()}
                             </p>
                         </Link>
@@ -424,12 +429,12 @@ export const ForecastColumns = ({
                     return <div className="text-xs text-muted-foreground px-4">–</div>;
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="font-bold text-primary text-[11px] leading-tight">
+                    <div className="flex flex-col py-1">
+                        <span className="font-bold text-primary text-[10px] leading-tight">
                             {Math.round(
                                 Number(s.safety_stock_summary.total_forecast || 0),
                             ).toLocaleString("id-ID")}{" "}
-                            <span className="text-[9px] font-medium text-primary/60">ML</span>
+                            <span className="text-[8px] font-medium text-primary/60">ML</span>
                         </span>
                     </div>
                 );
@@ -455,12 +460,12 @@ export const ForecastColumns = ({
                     return <div className="text-xs text-muted-foreground px-4">–</div>;
 
                 return (
-                    <div className="flex flex-co">
-                        <span className="font-bold text-rose-700 text-[11px] leading-tight">
+                    <div className="flex flex-col py-1">
+                        <span className="font-bold text-rose-700 text-[10px] leading-tight">
                             {Math.round(
                                 Number(s.safety_stock_summary.total_demand || 0),
                             ).toLocaleString("id-ID")}{" "}
-                            <span className="text-[9px] font-medium text-rose-500">ML</span>
+                            <span className="text-[8px] font-medium text-rose-500">ML</span>
                         </span>
                     </div>
                 );
@@ -503,15 +508,13 @@ export const ForecastColumns = ({
                     return <div className="text-xs text-muted-foreground px-4">–</div>;
 
                 return (
-                    <div className="flex flex-col">
-                        <div className="flex flex-col">
-                            <span className="font-bold text-emerald-700 text-[11px] leading-tight">
-                                {Math.round(
-                                    Number(s.safety_stock_summary.safety_stock_quantity || 0),
-                                ).toLocaleString("id-ID")}{" "}
-                                <span className="text-[9px] font-medium text-emerald-500">ML</span>
-                            </span>
-                        </div>
+                    <div className="flex flex-col py-1">
+                        <span className="font-bold text-emerald-700 text-[10px] leading-tight">
+                            {Math.round(
+                                Number(s.safety_stock_summary.safety_stock_quantity || 0),
+                            ).toLocaleString("id-ID")}{" "}
+                            <span className="text-[8px] font-medium text-emerald-500">ML</span>
+                        </span>
                     </div>
                 );
             },

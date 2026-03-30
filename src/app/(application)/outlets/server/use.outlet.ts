@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { QueryOutletDTO, RequestOutletDTO, UpdateOutletDTO } from "./outlet.schema";
+import { BulkDeleteDTO, BulkStatusDTO, QueryOutletDTO, RequestOutletDTO, UpdateOutletDTO } from "./outlet.schema";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { OutletService } from "./outlet.service";
@@ -83,33 +83,46 @@ export function useActionOutlet() {
         onError: (err) => FetchError(err, setErr),
     });
 
-    const deleteOutlet = useMutation<unknown, ResponseError, { id: number }>({
-        mutationKey: ["outlets", "delete"],
-        mutationFn: ({ id }) => OutletService.delete(id),
-        onSuccess: () => {
-            setNotif({
-                title: "Hapus Outlet",
-                message: "Outlet berhasil dipindahkan ke sampah",
-            });
-            queryClient.invalidateQueries({ queryKey: ["outlets"] });
-        },
-        onError: (err) => FetchError(err, setErr),
-    });
-
     const clean = useMutation<unknown, ResponseError, void>({
         mutationKey: ["outlets", "clean"],
         mutationFn: OutletService.clean,
-        onSuccess: () => {
+        onSuccess: (data: any) => {
             setNotif({
                 title: "Bersihkan Sampah",
-                message: "Berhasil membersihkan outlet yang dihapus permanen",
+                message: data.message || "Berhasil membersihkan outlet yang dihapus permanen",
             });
             queryClient.invalidateQueries({ queryKey: ["outlets"] });
         },
         onError: (err) => FetchError(err, setErr),
     });
 
-    return { toggleStatus, deleteOutlet, clean };
+    const bulkStatus = useMutation<unknown, ResponseError, BulkStatusDTO>({
+        mutationKey: ["outlets", "bulkStatus"],
+        mutationFn: (body) => OutletService.bulkStatus(body),
+        onSuccess: () => {
+            setNotif({
+                title: "Aksi Massal",
+                message: "Status outlet berhasil diperbarui secara massal",
+            });
+            queryClient.invalidateQueries({ queryKey: ["outlets"] });
+        },
+        onError: (err) => FetchError(err, setErr),
+    });
+
+    const bulkDelete = useMutation<unknown, ResponseError, BulkDeleteDTO>({
+        mutationKey: ["outlets", "bulkDelete"],
+        mutationFn: (body) => OutletService.bulkDelete(body),
+        onSuccess: (data: any) => {
+            setNotif({
+                title: "Hapus Massal",
+                message: data.message || "Berhasil menghapus outlet secara massal",
+            });
+            queryClient.invalidateQueries({ queryKey: ["outlets"] });
+        },
+        onError: (err) => FetchError(err, setErr),
+    });
+
+    return { toggleStatus, clean, bulkStatus, bulkDelete };
 }
 
 export function useOutletTableState() {
@@ -136,8 +149,12 @@ export function useOutletTableState() {
     );
 
     /* ================= STATUS ================= */
-    const is_active = get("is_active");
-    const set_active = (val?: "true" | "false") => batchSet({ is_active: val, page: "1" });
+    const status = get("status");
+    const setStatus = (val?: "active" | "deleted") => batchSet({ status: val, page: "1" });
+
+    /* ================= TYPE ================= */
+    const type = get("type") as QueryOutletDTO["type"];
+    const setType = (val?: QueryOutletDTO["type"]) => batchSet({ type: val, page: "1" });
 
     /* ================= WAREHOUSE ================= */
     const rawWarehouseId = get("warehouse_id");
@@ -153,9 +170,10 @@ export function useOutletTableState() {
     const queryParams = useMemo<QueryOutletDTO>(
         () => ({
             page: Number(get("page") ?? 1),
-            take: Number(get("take") ?? 25),
+            take: Number(get("take") ?? 50),
             search: get("search") ?? undefined,
-            is_active: (get("is_active") as any) ?? undefined,
+            status: (get("status") as any) ?? "active",
+            type: (get("type") as any) ?? undefined,
             warehouse_id: warehouseId,
             sortBy: sortBy as QueryOutletDTO["sortBy"],
             sortOrder: sortOrder as QueryOutletDTO["sortOrder"],
@@ -169,8 +187,10 @@ export function useOutletTableState() {
         sortBy,
         sortOrder,
         onSort,
-        is_active,
-        set_active,
+        status,
+        setStatus,
+        type,
+        setType,
         warehouseId,
         setWarehouseId,
         setPage,

@@ -15,6 +15,7 @@ export function isPathActive(pathname: string, target: string) {
         // Prevent known sibling sub-modules from falsely highlighting their parent
         const blockedSubmodules = [
             "stocks",
+            "stock-locations",
             "import",
             "type",
             "size",
