@@ -82,7 +82,7 @@ export function StockTransferForm() {
 
     const { outlets, isLoading: isOutletLoading } = useOutlets({
         take: 100,
-        is_active: "true",
+        status: "active",
     });
 
     const form = useForm<RequestStockTransferDTO>({

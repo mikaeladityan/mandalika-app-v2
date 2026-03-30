@@ -100,9 +100,9 @@ export function OutletDetail({ id }: OutletDetailProps) {
                                 </h3>
                                 <div>
                                     <span
-                                        className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide inline-block ${data.is_active ? "bg-emerald-100 text-emerald-700 border border-emerald-200" : "bg-rose-100 text-rose-700 border border-rose-200"}`}
+                                        className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide inline-block ${!data.deleted_at ? "bg-emerald-100 text-emerald-700 border border-emerald-200" : "bg-rose-100 text-rose-700 border border-rose-200"}`}
                                     >
-                                        {data.is_active ? "Aktif Beroperasi" : "Tidak Aktif"}
+                                        {!data.deleted_at ? "Aktif Beroperasi" : "Tidak Aktif"}
                                     </span>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@ export function OutletDetail({ id }: OutletDetailProps) {
                                     Gudang Utama (Parent)
                                 </h3>
                                 <p className="font-bold text-slate-800 text-sm sm:text-base">
-                                    {data.warehouses?.length ? data.warehouses.map(w => w.name).join(", ") : "-"}
+                                    {data.warehouses?.length ? data.warehouses.map(w => w.warehouse.name).join(", ") : "-"}
                                 </p>
                             </div>
                             <div className="flex flex-col gap-1.5">

@@ -76,7 +76,7 @@ export function useActionOutlet() {
         onSuccess: (data: any) => {
             setNotif({
                 title: "Status Outlet",
-                message: `Outlet ${data.name} sekarang ${data.is_active ? "Aktif" : "Non-Aktif"}`,
+                message: `Outlet ${data.name} sekarang ${!data.deleted_at ? "Aktif" : "Non-Aktif"}`,
             });
             queryClient.invalidateQueries({ queryKey: ["outlets"] });
         },

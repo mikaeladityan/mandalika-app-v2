@@ -40,7 +40,7 @@ export const ResponseOutletSchema = z.object({
     name: z.string(),
     code: z.string(),
     phone: z.string().nullable(),
-    is_active: z.boolean(),
+    is_active: z.boolean().optional(),
     type: z.enum(["RETAIL", "MARKETPLACE"]),
     warehouses: z
         .array(
