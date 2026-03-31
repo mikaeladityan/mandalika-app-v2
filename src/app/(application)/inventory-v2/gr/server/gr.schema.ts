@@ -1,18 +1,18 @@
 import { z } from "zod";
 
-export const CreateGoodsReceiptItemSchema = z.object({
+export const RequestGoodsReceiptItemSchema = z.object({
     product_id: z.coerce.number(),
     quantity_planned: z.coerce.number().min(0),
     quantity_actual: z.coerce.number().min(0),
     notes: z.string().optional(),
 });
 
-export const CreateGoodsReceiptSchema = z.object({
+export const RequestGoodsReceiptSchema = z.object({
     warehouse_id: z.coerce.number(),
     date: z.string().min(1, "Tanggal harus diisi"),
     type: z.enum(["QC_FG", "MANUAL"]).default("MANUAL"),
     notes: z.string().optional(),
-    items: z.array(CreateGoodsReceiptItemSchema).min(1),
+    items: z.array(RequestGoodsReceiptItemSchema).min(1),
 });
 
 export const QueryGoodsReceiptSchema = z.object({
@@ -21,47 +21,40 @@ export const QueryGoodsReceiptSchema = z.object({
     search: z.string().optional(),
     warehouse_id: z.string().transform(Number).optional(),
     status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]).optional(),
+    type: z.enum(["QC_FG", "MANUAL"]).optional(),
 });
-export interface CreateGoodsReceiptDTO {
-    warehouse_id: number;
-    date: string;
-    type: "QC_FG" | "MANUAL";
-    notes?: string;
-    items: {
-        product_id: number;
-        quantity_planned: number;
-        quantity_actual: number;
-        notes?: string;
-    }[];
-}
+
+export const ResponseGoodsReceiptItemSchema = z.object({
+    id: z.number(),
+    gr_id: z.number(),
+    product_id: z.number(),
+    product: z.object({
+        name: z.string(),
+        code: z.string(),
+        product_type: z.object({ name: z.string() }).optional(),
+        size: z.object({ size: z.number() }).optional(),
+    }),
+    label: z.string(),
+    quantity_planned: z.number(),
+    quantity_actual: z.number(),
+    notes: z.string().nullable(),
+});
+
+export const ResponseGoodsReceiptSchema = z.object({
+    id: z.number(),
+    gr_number: z.string(),
+    date: z.string(),
+    status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
+    type: z.enum(["QC_FG", "MANUAL"]),
+    warehouse_id: z.number(),
+    warehouse: z.object({ name: z.string() }),
+    notes: z.string().nullable(),
+    items: z.array(ResponseGoodsReceiptItemSchema).optional(),
+    _count: z.object({ items: z.number() }).optional(),
+    created_at: z.string(),
+});
+
+export type RequestGoodsReceiptDTO = z.input<typeof RequestGoodsReceiptSchema>;
+export type ResponseGoodsReceiptDTO = z.infer<typeof ResponseGoodsReceiptSchema>;
+export type ResponseGoodsReceiptItemDTO = z.infer<typeof ResponseGoodsReceiptItemSchema>;
 export type QueryGoodsReceiptDTO = z.infer<typeof QueryGoodsReceiptSchema>;
-
-export interface GoodsReceiptDTO {
-    id: number;
-    gr_number: string;
-    date: string;
-    status: "PENDING" | "COMPLETED" | "CANCELLED";
-    type: "QC_FG" | "MANUAL";
-    warehouse_id: number;
-    warehouse: { name: string };
-    notes: string | null;
-    items?: GoodsReceiptItemDTO[];
-    _count?: { items: number };
-    created_at: string;
-}
-
-export interface GoodsReceiptItemDTO {
-    id: number;
-    gr_id: number;
-    product_id: number;
-    product: { 
-        name: string; 
-        code: string;
-        product_type?: { name: string };
-        size?: { size: number };
-    };
-    label: string;
-    quantity_planned: number;
-    quantity_actual: number;
-    notes: string | null;
-}

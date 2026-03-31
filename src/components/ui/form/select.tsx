@@ -73,7 +73,7 @@ export function SelectForm({
                     : options;
 
                 return (
-                    <div className={cn("w-full space-y-1", className)}>
+                    <div className={cn("w-full", className)}>
                         {label && (
                             <label className="text-sm font-medium flex items-center">
                                 {label}

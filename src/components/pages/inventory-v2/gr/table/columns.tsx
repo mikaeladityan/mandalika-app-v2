@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { GoodsReceiptDTO } from "@/app/(application)/inventory-v2/gr/server/gr.schema";
+import { ResponseGoodsReceiptDTO } from "@/app/(application)/inventory-v2/gr/server/gr.schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, CheckCircle2, MoreHorizontal, XCircle } from "lucide-react";
@@ -19,7 +19,7 @@ interface ColumnProps {
     onCancel: (id: number) => void;
 }
 
-export const GRColumns = ({ onDetail, onPost, onCancel }: ColumnProps): ColumnDef<GoodsReceiptDTO>[] => [
+export const GRColumns = ({ onDetail, onPost, onCancel }: ColumnProps): ColumnDef<ResponseGoodsReceiptDTO>[] => [
     {
         accessorKey: "gr_number",
         header: "No. GR",

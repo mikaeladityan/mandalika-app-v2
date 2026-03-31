@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GoodsReceiptService } from "./gr.service";
 import { FetchError, ResponseError } from "@/lib/utils/error";
-import { CreateGoodsReceiptDTO, QueryGoodsReceiptDTO } from "./gr.schema";
+import { RequestGoodsReceiptDTO, QueryGoodsReceiptDTO } from "./gr.schema";
 import { useSetAtom } from "jotai";
 import { errorAtom, notificationAtom } from "@/shared/store";
 import { useDebounce, useQueryParams } from "@/shared/hooks";
@@ -36,7 +36,7 @@ export function useFormGoodsReceipt() {
     const setNotif = useSetAtom(notificationAtom);
     const queryClient = useQueryClient();
 
-    const create = useMutation<unknown, ResponseError, CreateGoodsReceiptDTO>({
+    const create = useMutation<unknown, ResponseError, RequestGoodsReceiptDTO>({
         mutationKey: ["goods-receipt", "create"],
         mutationFn: (body) => GoodsReceiptService.create(body),
         onSuccess: () => {
@@ -125,6 +125,7 @@ export function useGRTableState() {
     const setPageSize = (take: number) => batchSet({ take: String(take), page: "1" });
     const setWarehouse = (id?: number) => batchSet({ warehouse_id: id ? String(id) : undefined, page: "1" });
     const setStatus = (status?: string) => batchSet({ status: status || undefined, page: "1" });
+    const setType = (type?: string) => batchSet({ type: type || undefined, page: "1" });
 
     const queryParams = useMemo<QueryGoodsReceiptDTO>(
         () => ({
@@ -133,6 +134,7 @@ export function useGRTableState() {
             search: get("search") ?? undefined,
             warehouse_id: get("warehouse_id") ? Number(get("warehouse_id")) : undefined,
             status: (get("status") as any) ?? undefined,
+            type: (get("type") as any) ?? undefined,
         }),
         [searchParams],
     );
@@ -145,5 +147,6 @@ export function useGRTableState() {
         setPageSize,
         setWarehouse,
         setStatus,
+        setType,
     };
 }

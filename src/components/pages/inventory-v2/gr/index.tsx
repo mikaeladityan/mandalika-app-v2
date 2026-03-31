@@ -138,10 +138,12 @@ export function GoodsReceipt() {
                                 placeholder="Pilih Gudang"
                                 value={table.queryParams.warehouse_id ?? null}
                                 options={
-                                    warehouses?.map((w: any) => ({
-                                        value: w.id,
-                                        label: w.name,
-                                    })) ?? []
+                                    warehouses
+                                        ?.filter((w: any) => w.type === "FINISH_GOODS")
+                                        .map((w: any) => ({
+                                            value: w.id,
+                                            label: w.name,
+                                        })) ?? []
                                 }
                                 onChange={(val) => table.setWarehouse(Number(val))}
                                 onReset={() => table.setWarehouse(undefined)}
@@ -149,6 +151,30 @@ export function GoodsReceipt() {
                                 canSearching={true}
                                 className="w-full md:w-56"
                             />
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-2">
+                                        <Filter className="h-4 w-4" />
+                                        {table.queryParams.type === "MANUAL"
+                                            ? "Manual"
+                                            : table.queryParams.type === "QC_FG"
+                                              ? "QC Production"
+                                              : "Semua Tipe"}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => table.setType(undefined)}>
+                                        Semua Tipe
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => table.setType("MANUAL")}>
+                                        Manual
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => table.setType("QC_FG")}>
+                                        QC Production
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
