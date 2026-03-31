@@ -97,10 +97,12 @@ export function CreateGRBody({ onSuccess, onCancel }: Props) {
                         label="Gudang Tujuan"
                         placeholder="Pilih Gudang..."
                         options={
-                            warehouses?.map((w: any) => ({
-                                value: w.id,
-                                label: w.name,
-                            })) ?? []
+                            warehouses
+                                ?.filter((w: any) => w.type === "FINISH_GOODS")
+                                .map((w: any) => ({
+                                    value: w.id,
+                                    label: w.name,
+                                })) ?? []
                         }
                         isLoading={whLoading}
                         error={form.formState.errors.warehouse_id}

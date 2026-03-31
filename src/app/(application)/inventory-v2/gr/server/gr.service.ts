@@ -54,4 +54,41 @@ export class GoodsReceiptService {
             throw error;
         }
     }
+
+    static async export(params: QueryGoodsReceiptDTO) {
+        try {
+            const { data } = await api.get(`${API}/export`, {
+                params,
+                responseType: "blob",
+            });
+
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `Data-GR-Export.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async exportDetail(id: number, grNumber: string) {
+        try {
+            const { data } = await api.get(`${API}/${id}/export`, {
+                responseType: "blob",
+            });
+
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `GR-Export-${grNumber}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            throw error;
+        }
+    }
 }

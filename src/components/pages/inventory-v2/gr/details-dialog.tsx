@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { useGoodsReceipt } from "@/app/(application)/inventory-v2/gr/server/use.gr";
+import {
+    useExportGRDetail,
+    useFormGoodsReceipt,
+    useGoodsReceipt,
+} from "@/app/(application)/inventory-v2/gr/server/use.gr";
 import {
     Dialog,
     DialogContent,
@@ -13,7 +17,16 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Package, Calendar, User, FileText, Loader2, Warehouse, XCircle } from "lucide-react";
+import {
+    Package,
+    Calendar,
+    User,
+    FileText,
+    Loader2,
+    Warehouse,
+    XCircle,
+    FileDown,
+} from "lucide-react";
 import {
     Table,
     TableBody,
@@ -22,7 +35,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useFormGoodsReceipt } from "@/app/(application)/inventory-v2/gr/server/use.gr";
 import { Button } from "@/components/ui/button";
 
 interface DetailsDialogProps {
@@ -34,6 +46,7 @@ interface DetailsDialogProps {
 export function GoodsReceiptDetailsDialog({ id, open, onOpenChange }: DetailsDialogProps) {
     const { detail, isLoading } = useGoodsReceipt(undefined, id ?? undefined);
     const { post, cancel } = useFormGoodsReceipt();
+    const { exportDetailData, isExportingDetail } = useExportGRDetail();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
@@ -162,34 +175,55 @@ export function GoodsReceiptDetailsDialog({ id, open, onOpenChange }: DetailsDia
                             </div>
                         </div>
 
-                        {detail.status === "PENDING" && (
-                            <div className="mt-8 pt-4 border-t flex justify-end gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setConfirmCancelOpen(true)}
-                                    className="uppercase text-[11px] font-bold tracking-wider text-red-600 border-red-200 hover:bg-red-50"
-                                >
-                                    Batalkan
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => onOpenChange(false)}
-                                    className="uppercase text-[11px] font-bold tracking-wider"
-                                >
-                                    Tutup
-                                </Button>
-                                <Button
-                                    onClick={() => setConfirmOpen(true)}
-                                    disabled={post.isPending}
-                                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[11px] tracking-wider"
-                                >
-                                    {post.isPending && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    )}
-                                    Posting Sekarang
-                                </Button>
-                            </div>
-                        )}
+                        <div className="mt-8 pt-4 border-t flex justify-end gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    exportDetailData({
+                                        id: detail.id,
+                                        grNumber: detail.gr_number,
+                                    })
+                                }
+                                disabled={isExportingDetail}
+                                className="bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-bold uppercase text-[11px] tracking-wider"
+                            >
+                                {isExportingDetail ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
+                                ) : (
+                                    <FileDown className="mr-2 h-4 w-4 text-emerald-600" />
+                                )}
+                                Export XLSX
+                            </Button>
+
+                            {detail.status === "PENDING" && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setConfirmCancelOpen(true)}
+                                        className="uppercase text-[11px] font-bold tracking-wider text-red-600 border-red-200 hover:bg-red-50"
+                                    >
+                                        Batalkan
+                                    </Button>
+                                    <Button
+                                        onClick={() => setConfirmOpen(true)}
+                                        disabled={post.isPending}
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[11px] tracking-wider"
+                                    >
+                                        {post.isPending && (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        Posting Sekarang
+                                    </Button>
+                                </>
+                            )}
+                            <Button
+                                variant="outline"
+                                onClick={() => onOpenChange(false)}
+                                className="uppercase text-[11px] font-bold tracking-wider"
+                            >
+                                Tutup
+                            </Button>
+                        </div>
 
                         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                             <DialogContent className="max-w-md p-6">

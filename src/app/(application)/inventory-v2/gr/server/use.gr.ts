@@ -70,6 +70,44 @@ export function useFormGoodsReceipt() {
     return { create, post, cancel };
 }
 
+export function useExportGoodsReceipt() {
+    const setErr = useSetAtom(errorAtom);
+    const setNotif = useSetAtom(notificationAtom);
+
+    const exportMutation = useMutation<void, ResponseError, QueryGoodsReceiptDTO>({
+        mutationKey: ["goods-receipt", "export"],
+        mutationFn: (params) => GoodsReceiptService.export(params),
+        onSuccess: () => {
+            setNotif({ title: "Export", message: "Data Goods Receipt berhasil diunduh" });
+        },
+        onError: (err) => FetchError(err, setErr),
+    });
+
+    return {
+        exportData: exportMutation.mutate,
+        isExporting: exportMutation.isPending,
+    };
+}
+
+export function useExportGRDetail() {
+    const setErr = useSetAtom(errorAtom);
+    const setNotif = useSetAtom(notificationAtom);
+
+    const exportMutation = useMutation<void, ResponseError, { id: number; grNumber: string }>({
+        mutationKey: ["goods-receipt", "export-detail"],
+        mutationFn: ({ id, grNumber }) => GoodsReceiptService.exportDetail(id, grNumber),
+        onSuccess: () => {
+            setNotif({ title: "Export", message: "Detail Goods Receipt berhasil diunduh" });
+        },
+        onError: (err) => FetchError(err, setErr),
+    });
+
+    return {
+        exportDetailData: exportMutation.mutate,
+        isExportingDetail: exportMutation.isPending,
+    };
+}
+
 export function useGRTableState() {
     const { get, batchSet, searchParams } = useQueryParams();
 

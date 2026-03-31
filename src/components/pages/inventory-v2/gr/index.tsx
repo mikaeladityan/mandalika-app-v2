@@ -10,6 +10,7 @@ import {
     Filter,
     RefreshCcw,
     XCircle,
+    FileSpreadsheet,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,8 +36,9 @@ import { TableSkeleton } from "@/components/ui/usage/table.skeleton";
 import { useWarehouses } from "@/app/(application)/shared/use.shared";
 import {
     useGoodsReceipt,
-    useGRTableState,
     useFormGoodsReceipt,
+    useGRTableState,
+    useExportGoodsReceipt,
 } from "@/app/(application)/inventory-v2/gr/server/use.gr";
 import { GRColumns } from "./table/columns";
 import { CreateGRDialog } from "./form/create-gr-dialog";
@@ -54,6 +56,7 @@ export function GoodsReceipt() {
     const { data, meta, isLoading, isFetching, refetch } = useGoodsReceipt(table.queryParams);
     const { data: warehouses, isLoading: whLoading } = useWarehouses();
     const { post, cancel } = useFormGoodsReceipt();
+    const { exportData, isExporting } = useExportGoodsReceipt();
 
     const columns = useMemo(
         () =>
@@ -91,6 +94,20 @@ export function GoodsReceipt() {
                                     className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
                                 />
                                 Refresh
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => exportData(table.queryParams)}
+                                disabled={isExporting}
+                                className="bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-bold uppercase text-[11px] tracking-wider"
+                            >
+                                {isExporting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
+                                ) : (
+                                    <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-600" />
+                                )}
+                                Export Excel
                             </Button>
                             <Button size="sm" onClick={() => setCreateOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" />
