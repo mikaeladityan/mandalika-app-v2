@@ -145,6 +145,31 @@ export function useSidebarData(): SidebarGroupConfig[] {
                     ],
                 },
                 {
+                    title: "Inventory V2",
+                    icon: Boxes,
+                    items: [
+                        {
+                            title: "Transaksi",
+                            icon: Replace,
+                            items: [
+                                { title: "GR / Hasil FG", url: "/inventory-v2/gr", icon: Container },
+                                { title: "Delivery Order", url: "/inventory-v2/do", icon: TruckElectric },
+                                { title: "Transfer Gudang", url: "/inventory-v2/transfer", icon: ArrowLeftRight },
+                                { title: "Retur", url: "/inventory-v2/return", icon: History },
+                            ],
+                        },
+                        {
+                            title: "Monitoring",
+                            icon: BarChart2,
+                            items: [
+                                { title: "Total Stok", url: "/inventory-v2/stocks", icon: Boxes },
+                                { title: "Pergerakan Stok", url: "/inventory-v2/movements", icon: History },
+                                { title: "Stok per Lokasi", url: "/inventory-v2/locations", icon: MapPin },
+                            ],
+                        },
+                    ],
+                },
+                {
                     title: "Pengeluaran FG",
                     icon: ShoppingBag,
                     items: [
