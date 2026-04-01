@@ -270,7 +270,7 @@ export function CreateDOBody({ onSuccess, onCancel }: Props) {
                                                 options={
                                                     products?.map((p: any) => ({
                                                         value: p.id,
-                                                        label: `[${p.code}] ${p.name} ${p.product_type?.name?.toUpperCase()} ${p.size?.size}ML`,
+                                                        label: `[${p.code}] ${p.name} - ${p.product_type?.name || ""} • ${p.size?.size || ""} ${p.unit?.name || ""} • ${p.gender || ""}`.toUpperCase(),
                                                     })) ?? []
                                                 }
                                                 canSearching

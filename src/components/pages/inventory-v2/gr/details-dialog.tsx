@@ -69,9 +69,13 @@ export function GoodsReceiptDetailsDialog({ id, open, onOpenChange }: DetailsDia
                         <div className="pr-8">
                             <Badge
                                 variant={detail?.status === "COMPLETED" ? "default" : "secondary"}
-                                className="px-3 py-1 uppercase text-[10px] font-bold"
+                                className={`px-3 py-1 uppercase text-[10px] font-bold ${
+                                    detail?.status === "COMPLETED" 
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                                    : "bg-amber-50 text-amber-600 border-amber-200"
+                                }`}
                             >
-                                {detail?.status}
+                                {detail?.status === "COMPLETED" ? "Done / Completed" : detail?.status || "PENDING"}
                             </Badge>
                         </div>
                     </div>
@@ -151,14 +155,19 @@ export function GoodsReceiptDetailsDialog({ id, open, onOpenChange }: DetailsDia
                                                     <TableCell className="text-muted-foreground font-mono text-xs">
                                                         {idx + 1}
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-slate-600 text-xs">
+                                                    <TableCell className="py-3">
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="font-bold text-primary text-[10px] tracking-tight uppercase">
                                                                 {item.product.code}
                                                             </span>
-                                                            <span className="text-slate-800 font-medium">
-                                                                {item.product.name}
-                                                            </span>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-slate-900 font-bold text-xs uppercase leading-tight">
+                                                                    {item.product.name}
+                                                                </span>
+                                                                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                                                                    {item.product.product_type?.name || "-"} • {item.product.size?.size || "-"} • {item.product.unit?.name || "-"} • {item.product.gender || "-"}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right font-bold text-slate-700">

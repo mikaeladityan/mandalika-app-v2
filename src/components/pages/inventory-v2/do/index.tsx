@@ -252,7 +252,7 @@ export function DeliveryOrder() {
                             }`}
                             onClick={() => table.setStatus("COMPLETED")}
                         >
-                            Completed
+                            Done / Completed
                         </Button>
                         <Button
                             variant={table.queryParams.status === "CANCELLED" ? "default" : "ghost"}

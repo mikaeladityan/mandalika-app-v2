@@ -31,8 +31,10 @@ export const ResponseGoodsReceiptItemSchema = z.object({
     product: z.object({
         name: z.string(),
         code: z.string(),
-        product_type: z.object({ name: z.string() }).optional(),
-        size: z.object({ size: z.number() }).optional(),
+        product_type: z.object({ name: z.string() }).optional().nullable(),
+        size: z.object({ size: z.coerce.number() }).optional().nullable(),
+        unit: z.object({ name: z.string() }).optional().nullable(),
+        gender: z.string().optional().nullable(),
     }),
     label: z.string(),
     quantity_planned: z.number(),

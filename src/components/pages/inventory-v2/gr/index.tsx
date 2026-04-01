@@ -151,53 +151,105 @@ export function GoodsReceipt() {
                                 canSearching={true}
                                 className="w-full md:w-56"
                             />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-start gap-4">
+                        <div className="flex gap-2 items-center w-fit bg-zinc-100/50 p-1 rounded-lg border border-zinc-200 shadow-sm">
+                            <Button
+                                variant={table.queryParams.type === undefined ? "default" : "ghost"}
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.type === undefined
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setType(undefined)}
+                            >
+                                Semua Tipe
+                            </Button>
+                            <Button
+                                variant={table.queryParams.type === "QC_FG" ? "default" : "ghost"}
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.type === "QC_FG"
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setType("QC_FG")}
+                            >
+                                QC Production
+                            </Button>
+                            <Button
+                                variant={table.queryParams.type === "MANUAL" ? "default" : "ghost"}
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.type === "MANUAL"
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setType("MANUAL")}
+                            >
+                                Manual
+                            </Button>
+                        </div>
 
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2">
-                                        <Filter className="h-4 w-4" />
-                                        {table.queryParams.type === "MANUAL"
-                                            ? "Manual"
-                                            : table.queryParams.type === "QC_FG"
-                                              ? "QC Production"
-                                              : "Semua Tipe"}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => table.setType(undefined)}>
-                                        Semua Tipe
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => table.setType("MANUAL")}>
-                                        Manual
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => table.setType("QC_FG")}>
-                                        QC Production
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2">
-                                        <Filter className="h-4 w-4" />
-                                        {table.queryParams.status || "Semua Status"}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => table.setStatus(undefined)}>
-                                        Semua Status
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => table.setStatus("PENDING")}>
-                                        Pending
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => table.setStatus("COMPLETED")}>
-                                        Completed
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => table.setStatus("CANCELLED")}>
-                                        Cancelled
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        <div className="flex gap-2 items-center w-fit bg-zinc-100/50 p-1 rounded-lg border border-zinc-200 shadow-sm">
+                            <Button
+                                variant={
+                                    table.queryParams.status === undefined ? "default" : "ghost"
+                                }
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.status === undefined
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setStatus(undefined)}
+                            >
+                                Semua Status
+                            </Button>
+                            <Button
+                                variant={
+                                    table.queryParams.status === "PENDING" ? "default" : "ghost"
+                                }
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.status === "PENDING"
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setStatus("PENDING")}
+                            >
+                                Pending
+                            </Button>
+                            <Button
+                                variant={
+                                    table.queryParams.status === "COMPLETED" ? "default" : "ghost"
+                                }
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.status === "COMPLETED"
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setStatus("COMPLETED")}
+                            >
+                                Completed
+                            </Button>
+                            <Button
+                                variant={
+                                    table.queryParams.status === "CANCELLED" ? "default" : "ghost"
+                                }
+                                size="sm"
+                                className={`h-8 rounded-md px-3 text-xs font-bold transition-all ${
+                                    table.queryParams.status === "CANCELLED"
+                                        ? "bg-white text-primary shadow-sm hover:bg-white"
+                                        : "text-zinc-600 hover:bg-zinc-200/50"
+                                }`}
+                                onClick={() => table.setStatus("CANCELLED")}
+                            >
+                                Cancelled
+                            </Button>
                         </div>
                     </div>
                 </CardHeader>

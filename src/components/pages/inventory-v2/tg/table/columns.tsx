@@ -1,15 +1,16 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ResponseDeliveryOrderDTO } from "@/app/(application)/inventory-v2/do/server/do.schema";
+import { ResponseTransferGudangDTO } from "@/app/(application)/inventory-v2/tg/server/tg.schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export const getDOStatusBadge = (status: string) => {
+export const getTGStatusBadge = (status: string) => {
     switch (status) {
         case "PENDING":
-        case "PACKING": // mapping for UI context
+        case "PACKING":
             return (
                 <Badge
                     variant="secondary"
@@ -65,10 +66,10 @@ interface ColumnProps {
     onDetail: (id: number) => void;
 }
 
-export const DOColumns = ({ onDetail }: ColumnProps): ColumnDef<ResponseDeliveryOrderDTO>[] => [
+export const TGColumns = ({ onDetail }: ColumnProps): ColumnDef<ResponseTransferGudangDTO>[] => [
     {
         accessorKey: "transfer_number",
-        header: "No DO",
+        header: "No Transfer",
         cell: ({ row }) => {
             const hasDiscrepancy = row.original.items?.some(
                 (item: any) => (Number(item.quantity_missing) || 0) > 0 || (Number(item.quantity_rejected) || 0) > 0
@@ -81,17 +82,25 @@ export const DOColumns = ({ onDetail }: ColumnProps): ColumnDef<ResponseDelivery
                             {row.original.transfer_number}
                         </span>
                         {hasDiscrepancy && row.original.status === "COMPLETED" && (
-                            <Badge variant="outline" className="h-5 px-1.5 border-orange-200 bg-orange-50 text-orange-600 flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" />
-                                <span className="text-[10px] font-bold">Selisih</span>
-                            </Badge>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Badge variant="outline" className="h-5 px-1.5 border-orange-200 bg-orange-50 text-orange-600 flex items-center gap-1 cursor-help">
+                                            <AlertTriangle className="h-3 w-3" />
+                                            <span className="text-[10px] font-bold">Selisih</span>
+                                        </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="text-xs">Terdapat barang hilang atau ditolak pada transfer ini.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         )}
                     </div>
                 </div>
             );
         },
     },
-
     {
         accessorKey: "barcode",
         header: "Barcode",
@@ -120,19 +129,8 @@ export const DOColumns = ({ onDetail }: ColumnProps): ColumnDef<ResponseDelivery
         },
     },
     {
-        id: "destination",
-        header: "Tujuan",
-        cell: ({ row }) => {
-            return (
-                <span className="font-medium text-zinc-700 whitespace-nowrap">
-                    {row.original.to_outlet?.name || "-"}
-                </span>
-            );
-        },
-    },
-    {
         id: "source",
-        header: "Gudang Asal",
+        header: "Asal Gudang",
         cell: ({ row }) => {
             return (
                 <span className="text-zinc-600 whitespace-nowrap">
@@ -142,10 +140,21 @@ export const DOColumns = ({ onDetail }: ColumnProps): ColumnDef<ResponseDelivery
         },
     },
     {
+        id: "destination",
+        header: "Tujuan Gudang",
+        cell: ({ row }) => {
+            return (
+                <span className="font-medium text-zinc-700 whitespace-nowrap">
+                    {row.original.to_warehouse?.name || "-"}
+                </span>
+            );
+        },
+    },
+    {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
-            return getDOStatusBadge(row.original.status);
+            return getTGStatusBadge(row.original.status);
         },
     },
     {

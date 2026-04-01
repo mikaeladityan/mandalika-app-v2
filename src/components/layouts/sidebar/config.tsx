@@ -25,7 +25,9 @@ import {
     Layers,
     MapPin,
     Container,
+    AlertTriangle,
 } from "lucide-react";
+
 
 export type SidebarItemConfig = {
     title: string;
@@ -154,7 +156,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
                             items: [
                                 { title: "GR / Hasil FG", url: "/inventory-v2/gr", icon: Container },
                                 { title: "Delivery Order", url: "/inventory-v2/do", icon: TruckElectric },
-                                { title: "Transfer Gudang", url: "/inventory-v2/transfer", icon: ArrowLeftRight },
+                                { title: "Transfer Gudang", url: "/inventory-v2/tg", icon: ArrowLeftRight },
                                 { title: "Retur", url: "/inventory-v2/return", icon: History },
                             ],
                         },
@@ -165,6 +167,7 @@ export function useSidebarData(): SidebarGroupConfig[] {
                                 { title: "Total Stok", url: "/inventory-v2/stocks", icon: Boxes },
                                 { title: "Pergerakan Stok", url: "/inventory-v2/movements", icon: History },
                                 { title: "Stok per Lokasi", url: "/inventory-v2/locations", icon: MapPin },
+                                { title: "Laporan Selisih", url: "/inventory-v2/discrepancy", icon: AlertTriangle },
                             ],
                         },
                     ],
