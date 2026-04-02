@@ -2,7 +2,8 @@
 
 import { RequestIssuanceDTO, RequestIssuanceSchema } from "@/app/(application)/product-issuance/server/issuance.schema";
 import { ISSUANCE_TYPE } from "@/shared/types";
-import { useFormIssuance, useIssuance } from "@/app/(application)/product-issuance/server/use.issuance";
+import { useFormIssuance } from "@/app/(application)/product-issuance/server/use.issuance";
+import { useProducts } from "@/app/(application)/products/server/use.products";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -51,21 +52,29 @@ export function CreateIssuance() {
     });
 
     const { create } = useFormIssuance(form);
-    const { productsOption } = useIssuance();
-
-    // Fetch products manually on mount
-    useEffect(() => {
-        productsOption.refetch();
-    }, []);
+    const products = useProducts({
+        status: "ACTIVE",
+        take: 1000,
+        sortBy: "name",
+        sortOrder: "asc",
+    });
 
     const productOptions = useMemo(() => {
-        return (
-            productsOption.data?.map((p) => ({
-                label: `(${p.code}) ${p.name} ${String(p.type).toUpperCase()}`,
-                value: p.id,
-            })) ?? []
-        );
-    }, [productsOption.data]);
+        const uniqueProducts = new Map();
+
+        products.data?.forEach((p) => {
+            if (!uniqueProducts.has(p.id)) {
+                uniqueProducts.set(p.id, {
+                    label: `(${p.code}) ${p.name} ${String(
+                        p.product_type?.name || "NON-TYPE",
+                    ).toUpperCase()} ${p.size?.size} ML`,
+                    value: p.id,
+                });
+            }
+        });
+
+        return Array.from(uniqueProducts.values());
+    }, [products.data]);
 
     const onSubmit = async (body: RequestIssuanceDTO) => {
         await create.mutateAsync({
@@ -75,7 +84,7 @@ export function CreateIssuance() {
     };
 
     const isPending = create.isPending;
-    const isLoadingOptions = productsOption.isLoading;
+    const isLoadingOptions = products.isLoading;
 
     if (isLoadingOptions) {
         return (

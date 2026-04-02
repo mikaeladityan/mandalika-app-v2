@@ -3,6 +3,9 @@
 import { RequestIssuanceDTO, RequestIssuanceSchema } from "@/app/(application)/product-issuance/server/issuance.schema";
 import { QueryDetailIssuance } from "@/app/(application)/product-issuance/server/issuance.service";
 import { useFormIssuance, useIssuance } from "@/app/(application)/product-issuance/server/use.issuance";
+import { useProducts } from "@/app/(application)/products/server/use.products";
+import { ISSUANCE_TYPE } from "@/shared/types";
+import { SelectForm } from "@/components/ui/form/select";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -17,7 +20,7 @@ import { Form } from "@/components/ui/form/main";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, RefreshCcw, Save, Calendar, Info } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -38,6 +41,30 @@ export function EditIssuance() {
     };
 
     const { issuance, isLoading, isFetching } = useIssuance(undefined, query);
+
+    const products = useProducts({
+        status: "ACTIVE",
+        take: 1000,
+        sortBy: "name",
+        sortOrder: "asc",
+    });
+
+    const productOptions = useMemo(() => {
+        const uniqueProducts = new Map();
+
+        products.data?.forEach((p) => {
+            if (!uniqueProducts.has(p.id)) {
+                uniqueProducts.set(p.id, {
+                    label: `(${p.code}) ${p.name} ${String(
+                        p.product_type?.name || "NON-TYPE",
+                    ).toUpperCase()} ${p.size?.size} ML`,
+                    value: p.id,
+                });
+            }
+        });
+
+        return Array.from(uniqueProducts.values());
+    }, [products.data]);
 
     const form = useForm<RequestIssuanceDTO>({
         resolver: zodResolver(RequestIssuanceSchema),
@@ -60,7 +87,7 @@ export function EditIssuance() {
                 product_id: Number(id),
             });
         }
-    }, [issuance, form, month, year, id]);
+    }, [issuance, form, month, year, id, type]);
 
     const { update } = useFormIssuance(form);
 
@@ -138,15 +165,18 @@ export function EditIssuance() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-700">
-                                        Kode Produk
-                                    </label>
-                                    <div className="h-10 px-3 flex items-center bg-slate-50 border border-slate-200 rounded-md text-slate-500 font-mono text-sm">
-                                        {issuance.product.code}
-                                    </div>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SelectForm
+                                    required
+                                    name="product_id"
+                                    control={form.control}
+                                    label="Produk"
+                                    canSearching
+                                    options={productOptions}
+                                    placeholder="Pilih produk..."
+                                    error={form.formState.errors.product_id}
+                                    isLoading={isPending}
+                                />
 
                                 <InputForm
                                     required
@@ -157,6 +187,22 @@ export function EditIssuance() {
                                     placeholder="2000"
                                     error={form.formState.errors.quantity}
                                     disabled={isPending}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SelectForm
+                                    required
+                                    name="type"
+                                    control={form.control}
+                                    label="Tipe Pengeluaran"
+                                    options={ISSUANCE_TYPE.map((t) => ({
+                                        label: t.replace("_", " "),
+                                        value: t,
+                                    }))}
+                                    placeholder="Pilih tipe..."
+                                    error={form.formState.errors.type}
+                                    isLoading={isPending}
                                 />
                             </div>
                         </CardContent>

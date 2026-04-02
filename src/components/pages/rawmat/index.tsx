@@ -18,6 +18,7 @@ import {
     ArchiveRestore,
     Trash2,
     Download,
+    Printer,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,16 +43,26 @@ import { useCategory } from "@/app/(application)/rawmat/(component)/categories/s
 import { useSupplier } from "@/app/(application)/rawmat/(component)/suppliers/server/use.supplier";
 import { useUnit } from "@/app/(application)/rawmat/(component)/units/server/use.unit";
 import { CreateRawMaterialDialog, EditRawMaterialDialog } from "./rawmat-form-dialog";
+import { PrintReport } from "./print-report";
 
 export function RawMaterials() {
     const router = useRouter();
     const table = useRawMaterialTableState();
-    const { countUtils } = useRawMaterialUtils(true);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
+        price: true,
+        min_stock: false,
+        min_buy: false,
+        current_stock: true,
+        created_at: false,
+        updated_at: true,
+    });
 
     const [createOpen, setCreateOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | undefined>();
+
+    const { countUtils } = useRawMaterialUtils(true);
 
     const defaultColumnVisibility = useMemo(
         () => ({
@@ -63,8 +74,9 @@ export function RawMaterials() {
             current_stock: true,
             created_at: false,
             updated_at: true,
+            ...columnVisibility, // Use state to override
         }),
-        [],
+        [columnVisibility],
     );
 
     const { data, meta, isLoading, isFetching, isRefetching } = useRawMaterialsQuery(
@@ -83,9 +95,6 @@ export function RawMaterials() {
 
     const selectedIds = getSelectedIds(rowSelection).map(Number);
 
-    const handleExportAll = () => {
-        exportCsv.mutate(table.queryParams);
-    };
     const columns = useMemo(
         () =>
             RawMaterialColumns({
@@ -100,6 +109,17 @@ export function RawMaterials() {
             }),
         [table.sortBy, table.sortOrder, table.onSort, table.status],
     );
+
+    const handleExportAll = () => {
+        const currentVisible = columns
+            .map((c) => (c as any).id || (c as any).accessorKey)
+            .filter((id) => id && (defaultColumnVisibility as any)[id] !== false);
+
+        exportCsv.mutate({
+            ...table.queryParams,
+            visibleColumns: currentVisible.join(","),
+        } as any);
+    };
 
     const isTableLoading = isLoading || isFetching || isRefetching || exportCsv.isPending;
 
@@ -395,8 +415,8 @@ export function RawMaterials() {
                                 </Button>
                             </Link>
                             <Button
-                                size={"sm"}
-                                variant={"default"}
+                                size="sm"
+                                variant="default"
                                 disabled={exportCsv.isPending}
                                 className="cursor-pointer"
                                 onClick={handleExportAll}
@@ -406,7 +426,17 @@ export function RawMaterials() {
                                 ) : (
                                     <Download size={16} className="mr-2" />
                                 )}
-                                Export Excel
+                                Excel
+                            </Button>
+
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200 font-bold gap-1.5 transition-all"
+                                onClick={() => window.print()}
+                            >
+                                <Printer className="h-4 w-4" />
+                                Print PDF
                             </Button>
                         </div>
                     </div>
@@ -439,6 +469,17 @@ export function RawMaterials() {
 
             <CreateRawMaterialDialog open={createOpen} setOpen={setCreateOpen} />
             <EditRawMaterialDialog open={editOpen} setOpen={setEditOpen} id={selectedId} />
+
+            {/* Hidden Printable Version */}
+            {data && (
+                <PrintReport
+                    data={data}
+                    visibleColumns={columns
+                        .map((c) => (c as any).id || (c as any).accessorKey)
+                        .filter((id) => id && (defaultColumnVisibility as any)[id] !== false)}
+                    title="Laporan Master Raw Material"
+                />
+            )}
         </section>
     );
 }

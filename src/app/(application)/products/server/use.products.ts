@@ -282,3 +282,5 @@ export function useProductsQuery(params: QueryProductDTO) {
         ...query,
     };
 }
+
+export const useProducts = useProductsQuery;
