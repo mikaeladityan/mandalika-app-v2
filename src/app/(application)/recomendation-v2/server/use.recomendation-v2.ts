@@ -184,12 +184,44 @@ export function useRecomendationV2TableState(initial?: {
     const take = Number(get("take") ?? 50);
     const month = Number(get("month") ?? new Date().getMonth() + 1);
     const year = Number(get("year") ?? new Date().getFullYear());
-    const type = (get("type") as any) || initial?.defaultType;
+    const type = (get("type") as any) || initial?.defaultType || "ffo";
     const sales_months = Number(get("sales_months") ?? 3);
     const sortBy = get("sortBy") || undefined;
     const order = (get("order") as "asc" | "desc") || undefined;
 
-    const [forecastMonths, setForecastMonths] = useLocalStorage<number>(FORECAST_HORIZON_KEY, 4);
+    const fcHorizonKey = `RECOM_HORIZON_FC_${type.toUpperCase()}`;
+    const poHorizonKey = `RECOM_HORIZON_PO_${type.toUpperCase()}`;
+    
+    const [forecastMonths, setForecastMonths] = useLocalStorage<number>(fcHorizonKey, Number(get("forecast_months") ?? 4));
+    const [poMonths, setPoMonths] = useLocalStorage<number>(poHorizonKey, Number(get("po_months") ?? 4));
+
+    // Sync forecastMonths with localStorage when type changes
+    useEffect(() => {
+        const stored = window.localStorage.getItem(fcHorizonKey);
+        if (stored) {
+            try {
+                setForecastMonths(JSON.parse(stored));
+            } catch (e) {
+                setForecastMonths(4);
+            }
+        } else {
+            setForecastMonths(4);
+        }
+    }, [type, fcHorizonKey, setForecastMonths]);
+
+    // Sync poMonths with localStorage when type changes
+    useEffect(() => {
+        const stored = window.localStorage.getItem(poHorizonKey);
+        if (stored) {
+            try {
+                setPoMonths(JSON.parse(stored));
+            } catch (e) {
+                setPoMonths(4);
+            }
+        } else {
+            setPoMonths(4);
+        }
+    }, [type, poHorizonKey, setPoMonths]);
 
     // Sync URL when debouncedSearch change
     useEffect(() => {
@@ -205,6 +237,17 @@ export function useRecomendationV2TableState(initial?: {
     const setYear = (y: number) => batchSet({ year: String(y), page: "1" });
     const setType = (t: string) => batchSet({ type: t, page: "1" });
     const setSalesMonths = (s: number) => batchSet({ sales_months: String(s), page: "1" });
+    
+    const updateForecastMonths = (val: number) => {
+        setForecastMonths(val);
+        batchSet({ forecast_months: String(val), page: "1" });
+    };
+
+    const updatePoMonths = (val: number) => {
+        setPoMonths(val);
+        batchSet({ po_months: String(val), page: "1" });
+    };
+
     const setSorting = (s?: string, o?: "asc" | "desc") => 
         batchSet({ sortBy: s || undefined, order: o || undefined, page: "1" });
 
@@ -217,6 +260,7 @@ export function useRecomendationV2TableState(initial?: {
         type,
         sales_months,
         forecast_months: forecastMonths,
+        po_months: poMonths,
         sortBy,
         order,
     };
@@ -250,7 +294,9 @@ export function useRecomendationV2TableState(initial?: {
         salesMonths: sales_months,
         setSalesMonths,
         forecastMonths,
-        setForecastMonths,
+        setForecastMonths: updateForecastMonths,
+        poMonths,
+        setPoMonths: updatePoMonths,
         sortBy,
         order,
         setSorting,

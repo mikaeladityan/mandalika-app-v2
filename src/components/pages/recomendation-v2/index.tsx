@@ -71,6 +71,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                 month: tableState.month,
                 year: tableState.year,
                 forecastMonths: tableState.forecastMonths,
+                poMonths: tableState.poMonths,
             };
         }
         return {
@@ -80,8 +81,9 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
             month: tableState.month,
             year: tableState.year,
             forecastMonths: tableState.forecastMonths,
+            poMonths: tableState.poMonths,
         };
-    }, [list.data?.periods, tableState.month, tableState.year, tableState.forecastMonths]);
+    }, [list.data?.periods, tableState.month, tableState.year, tableState.forecastMonths, tableState.poMonths]);
 
     const columns = useMemo(
         () => RecomendationV2Columns(periods),
@@ -164,15 +166,15 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                     </div>
 
                     {/* ROW 2: SEARCH & FILTERS */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                        {/* Search and Results Count */}
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 w-full lg:max-w-2xl">
-                            <InputGroup className="w-full md:max-w-sm rounded-xl">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        {/* Left Group: Search & Horizon */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full flex-1">
+                            <InputGroup className="w-full md:max-w-md rounded-xl shadow-xs border-slate-200/60 bg-slate-50/30">
                                 <InputGroupInput
                                     placeholder="Cari material, barcode, atau supplier..."
                                     value={tableState.search}
                                     onChange={(e) => tableState.setSearch(e.target.value)}
-                                    className="pl-3 h-10 border-none bg-transparent"
+                                    className="pl-3 h-11 border-none bg-transparent"
                                 />
                                 <InputGroupAddon align="inline-end">
                                     {list.isFetching ? (
@@ -182,63 +184,95 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                     )}
                                 </InputGroupAddon>
                                 <InputGroupAddon align="inline-end" className="pr-3">
-                                    <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap bg-muted/50 px-1.5 py-0.5 rounded">
-                                        {list.data?.len ?? 0} Item
+                                    <span className="text-[10px] font-black text-muted-foreground whitespace-nowrap bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-xs">
+                                        {list.data?.len ?? 0} <span className="opacity-50">ITEMS</span>
                                     </span>
                                 </InputGroupAddon>
                             </InputGroup>
 
-                            {/* Reset Button */}
-                            {(tableState.search || tableState.queryParams.page !== 1) && (
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={tableState.reset}
-                                    className="h-10 px-3 text-muted-foreground hover:text-foreground font-bold text-xs"
-                                >
-                                    Reset Filter <X className="ml-1.5 h-3.5 w-3.5" />
-                                </Button>
-                            )}
+                            <div className="flex items-center gap-4">
+                                <div className="h-8 w-px bg-slate-200 hidden md:block mx-1" />
+                                
+                                {/* Forecast Horizon */}
+                                <div className="flex items-center gap-2 bg-indigo-50/50 p-1.5 pr-3 rounded-xl border border-indigo-100/50 transition-all text-indigo-700">
+                                    <TrendingUp className="size-4 text-indigo-500/60 ml-1.5" />
+                                    <Label className="text-[10px] font-black text-nowrap uppercase tracking-widest opacity-70">
+                                        Horizon FC
+                                    </Label>
+                                    <Select
+                                        value={String(tableState.forecastMonths)}
+                                        onValueChange={(val) => tableState.setForecastMonths(Number(val))}
+                                    >
+                                        <SelectTrigger className="w-20 border-none bg-transparent h-6 focus:ring-0 font-black text-indigo-900 p-0 text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-indigo-100 shadow-2xl">
+                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                                                <SelectItem
+                                                    key={h}
+                                                    value={String(h)}
+                                                    className="font-bold text-xs focus:bg-indigo-50"
+                                                >
+                                                    {h} Bulan
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* PO Horizon */}
+                                <div className="flex items-center gap-2 bg-emerald-50/50 p-1.5 pr-3 rounded-xl border border-emerald-100/50 transition-all text-emerald-700">
+                                    <CalendarDays className="size-4 text-emerald-500/60 ml-1.5" />
+                                    <Label className="text-[10px] font-black text-nowrap uppercase tracking-widest opacity-70">
+                                        Horizon PO
+                                    </Label>
+                                    <Select
+                                        value={String(tableState.poMonths)}
+                                        onValueChange={(val) => tableState.setPoMonths(Number(val))}
+                                    >
+                                        <SelectTrigger className="w-20 border-none bg-transparent h-6 focus:ring-0 font-black text-emerald-900 p-0 text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-emerald-100 shadow-2xl">
+                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                                                <SelectItem
+                                                    key={h}
+                                                    value={String(h)}
+                                                    className="font-bold text-xs focus:bg-emerald-50"
+                                                >
+                                                    {h} Bulan
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Reset Button */}
+                                {(tableState.search || tableState.queryParams.page !== 1) && (
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={tableState.reset}
+                                        className="h-10 px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50 font-bold text-xs rounded-xl"
+                                    >
+                                        Reset <X className="ml-1.5 h-3.5 w-3.5" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Date & Horizon Selectors */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-transparent focus-within:border-primary/10 transition-all text-muted-foreground mr-1">
-                                <TrendingUp className="size-4 text-primary/60 ml-1" />
-                                <Label className="text-[10px] font-bold text-nowrap uppercase tracking-tight">
-                                    Horizon
-                                </Label>
-                                <Select
-                                    value={String(tableState.forecastMonths)}
-                                    onValueChange={(val) => tableState.setForecastMonths(Number(val))}
-                                >
-                                    <SelectTrigger className="w-20 border-none bg-transparent h-6 focus:ring-0 font-bold text-foreground p-0 text-xs">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-border/50 shadow-xl">
-                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                                            <SelectItem
-                                                key={h}
-                                                value={String(h)}
-                                                className="font-bold text-xs"
-                                            >
-                                                {h} Bulan
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-transparent focus-within:border-primary/10 transition-all">
-                                <CalendarDays className="size-4 text-primary/60 ml-1" />
+                        {/* Right Group: Month/Year */}
+                        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100 shadow-xs ring-1 ring-white">
+                            <div className="flex items-center gap-2 px-2">
+                                <CalendarDays className="size-4 text-slate-400" />
                                 <Select
                                     value={String(tableState.month)}
                                     onValueChange={(val) => tableState.setMonth(Number(val))}
                                 >
-                                    <SelectTrigger className="w-[110px] h-8 border-none bg-transparent focus:ring-0 font-semibold text-foreground text-xs px-1">
+                                    <SelectTrigger className="w-[120px] h-8 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-xs px-1">
                                         <SelectValue placeholder="Bulan" />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
+                                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
                                         {months.map((m, i) => (
                                             <SelectItem
                                                 key={m}
@@ -250,32 +284,32 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
                                         ))}
                                     </SelectContent>
                                 </Select>
-
-                                <div className="w-px h-5 bg-border/50" />
-
-                                <Select
-                                    value={String(tableState.year)}
-                                    onValueChange={(val) => tableState.setYear(Number(val))}
-                                >
-                                    <SelectTrigger className="w-[80px] h-8 border-none bg-transparent focus:ring-0 font-semibold text-foreground text-xs px-1">
-                                        <SelectValue placeholder="Tahun" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-indigo-50 shadow-xl">
-                                        {Array.from(
-                                            { length: 5 },
-                                            (_, i) => new Date().getFullYear() - 2 + i,
-                                        ).map((y) => (
-                                            <SelectItem
-                                                key={y}
-                                                value={String(y)}
-                                                className="text-[11px] font-bold"
-                                            >
-                                                {y}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
+
+                            <div className="w-px h-5 bg-slate-200" />
+
+                            <Select
+                                value={String(tableState.year)}
+                                onValueChange={(val) => tableState.setYear(Number(val))}
+                            >
+                                <SelectTrigger className="w-[85px] h-8 border-none bg-transparent focus:ring-0 font-bold text-slate-700 text-xs px-2">
+                                    <SelectValue placeholder="Tahun" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                    {Array.from(
+                                        { length: 5 },
+                                        (_, i) => new Date().getFullYear() - 2 + i,
+                                    ).map((y) => (
+                                        <SelectItem
+                                            key={y}
+                                            value={String(y)}
+                                            className="text-[11px] font-bold"
+                                        >
+                                            {y}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </CardHeader>

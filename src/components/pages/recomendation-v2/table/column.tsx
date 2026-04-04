@@ -21,6 +21,7 @@ interface PeriodProps {
     month: number;
     year: number;
     forecastMonths: number;
+    poMonths: number;
 }
 
 const MONTHS_SHORT = [
