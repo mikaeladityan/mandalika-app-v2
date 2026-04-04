@@ -60,7 +60,7 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
         if (!hasHorizon) return 0;
         const usableStock = data.current_stock - data.safety_stock_x_resep;
         const readyStock = usableStock + data.open_po;
-        const deficit = totalNeeded - readyStock;
+        const deficit = (totalNeeded || 0) - readyStock;
         return deficit > 0 ? deficit : 0;
     }, [data, totalNeeded, hasHorizon]);
 
@@ -83,7 +83,7 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
             year: _year,
             quantity: qty,
             horizon: currentHorizon,
-            total_needed: totalNeeded,
+            total_needed: totalNeeded || 0,
             current_stock: data.current_stock,
             stock_fg_x_resep: data.stock_fg_x_resep,
             safety_stock_x_resep: data.safety_stock_x_resep,

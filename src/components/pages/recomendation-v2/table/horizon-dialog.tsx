@@ -67,7 +67,7 @@ export function HorizonDialog({ data, month, year, defaultHorizon }: HorizonDial
                 year,
                 quantity: data.work_order_quantity || 0,
                 horizon: h,
-                total_needed: totalNeeded,
+                total_needed: totalNeeded || 0,
                 current_stock: data.current_stock,
                 stock_fg_x_resep: data.stock_fg_x_resep,
                 safety_stock_x_resep: data.safety_stock_x_resep,
