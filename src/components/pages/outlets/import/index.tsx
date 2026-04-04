@@ -18,6 +18,13 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
 
 import { PreviewTable } from "./preview";
 import { OutletImportPreviewDTO } from "@/app/(application)/outlets/import/server/import.schema";
@@ -37,6 +44,7 @@ export function OutletImportForm() {
     const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
     const [importResult, setImportResult] = useState<any>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [openDialog, setOpenDialog] = useState(false);
 
     const { preview, execute, getPreview } = useOutletImportPage();
 
@@ -65,7 +73,7 @@ export function OutletImportForm() {
     }
 
     async function handleImport() {
-        if (!importId || stats.invalid > 0) return;
+        if (!importId || stats.valid === 0) return;
 
         try {
             const result = await execute.mutateAsync(importId);
@@ -74,6 +82,7 @@ export function OutletImportForm() {
             toast.success("Import Selesai");
 
             // Reset state
+            setOpenDialog(false);
             setImportId(null);
             setRows([]);
             setStats({ total: 0, valid: 0, invalid: 0 });
@@ -214,8 +223,8 @@ export function OutletImportForm() {
                             </Button>
 
                             <Button size="sm" 
-                                className="px-8 shadow-md font-bold"
-                                onClick={handleImport}
+                                className={`px-8 shadow-md font-bold ${stats.invalid > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-primary"}`}
+                                onClick={() => setOpenDialog(true)}
                                 disabled={!importId || stats.valid === 0 || execute.isPending}
                             >
                                 {execute.isPending ? (
@@ -292,6 +301,50 @@ export function OutletImportForm() {
                     </Card>
                 )}
             </div>
+
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Database className="h-5 w-5 text-primary" />
+                            Konfirmasi Import Outlet
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-4">
+                        {stats.invalid > 0 && (
+                            <div className="p-4 rounded-xl border bg-amber-50 border-amber-100 text-amber-800 flex items-start gap-3">
+                                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold leading-none">Verifikasi Data Invalid</p>
+                                    <p className="text-xs leading-relaxed">
+                                        Terdeteksi <strong>{stats.invalid} baris tidak valid</strong>. 
+                                        Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses ke database. 
+                                        Lanjutkan import sisa data yang valid?
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        <p className="text-sm text-slate-500">
+                            Anda akan melakukan bulk update/insert sebanyak <strong>{stats.valid} outlet</strong>. 
+                            Pastikan data sudah sesuai sebelum melanjutkan.
+                        </p>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="ghost" onClick={() => setOpenDialog(false)}>
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={handleImport}
+                            disabled={execute.isPending}
+                            className={`${stats.invalid > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-primary"} shadow-md text-white`}
+                        >
+                            {execute.isPending ? "Memproses..." : stats.invalid > 0 ? `Tetap Import (${stats.valid} Baris)` : "Konfirmasi & Import"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <ResultDialog 
                 result={importResult} 

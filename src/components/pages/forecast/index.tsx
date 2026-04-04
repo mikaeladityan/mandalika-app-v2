@@ -218,7 +218,7 @@ export function Forecast({ is_display }: { is_display?: boolean }) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-border/50">
-                                        {[3, 4, 6, 12].map((h) => (
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
                                             <SelectItem
                                                 key={h}
                                                 value={String(h)}

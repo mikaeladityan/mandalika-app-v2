@@ -13,8 +13,8 @@ import { RecomendationV2Service } from "./recomendation-v2.service";
 import { toast } from "sonner";
 
 /** Hitung total kebutuhan berdasarkan horizon bulan. */
-export function calculateTotalNeeded(needs: Array<{ quantity?: number }>, horizon: number): number {
-    if (horizon <= 0) return 0;
+export function calculateTotalNeeded(needs: Array<{ quantity?: number }>, horizon: number): number | null {
+    if (horizon <= 0 || !needs || needs.length === 0) return null;
     return needs.slice(0, horizon).reduce((sum, n) => sum + (n.quantity || 0), 0);
 }
 

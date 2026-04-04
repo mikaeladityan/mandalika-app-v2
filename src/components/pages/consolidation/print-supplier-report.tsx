@@ -189,30 +189,40 @@ export function PrintSupplierReport({ supplier }: PrintSupplierReportProps) {
                 </tbody>
             </table>
 
-            <table className="w-full border-collapse border border-black text-center text-[10px] mt-4">
-                <thead>
-                    <tr className="bg-[#002f6c] text-white">
-                        <th className="border border-white py-1.5 w-1/3">Pemohon</th>
-                        <th className="border border-white py-1.5 w-1/3">
-                            Diketahui
-                            <br />
-                            (Purchaser)
-                        </th>
-                        <th className="border border-white py-1.5 w-1/3">
-                            Disetujui
-                            <br />
-                            (COO)
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td className="border border-black h-16"></td>
-                        <td className="border border-black h-16"></td>
-                        <td className="border border-black h-16"></td>
-                    </tr>
-                </tbody>
-            </table>
+            {/* Signature Area */}
+            <div className="mt-16 w-full">
+                <div className="flex justify-between items-start">
+                    <div className="text-center w-64">
+                        <p className="font-bold text-[10px] mb-20 uppercase tracking-widest text-slate-800 underline underline-offset-4">
+                            Dibuat Oleh:
+                        </p>
+                        <div className="border-t border-slate-900 mx-auto w-48 mb-1"></div>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase italic">
+                            ( Staff Purchasing )
+                        </p>
+                    </div>
+
+                    <div className="text-center w-64">
+                        <p className="font-bold text-[10px] mb-20 uppercase tracking-widest text-slate-800 underline underline-offset-4">
+                            Diketahui Oleh:
+                        </p>
+                        <div className="border-t border-slate-900 mx-auto w-48 mb-1"></div>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase italic">
+                            ( Head Dept / Manager )
+                        </p>
+                    </div>
+
+                    <div className="text-center w-64">
+                        <p className="font-bold text-[10px] mb-20 uppercase tracking-widest text-slate-800 underline underline-offset-4">
+                            Disetujui Oleh:
+                        </p>
+                        <div className="border-t border-slate-900 mx-auto w-48 mb-1"></div>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase italic">
+                            ( Direktur / COO )
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <style jsx global>{`
                 @media print {

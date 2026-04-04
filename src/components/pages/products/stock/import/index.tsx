@@ -249,7 +249,7 @@ export function ProductInventoryImportForm() {
                             </Button>
 
                             <Button size="sm"  
-                                className="px-8 shadow-md"
+                                className={`px-8 shadow-md ${stats.invalid > 0 ? "bg-amber-600 hover:bg-amber-700" : ""}`}
                                 onClick={() => setIsDialogOpen(true)}
                                 disabled={!importId || stats.valid === 0 || executeMutation.isPending}
                             >
@@ -335,7 +335,20 @@ export function ProductInventoryImportForm() {
                             Silakan pilih tanggal periode stok yang akan disesuaikan (Upsert).
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex flex-col space-y-4 py-4">
+                    <div className="flex flex-col space-y-4 py-2">
+                        {stats.invalid > 0 && (
+                            <div className="p-3 rounded-xl border bg-amber-50 border-amber-100 text-amber-800 flex items-start gap-3">
+                                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold leading-none">Verifikasi Data Invalid</p>
+                                    <p className="text-xs leading-relaxed">
+                                        Terdeteksi <strong>{stats.invalid} baris tidak valid</strong>. 
+                                        Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses. 
+                                        Lanjutkan?
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-3">
                             <label className="text-sm font-semibold text-slate-700 block text-center">
                                 Pilih Tanggal Stok
@@ -360,12 +373,12 @@ export function ProductInventoryImportForm() {
                         </Button>
                         <Button size="sm"   onClick={handleImport}
                             disabled={!selectedDate || executeMutation.isPending}
-                            className="bg-primary shadow-md"
+                            className={`${stats.invalid > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-primary"} shadow-md text-white`}
                         >
                             {executeMutation.isPending ? (
                                 <RefreshCw className="animate-spin mr-2 h-4 w-4" />
                             ) : null}
-                            Eksekusi Import
+                            {executeMutation.isPending ? "Memproses..." : stats.invalid > 0 ? `Tetap Import (${stats.valid} Baris)` : "Eksekusi Import"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

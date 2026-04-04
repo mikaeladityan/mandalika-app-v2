@@ -113,7 +113,7 @@ export function Consolidation({ title, description }: ConsolidationProps) {
 
                             <Button
                                 onClick={() => window.print()}
-                                disabled={list.isLoading}
+                                disabled={list.isLoading || !list.data?.data?.length}
                                 className="h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-sm font-bold gap-1.5 transition-all text-[11px] px-3"
                             >
                                 <Printer className="w-3.5 h-3.5" />

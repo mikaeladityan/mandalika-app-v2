@@ -406,7 +406,11 @@ export const RecomendationV2Columns = (
                                 <span
                                     className={cn(
                                         "text-[10px] font-bold tabular-nums",
-                                        isInsufficient ? "text-red-600" : isInHorizon ? "text-amber-700" : "text-slate-600",
+                                        isInsufficient
+                                            ? "text-red-600"
+                                            : isInHorizon
+                                              ? "text-amber-700"
+                                              : "text-slate-600",
                                     )}
                                 >
                                     {formatNumber(q)}
@@ -433,7 +437,7 @@ export const RecomendationV2Columns = (
         cell: ({ row }) => {
             const data = row.original;
             const hasHorizon = !!data.work_order_horizon;
-            
+
             if (!hasHorizon) {
                 return (
                     <div className="flex flex-col items-center justify-center min-w-[80px]">
@@ -447,16 +451,13 @@ export const RecomendationV2Columns = (
                 );
             }
 
-            const total = calculateTotalNeeded(
-                data.needs,
-                data.work_order_horizon || 0,
-            );
+            const total = calculateTotalNeeded(data.needs, data.work_order_horizon || 0);
 
             return (
                 <div className="flex flex-col items-center justify-center min-w-[80px]">
-                    <span className="text-[11px] font-bold text-slate-700 mb-1">
-                        {formatNumber(total)}
-                    </span>
+                    {/* <span className="text-[11px] font-bold text-slate-700 mb-1">
+                        {total !== null ? formatNumber(total) : "–"}
+                    </span> */}
                     <HorizonDialog
                         data={data}
                         month={periods.month}

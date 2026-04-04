@@ -152,7 +152,7 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
 
                             <Button
                                 onClick={() => window.print()}
-                                disabled={list.isLoading}
+                                disabled={list.isLoading || !list.data?.data?.length}
                                 variant="outline"
                                 className="h-8 bg-blue-50 text-blue-700 border-blue-100 rounded-xl font-bold shadow-sm hover:bg-blue-100 transition-all px-3 text-[11px] flex items-center gap-1.5 group"
                             >

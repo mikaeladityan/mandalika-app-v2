@@ -160,7 +160,7 @@ export function ImportIssuanceForm() {
     }
 
     async function handleExecute() {
-        if (!importId || stats.invalid > 0) return;
+        if (!importId || stats.valid === 0) return;
 
         const { month, year, type } = form.getValues();
 
@@ -186,6 +186,7 @@ export function ImportIssuanceForm() {
 
     return (
         <div className="space-y-6 w-full pb-10">
+            {/* Header omitted */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Button
@@ -431,6 +432,19 @@ export function ImportIssuanceForm() {
                     </DialogHeader>
 
                     <div className="py-4 space-y-4">
+                        {stats.invalid > 0 && (
+                             <div className="p-4 rounded-xl border bg-amber-50 border-amber-100 text-amber-800 flex items-start gap-3">
+                                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold leading-none">Verifikasi Data Invalid</p>
+                                    <p className="text-xs leading-relaxed">
+                                        Terdeteksi <strong>{stats.invalid} baris tidak valid</strong>. 
+                                        Hanya <strong>{stats.valid} baris valid</strong> yang akan diproses ke database. 
+                                        Lanjutkan import sisa data yang valid?
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                         <p className="text-sm text-slate-500">
                             Silakan tentukan bulan dan tahun periode pengeluaran yang sedang
                             diimport.
@@ -454,17 +468,19 @@ export function ImportIssuanceForm() {
                                 onValueChange={(v) => form.setValue("year", Number(v))}
                             />
 
-                            <SelectForm
-                                name="type"
-                                label="Tipe Pengeluaran"
-                                required
-                                control={form.control}
-                                options={ISSUANCE_TYPE.map((t) => ({
-                                    label: t.replace("_", " "),
-                                    value: t,
-                                }))}
-                                onValueChange={(v) => form.setValue("type", String(v))}
-                            />
+                            <div className="col-span-2">
+                                <SelectForm
+                                    name="type"
+                                    label="Tipe Pengeluaran"
+                                    required
+                                    control={form.control}
+                                    options={ISSUANCE_TYPE.map((t) => ({
+                                        label: t.replace("_", " "),
+                                        value: t,
+                                    }))}
+                                    onValueChange={(v) => form.setValue("type", String(v))}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -475,9 +491,9 @@ export function ImportIssuanceForm() {
                         <Button
                             onClick={handleExecute}
                             disabled={executeMutation.isPending}
-                            className="bg-primary shadow-md"
+                            className={`${stats.invalid > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-primary"} shadow-md text-white`}
                         >
-                            {executeMutation.isPending ? "Memproses..." : "Konfirmasi & Import"}
+                            {executeMutation.isPending ? "Memproses..." : stats.invalid > 0 ? `Tetap Import (${stats.valid} Baris)` : "Konfirmasi & Import"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
