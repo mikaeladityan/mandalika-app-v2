@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Loader2, X } from "lucide-react";
 import { OnChangeFn, VisibilityState, ColumnOrderState } from "@tanstack/react-table";
@@ -202,6 +203,32 @@ export function RecomendationV2({ title, description, type }: RecomendationV2Pro
 
                         {/* Date & Horizon Selectors */}
                         <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-transparent focus-within:border-primary/10 transition-all text-muted-foreground mr-1">
+                                <TrendingUp className="size-4 text-primary/60 ml-1" />
+                                <Label className="text-[10px] font-bold text-nowrap uppercase tracking-tight">
+                                    Horizon
+                                </Label>
+                                <Select
+                                    value={String(tableState.forecastMonths)}
+                                    onValueChange={(val) => tableState.setForecastMonths(Number(val))}
+                                >
+                                    <SelectTrigger className="w-20 border-none bg-transparent h-6 focus:ring-0 font-bold text-foreground p-0 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl border-border/50 shadow-xl">
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                                            <SelectItem
+                                                key={h}
+                                                value={String(h)}
+                                                className="font-bold text-xs"
+                                            >
+                                                {h} Bulan
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-transparent focus-within:border-primary/10 transition-all">
                                 <CalendarDays className="size-4 text-primary/60 ml-1" />
                                 <Select
