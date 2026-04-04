@@ -10,12 +10,19 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RecomendationV2Response } from "@/app/(application)/recomendation-v2/server/recomendation-v2.schema";
 import { useRecomendationV2Mutations } from "@/app/(application)/recomendation-v2/server/use.recomendation-v2";
-import { Loader2, PackageSearch, Save, Trash2 } from "lucide-react";
+import { CalendarDays, Loader2, PackageSearch, Save, Trash2 } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
 interface OpenPoDialogProps {
@@ -24,6 +31,7 @@ interface OpenPoDialogProps {
     year: number;
     currentQuantity: number;
     children: React.ReactNode;
+    isManualSelect?: boolean;
 }
 
 export function OpenPoDialog({
@@ -32,16 +40,21 @@ export function OpenPoDialog({
     year,
     currentQuantity,
     children,
+    isManualSelect = false,
 }: OpenPoDialogProps) {
     const [open, setOpen] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState<number>(month);
+    const [selectedYear, setSelectedYear] = useState<number>(year);
     const [quantity, setQuantity] = useState<string>(String(currentQuantity));
     const { saveOpenPo } = useRecomendationV2Mutations();
 
     useEffect(() => {
         if (open) {
             setQuantity(String(currentQuantity));
+            setSelectedMonth(month);
+            setSelectedYear(year);
         }
-    }, [open, currentQuantity]);
+    }, [open, currentQuantity, month, year]);
 
     const handleSave = () => {
         const qty = parseFloat(quantity);
@@ -50,8 +63,8 @@ export function OpenPoDialog({
         saveOpenPo.mutate(
             {
                 raw_mat_id: data.material_id,
-                month,
-                year,
+                month: selectedMonth,
+                year: selectedYear,
                 quantity: qty,
             },
             {
@@ -64,8 +77,8 @@ export function OpenPoDialog({
         saveOpenPo.mutate(
             {
                 raw_mat_id: data.material_id,
-                month,
-                year,
+                month: selectedMonth,
+                year: selectedYear,
                 quantity: 0,
             },
             {
@@ -75,8 +88,16 @@ export function OpenPoDialog({
     };
 
     const monthName = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
-        new Date(year, month - 1)
+        new Date(selectedYear, selectedMonth - 1)
     );
+
+    const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -92,13 +113,59 @@ export function OpenPoDialog({
                                 Manual <span className="text-emerald-600">Open PO</span>
                             </DialogTitle>
                             <DialogDescription className="text-slate-500 font-medium">
-                                Input ketersediaan untuk {monthName} {year}
+                                {isManualSelect 
+                                    ? "Pilih periode dan input ketersediaan data" 
+                                    : `Input ketersediaan untuk ${monthName} ${selectedYear}`}
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
                 <div className="px-8 pb-6 space-y-6 bg-white">
+                    {/* Period Matchers */}
+                    {isManualSelect && (
+                        <div className="flex flex-col gap-3">
+                            <Label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">
+                                PERIODE KEDATANGAN
+                            </Label>
+                            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100 shadow-sm">
+                                <Select
+                                    value={String(selectedMonth)}
+                                    onValueChange={(val) => setSelectedMonth(Number(val))}
+                                >
+                                    <SelectTrigger className="flex-1 h-11 border-none bg-white rounded-xl shadow-xs font-bold text-slate-700 focus:ring-emerald-500/10">
+                                        <div className="flex items-center gap-2">
+                                            <CalendarDays className="size-4 text-emerald-500/50" />
+                                            <SelectValue placeholder="Bulan" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                        {months.map((m, i) => (
+                                            <SelectItem key={m} value={String(i + 1)} className="font-bold text-xs">
+                                                {m}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select
+                                    value={String(selectedYear)}
+                                    onValueChange={(val) => setSelectedYear(Number(val))}
+                                >
+                                    <SelectTrigger className="w-[100px] h-11 border-none bg-white rounded-xl shadow-xs font-bold text-slate-700 focus:ring-emerald-500/10">
+                                        <SelectValue placeholder="Tahun" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                        {years.map((y) => (
+                                            <SelectItem key={y} value={String(y)} className="font-bold text-xs">
+                                                {y}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
                     <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             MATERIAL

@@ -10,7 +10,7 @@ import { LeadTimeEditDialog } from "./lead-time-dialog";
 import { WorkOrderDialog } from "./work-order-dialog";
 import { HorizonDialog } from "./horizon-dialog";
 import { calculateTotalNeeded } from "@/app/(application)/recomendation-v2/server/use.recomendation-v2";
-import { Info } from "lucide-react";
+import { Info, PlusCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { OpenPoDialog } from "./open-po-dialog";
 
@@ -540,6 +540,19 @@ export const RecomendationV2Columns = (
             const pos = row.original.open_pos || [];
             return (
                 <div className="flex items-center gap-2">
+                    <OpenPoDialog
+                        data={row.original}
+                        month={periods.month}
+                        year={periods.year}
+                        currentQuantity={0}
+                        isManualSelect={true}
+                    >
+                        <button className="h-10 w-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-emerald-200 bg-emerald-50/30 text-emerald-600 hover:bg-emerald-100/50 hover:border-emerald-300 transition-all group shrink-0">
+                            <PlusCircle className="size-3.5 group-hover:scale-110 transition-transform" />
+                            <span className="text-[7px] font-black mt-0.5 uppercase tracking-tighter">ADD</span>
+                        </button>
+                    </OpenPoDialog>
+
                     {periods.po_periods.map((p) => {
                         const q = pos.find((s: any) => s.key === p.key)?.quantity ?? 0;
                         return (
