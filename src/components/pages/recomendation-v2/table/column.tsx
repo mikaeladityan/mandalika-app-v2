@@ -235,7 +235,7 @@ export const RecomendationV2Columns = (
         id: "available_stock",
         header: () => (
             <div className="flex items-center font-bold text-xs uppercase text-indigo-600 whitespace-nowrap">
-                Ready Stock
+                Current Stock + Open PO
                 <FormulaHint
                     title="Ready Stock (S+P)"
                     formula="Ready Stock = Net Current Stock + Total Open PO"

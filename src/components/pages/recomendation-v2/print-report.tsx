@@ -92,7 +92,7 @@ export function PrintReport({ data, visibleColumns, title, periods }: PrintRepor
                             )}
                             {showCol("available_stock") && (
                                 <th className="border border-slate-300 px-2 py-2 text-center text-[10px] font-black text-indigo-700">
-                                    READY STOCK
+                                    CURRENT STOCK + OPEN PO
                                 </th>
                             )}
 
@@ -177,7 +177,9 @@ export function PrintReport({ data, visibleColumns, title, periods }: PrintRepor
                                                 : "",
                                         )}
                                     >
-                                        {formatNumber(item.current_stock - item.safety_stock_x_resep)}
+                                        {formatNumber(
+                                            item.current_stock - item.safety_stock_x_resep,
+                                        )}
                                     </td>
                                 )}
                                 {showCol("available_stock") && (
@@ -193,8 +195,8 @@ export function PrintReport({ data, visibleColumns, title, periods }: PrintRepor
                                 {showCol("sales_history") &&
                                     periods.sales_periods.map((p) => {
                                         const q =
-                                            item.sales?.find((s: any) => s.key === p.key)?.quantity ??
-                                            0;
+                                            item.sales?.find((s: any) => s.key === p.key)
+                                                ?.quantity ?? 0;
                                         return (
                                             <td
                                                 key={`val-s-${p.key}`}
@@ -208,8 +210,8 @@ export function PrintReport({ data, visibleColumns, title, periods }: PrintRepor
                                 {showCol("needs_buy") &&
                                     periods.forecast_periods.map((p) => {
                                         const q =
-                                            item.needs?.find((s: any) => s.key === p.key)?.quantity ??
-                                            0;
+                                            item.needs?.find((s: any) => s.key === p.key)
+                                                ?.quantity ?? 0;
                                         return (
                                             <td
                                                 key={`val-f-${p.key}`}
@@ -224,7 +226,8 @@ export function PrintReport({ data, visibleColumns, title, periods }: PrintRepor
                                     <td className="border border-slate-300 px-2 py-1.5 text-center font-black bg-red-50/30 text-red-700">
                                         {/* Logic deficit same as column.tsx */}
                                         {(() => {
-                                            const h = item.work_order_horizon || periods.forecastMonths;
+                                            const h =
+                                                item.work_order_horizon || periods.forecastMonths;
                                             const ready =
                                                 item.current_stock -
                                                 item.safety_stock_x_resep +

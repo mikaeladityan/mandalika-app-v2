@@ -164,10 +164,12 @@ export function WorkOrderDialog({ data, month: _month, year: _year }: WorkOrderD
                     <div className="grid grid-cols-2 gap-5">
                         <div className="p-5 rounded-[1.5rem] bg-linear-to-br from-slate-50 to-white border border-slate-100 shadow-xs flex flex-col gap-2 transition-all hover:shadow-md hover:border-indigo-100 group">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-400 transition-colors">
-                                Ready Stock (S+P)
+                                CURRENT STOCK + OPEN PO
                             </span>
                             <span className="text-xl font-black text-slate-900">
-                                {formatNumber(data.current_stock - data.safety_stock_x_resep + data.open_po)}
+                                {formatNumber(
+                                    data.current_stock - data.safety_stock_x_resep + data.open_po,
+                                )}
                                 <span className="ml-1 text-[10px] text-slate-400 font-medium italic lowercase">
                                     {data.uom}
                                 </span>
