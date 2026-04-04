@@ -8,6 +8,7 @@ import {
     RequestApproveWorkOrderDTO,
     RequestSaveWorkOrderDTO,
     RequestBulkSaveHorizonDTO,
+    RequestSaveOpenPoDTO,
 } from "./recomendation-v2.schema";
 import { RecomendationV2Service } from "./recomendation-v2.service";
 import { toast } from "sonner";
@@ -92,7 +93,26 @@ export function useRecomendationV2(params: QueryRecomendationV2DTO) {
         },
     });
 
-    return { list, saveOrder, approveOrder, deleteOrder, bulkSaveHorizon, exportData };
+    const saveOpenPo = useMutation({
+        mutationFn: (body: RequestSaveOpenPoDTO) => RecomendationV2Service.saveOpenPo(body),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
+            toast.success("Open PO berhasil diperbarui");
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Gagal memperbarui Open PO");
+        },
+    });
+
+    return {
+        list,
+        saveOrder,
+        approveOrder,
+        deleteOrder,
+        bulkSaveHorizon,
+        saveOpenPo,
+        exportData,
+    };
 }
 
 /**
@@ -136,7 +156,18 @@ export function useRecomendationV2Mutations() {
         },
     });
 
-    return { saveOrder, approveOrder, deleteOrder };
+    const saveOpenPo = useMutation({
+        mutationFn: (body: RequestSaveOpenPoDTO) => RecomendationV2Service.saveOpenPo(body),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["recomendation-v2"] });
+            toast.success("Open PO berhasil diperbarui");
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Gagal memperbarui Open PO");
+        },
+    });
+
+    return { saveOrder, approveOrder, deleteOrder, saveOpenPo };
 }
 
 export function useRecomendationV2TableState(initial?: {

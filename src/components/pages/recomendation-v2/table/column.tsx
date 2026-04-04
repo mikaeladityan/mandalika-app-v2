@@ -12,6 +12,7 @@ import { HorizonDialog } from "./horizon-dialog";
 import { calculateTotalNeeded } from "@/app/(application)/recomendation-v2/server/use.recomendation-v2";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { OpenPoDialog } from "./open-po-dialog";
 
 interface PeriodProps {
     sales_periods: { month: number; year: number; key: string }[];
@@ -398,7 +399,7 @@ export const RecomendationV2Columns = (
                                 <span
                                     className={cn(
                                         "text-[8px] font-black uppercase",
-                                        isInHorizon ? "text-amber-600" : "text-slate-400",
+                                        isInHorizon ? "text-slate-600" : "text-slate-400",
                                     )}
                                 >
                                     {MONTHS_SHORT[p.month - 1]}
@@ -409,7 +410,7 @@ export const RecomendationV2Columns = (
                                         isInsufficient
                                             ? "text-red-600"
                                             : isInHorizon
-                                              ? "text-amber-700"
+                                              ? "text-slate-600"
                                               : "text-slate-600",
                                     )}
                                 >
@@ -541,17 +542,22 @@ export const RecomendationV2Columns = (
                     {periods.po_periods.map((p) => {
                         const q = pos.find((s: any) => s.key === p.key)?.quantity ?? 0;
                         return (
-                            <div
+                            <OpenPoDialog
                                 key={p.key}
-                                className="flex flex-col items-center justify-center p-1.5 rounded-lg border border-emerald-100 bg-emerald-50/30 min-w-[65px]"
+                                data={row.original}
+                                month={p.month}
+                                year={p.year}
+                                currentQuantity={q}
                             >
-                                <span className="text-[8px] font-black text-emerald-600 uppercase">
-                                    {MONTHS_SHORT[p.month - 1]}
-                                </span>
-                                <span className="text-[10px] font-bold text-emerald-700 tabular-nums">
-                                    {formatNumber(q)}
-                                </span>
-                            </div>
+                                <div className="flex flex-col items-center justify-center p-1.5 rounded-lg border border-emerald-100 bg-emerald-50/30 min-w-[65px] cursor-pointer hover:bg-emerald-100/50 hover:border-emerald-300 transition-all shadow-xs group">
+                                    <span className="text-[8px] font-black text-emerald-600 uppercase group-hover:text-emerald-700 transition-colors">
+                                        {MONTHS_SHORT[p.month - 1]}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-emerald-700 tabular-nums group-hover:text-emerald-900 transition-colors">
+                                        {formatNumber(q)}
+                                    </span>
+                                </div>
+                            </OpenPoDialog>
                         );
                     })}
                 </div>

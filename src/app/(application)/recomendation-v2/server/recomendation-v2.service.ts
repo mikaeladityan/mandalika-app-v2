@@ -6,6 +6,7 @@ import {
     RequestApproveWorkOrderDTO,
     RequestSaveWorkOrderDTO,
     RequestBulkSaveHorizonDTO,
+    RequestSaveOpenPoDTO,
 } from "./recomendation-v2.schema";
 
 export class RecomendationV2Service {
@@ -87,6 +88,19 @@ export class RecomendationV2Service {
             await setupCSRFToken();
             const { data } = await api.post<ApiSuccessResponse<any>>(
                 `${process.env.NEXT_PUBLIC_API}/api/app/recomendations-v2/bulk-horizon`,
+                body,
+            );
+            return data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async saveOpenPo(body: RequestSaveOpenPoDTO) {
+        try {
+            await setupCSRFToken();
+            const { data } = await api.post<ApiSuccessResponse<any>>(
+                `${process.env.NEXT_PUBLIC_API}/api/app/recomendations-v2/open-po`,
                 body,
             );
             return data.data;
