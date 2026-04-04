@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import {
     Upload,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
     DialogContent,
@@ -51,6 +52,7 @@ export function ProductInventoryImportForm() {
     const router = useRouter();
     const warehouse = useWarehouses();
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
     const [importId, setImportId] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -58,6 +60,7 @@ export function ProductInventoryImportForm() {
     const [rows, setRows] = useState<ProductInventoryImportPreviewDTO[]>([]);
     const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
     const [importResult, setImportResult] = useState<any>(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     const previewMutation = usePreviewImportProductInventory();
     const getPreviewMutation = useGetPreviewImportProductInventory();
@@ -160,25 +163,75 @@ export function ProductInventoryImportForm() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
-                        <label className="group relative border-dashed border-2 border-slate-200 rounded-xl p-10 block text-center cursor-pointer hover:border-primary/50 hover:bg-slate-50 transition-all duration-200">
+                        <div
+                            className={`group relative border-dashed border-2 rounded-xl p-10 block text-center cursor-pointer transition-all duration-300 ${
+                                isDragging
+                                    ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/10"
+                                    : "border-slate-200 hover:border-primary/50 hover:bg-slate-50 shadow-sm"
+                            }`}
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragEnter={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDragging(true);
+                            }}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!isDragging) setIsDragging(true);
+                                if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (e.currentTarget === e.target) {
+                                    setIsDragging(false);
+                                }
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDragging(false);
+                                
+                                const droppedFile = e.dataTransfer?.files?.[0];
+                                if (droppedFile) {
+                                    setFile(droppedFile);
+                                }
+                            }}
+                        >
                             <input
+                                ref={fileInputRef}
+                                aria-hidden="true"
                                 hidden
                                 type="file"
                                 accept=".csv,.xlsx"
                                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                             />
-                            <div className="flex flex-col items-center">
+                            <div className={`flex flex-col items-center ${isDragging ? "pointer-events-none" : ""}`}>
                                 <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
                                     <Upload className="h-6 w-6 text-slate-500 group-hover:text-primary" />
                                 </div>
-                                <span className="text-lg font-medium text-slate-700 block mb-1">
-                                    {file ? file.name : "Klik atau seret file ke sini"}
-                                </span>
-                                <span className="text-sm text-slate-400">
-                                    {file ? `${(file.size / 1024).toFixed(2)} KB` : "Excel atau CSV (Maks 5MB)"}
-                                </span>
+                                {file ? (
+                                    <div className="space-y-2">
+                                        <span className="text-lg font-bold text-primary block">
+                                            {file.name}
+                                        </span>
+                                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                                            {(file.size / 1024).toFixed(2)} KB
+                                        </Badge>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className="text-lg font-medium text-slate-700 block mb-1">
+                                            Klik atau seret file ke sini
+                                        </span>
+                                        <span className="text-sm text-slate-400">
+                                            Excel atau CSV (Maks 5MB)
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                        </label>
+                        </div>
 
                         <div className="flex justify-end gap-3 pt-2">
                             <Button size="sm"  variant="outline"

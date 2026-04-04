@@ -369,13 +369,22 @@ export const RecomendationV2Columns = (
             </div>
         ),
         cell: ({ row }) => {
-            const needs = row.original.needs || [];
-            const horizon = row.original.work_order_horizon || periods.forecastMonths;
+            const data = row.original;
+            const needs = data.needs || [];
+            const horizon = data.work_order_horizon || 0;
+            const readyStock = data.current_stock - data.safety_stock_x_resep + data.open_po;
+
+            let cumulativeNeed = 0;
+
             return (
                 <div className="flex items-center gap-2">
                     {periods.forecast_periods.map((p, index) => {
                         const q = needs.find((s: any) => s.key === p.key)?.quantity ?? 0;
-                        const isInHorizon = index < horizon;
+                        cumulativeNeed += q;
+
+                        const isInHorizon = horizon > 0 && index < horizon;
+                        const isInsufficient = cumulativeNeed > readyStock;
+
                         return (
                             <div
                                 key={p.key}
@@ -397,7 +406,7 @@ export const RecomendationV2Columns = (
                                 <span
                                     className={cn(
                                         "text-[10px] font-bold tabular-nums",
-                                        isInHorizon ? "text-amber-700" : "text-slate-600",
+                                        isInsufficient ? "text-red-600" : isInHorizon ? "text-amber-700" : "text-slate-600",
                                     )}
                                 >
                                     {formatNumber(q)}
@@ -417,11 +426,6 @@ export const RecomendationV2Columns = (
             <div className="flex flex-col items-center gap-0.5 py-1 min-w-[100px]">
                 <div className="flex items-center font-black uppercase text-slate-500 tracking-widest leading-none text-center">
                     Total Need
-                    <FormulaHint
-                        title="Total Need (Horizon)"
-                        formula="Σ Forecast Needs bulan m s/d m+n"
-                        description="Akumulasi kebutuhan material berdasarkan horizon waktu yang dipilih (3, 4, 6, atau 12 bulan)."
-                    />
                 </div>
                 <span className="text-[8px] text-slate-400 font-mono italic">(Horizon)</span>
             </div>
@@ -429,12 +433,30 @@ export const RecomendationV2Columns = (
         cell: ({ row }) => {
             const data = row.original;
             const hasHorizon = !!data.work_order_horizon;
-            const triggerTotal = calculateTotalNeeded(
+            
+            if (!hasHorizon) {
+                return (
+                    <div className="flex flex-col items-center justify-center min-w-[80px]">
+                        <HorizonDialog
+                            data={data}
+                            month={periods.month}
+                            year={periods.year}
+                            defaultHorizon={periods.forecastMonths}
+                        />
+                    </div>
+                );
+            }
+
+            const total = calculateTotalNeeded(
                 data.needs,
-                data.work_order_horizon || periods.forecastMonths,
+                data.work_order_horizon || 0,
             );
+
             return (
                 <div className="flex flex-col items-center justify-center min-w-[80px]">
+                    <span className="text-[11px] font-bold text-slate-700 mb-1">
+                        {formatNumber(total)}
+                    </span>
                     <HorizonDialog
                         data={data}
                         month={periods.month}
@@ -453,21 +475,15 @@ export const RecomendationV2Columns = (
             <div className="flex flex-col items-center gap-0.5 py-1 min-w-[140px]">
                 <div className="flex items-center font-black uppercase text-indigo-600 tracking-widest leading-none">
                     Rekomendasi
-                    <FormulaHint
-                        title="Rekomendasi Beli"
-                        formula="Beli = Ready Stock - Total Need"
-                        description="Jika Ready Stock tidak mencukupi Total Need, sistem akan merekomendasikan jumlah yang harus dibeli (Defisit)."
-                    />
                 </div>
                 <span className="text-[8px] text-indigo-400 font-mono italic">
-                    (CS+PO) - Total Need
+                    (Ready Stock) - Total Need
                 </span>
             </div>
         ),
         cell: ({ row }) => {
             const data = row.original;
-
-            const h = data.work_order_horizon || periods.forecastMonths;
+            const h = data.work_order_horizon || 0;
 
             if (!h) {
                 return <span className="text-[10px] font-bold text-slate-300">–</span>;
@@ -480,7 +496,7 @@ export const RecomendationV2Columns = (
                 h,
             );
 
-            if (deficit === null) {
+            if (deficit === null || (deficit && deficit >= 0)) {
                 return (
                     <Badge
                         variant="secondary"

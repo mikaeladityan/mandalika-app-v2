@@ -13,7 +13,7 @@ export interface Errors {
 export const STATUS = ["PENDING", "ACTIVE", "FAVOURITE", "BLOCK", "DELETE"] as const;
 export const ROLE = ["STAFF", "SUPER_ADMIN", "OWNER", "DEVELOPER"] as const;
 export const GENDER = ["WOMEN", "MEN", "UNISEX"] as const;
-export const ISSUANCE_TYPE = ["ALL", "OFFLINE", "ONLINE", "SPIN_WHEEL", "GARANSI_OUT"] as const;
+export const ISSUANCE_TYPE = ["OFFLINE", "ONLINE", "SPIN_WHEEL", "GARANSI_OUT"] as const;
 export const TRANSFER_STATUS = [
     "PENDING",
     "APPROVED",

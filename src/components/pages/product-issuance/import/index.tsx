@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -13,13 +13,14 @@ import {
     Container,
     CheckCircle,
     Calendar,
-    ShoppingBag
+    ShoppingBag,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
     DialogContent,
@@ -81,6 +82,7 @@ const MAX_ROWS = 5000;
 
 export function ImportIssuanceForm() {
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const now = new Date();
     const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
     const searchParams = useSearchParams();
@@ -100,10 +102,37 @@ export function ImportIssuanceForm() {
     const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
     const [openDialog, setOpenDialog] = useState(false);
     const [importResult, setImportResult] = useState<any>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleFileChange = (selectedFile: File | null) => {
+        if (!selectedFile) return;
+
+        setFile(selectedFile);
+
+        // Auto-select Type from filename (e.g., "... - OFFLINE" or "...-OFFLINE")
+        // We use regex to be more flexible with spaces around the dash
+        const fileName = selectedFile.name;
+        const validTypes = ["OFFLINE", "ONLINE", "SPIN_WHEEL", "GARANSI_OUT"];
+
+        for (const t of validTypes) {
+            // Match any dash/space combination followed by the type
+            const regex = new RegExp(`[-\\s]+${t}(\\.[^.]+|$)`, "i");
+            if (regex.test(fileName)) {
+                form.setValue("type", t, { shouldValidate: true, shouldDirty: true });
+                toast.success(`Tipe pengeluaran otomatis disetel ke: ${t.replace("_", " ")}`, {
+                    description: `Terdeteksi dari nama file "${fileName}"`,
+                });
+                break;
+            }
+        }
+    };
 
     const typeLabel = useMemo(() => {
         const t = form.watch("type") || defaultType;
-        return t.replace("_", " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+        return t
+            .replace("_", " ")
+            .toLowerCase()
+            .replace(/\b\w/g, (l) => l.toUpperCase());
     }, [form.watch("type"), defaultType]);
 
     const previewMutation = usePreviewImportIssuance();
@@ -134,6 +163,8 @@ export function ImportIssuanceForm() {
         if (!importId || stats.invalid > 0) return;
 
         const { month, year, type } = form.getValues();
+
+        console.log("Executing import with type:", type); // Debug to ensure correct type is used
 
         const result = await executeMutation.mutateAsync({
             importId,
@@ -167,7 +198,7 @@ export function ImportIssuanceForm() {
                     </Button>
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                             <div className="size-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                            <div className="size-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                                 <ShoppingBag className="size-4" />
                             </div>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -175,8 +206,8 @@ export function ImportIssuanceForm() {
                             </h1>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Upload data pengeluaran {typeLabel.toLowerCase()} bulanan untuk diproses menjadi forecast
-                            kebutuhan.
+                            Upload data pengeluaran {typeLabel.toLowerCase()} bulanan untuk diproses
+                            menjadi forecast kebutuhan.
                         </p>
                     </div>
                 </div>
@@ -207,27 +238,82 @@ export function ImportIssuanceForm() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
-                        <label className="group relative border-dashed border-2 border-slate-200 rounded-xl p-10 block text-center cursor-pointer hover:border-primary/50 hover:bg-slate-50 transition-all duration-200">
+                        <div
+                            className={`group relative border-dashed border-2 rounded-xl p-10 block text-center cursor-pointer transition-all duration-300 ${
+                                isDragging
+                                    ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/10"
+                                    : "border-slate-200 hover:border-primary/50 hover:bg-slate-50 shadow-sm"
+                            }`}
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragEnter={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDragging(true);
+                            }}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!isDragging) setIsDragging(true);
+                                if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (e.currentTarget === e.target) {
+                                    setIsDragging(false);
+                                }
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDragging(false);
+                                
+                                const droppedFile = e.dataTransfer?.files?.[0];
+                                if (droppedFile) {
+                                    handleFileChange(droppedFile);
+                                }
+                            }}
+                        >
                             <input
+                                ref={fileInputRef}
+                                aria-hidden="true"
                                 hidden
                                 type="file"
                                 accept=".csv,.xlsx"
-                                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                                onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                             />
-                            <div className="flex flex-col items-center">
+                            <div className={`flex flex-col items-center ${isDragging ? "pointer-events-none" : ""}`}>
                                 <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
                                     <Upload className="h-6 w-6 text-slate-500 group-hover:text-primary" />
                                 </div>
-                                <span className="text-lg font-medium text-slate-700 block mb-1">
-                                    {file ? file.name : "Klik atau seret file ke sini"}
-                                </span>
-                                <span className="text-sm text-slate-400">
-                                    {file
-                                        ? `${(file.size / 1024).toFixed(2)} KB`
-                                        : "Excel atau CSV (Maks 5MB)"}
-                                </span>
+                                {file ? (
+                                    <div className="space-y-2">
+                                        <span className="text-lg font-bold text-primary block">
+                                            {file.name}
+                                        </span>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                                                {(file.size / 1024).toFixed(2)} KB
+                                            </Badge>
+                                            {form.watch("type") && form.watch("type") !== "ALL" && (
+                                                <Badge className="bg-emerald-500 text-white border-none">
+                                                    Tipe: {form.watch("type")}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className="text-lg font-medium text-slate-700 block mb-1">
+                                            Klik atau seret file ke sini
+                                        </span>
+                                        <span className="text-sm text-slate-400">
+                                            Excel atau CSV (Maks 5MB)
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                        </label>
+                        </div>
 
                         <div className="flex justify-end gap-3 pt-2">
                             <Button
@@ -336,7 +422,7 @@ export function ImportIssuanceForm() {
             </div>
 
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                <DialogContent>
+                <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Calendar className="h-5 w-5 text-primary" />
@@ -346,7 +432,8 @@ export function ImportIssuanceForm() {
 
                     <div className="py-4 space-y-4">
                         <p className="text-sm text-slate-500">
-                            Silakan tentukan bulan dan tahun periode pengeluaran yang sedang diimport.
+                            Silakan tentukan bulan dan tahun periode pengeluaran yang sedang
+                            diimport.
                         </p>
                         <div className="grid grid-cols-2 gap-4">
                             <SelectForm

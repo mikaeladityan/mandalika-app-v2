@@ -114,21 +114,8 @@ export function RekapColumns({
             header: () => <div className="text-start">{renderSortHeader("ALL", "all_qty")}</div>,
             cell: ({ row }) => (
                 <div className="text-start">
-                    <span className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-slate-50 text-slate-700 font-black text-xs border border-slate-100 min-w-[50px]">
-                        {formatNumber(row.original.all_qty)}
-                    </span>
-                </div>
-            ),
-        },
-        {
-            accessorKey: "total_qty",
-            header: () => (
-                <div className="text-start">{renderSortHeader("TOTAL", "total_qty")}</div>
-            ),
-            cell: ({ row }) => (
-                <div className="text-start">
                     <span className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 font-black text-xs border border-indigo-100 min-w-[50px]">
-                        {formatNumber(row.original.total_qty)}
+                        {formatNumber(row.original.all_qty)}
                     </span>
                 </div>
             ),

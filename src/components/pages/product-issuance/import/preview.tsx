@@ -20,7 +20,7 @@ export function PreviewTable({ rows }: { rows: IssuanceImportPreviewDTO[] }) {
                     <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
                         <TableHead className="font-semibold text-slate-700">CODE</TableHead>
                         <TableHead className="font-semibold text-slate-700">NAMA PRODUK</TableHead>
-                        <TableHead className="font-semibold text-slate-700">TYPE</TableHead>
+                        <TableHead className="font-semibold text-slate-700">KATEGORI</TableHead>
                         <TableHead className="font-semibold text-slate-700 text-right">JUMLAH PENGELUARAN</TableHead>
                         <TableHead className="font-semibold text-slate-700">STATUS</TableHead>
                     </TableRow>
